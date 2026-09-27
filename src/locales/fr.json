@@ -983,5 +983,10 @@
     "removeStep": "Supprimer l’étape {number}",
     "moveUp": "Monter l’étape {number}",
     "moveDown": "Descendre l’étape {number}"
+  },
+  "game": {
+    "tank": "Char",
+    "controls": "Mode jeu • Flèches / ZQSD / WASD : déplacer • Espace : tirer • Échap : quitter",
+    "exit": "Quitter le jeu"
   }
 }

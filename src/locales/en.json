@@ -983,5 +983,10 @@
     "removeStep": "Remove stop {number}",
     "moveUp": "Move stop {number} up",
     "moveDown": "Move stop {number} down"
+  },
+  "game": {
+    "tank": "Tank",
+    "controls": "Game mode • Arrows / WASD / ZQSD: move • Space: shoot • Esc: exit",
+    "exit": "Exit game"
   }
 }

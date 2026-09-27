@@ -4,6 +4,7 @@
 
   <!-- Navigation bar (shown during navigation/free hand modes) -->
   <NavigationBar />
+  <MapEffects />
 
   <!-- Fullscreen map -->
   <div id="map" :class="{ 'freehand-drawing': uiStore.freeHandDrawing.isDrawing }" />
@@ -105,6 +106,7 @@ import SearchAlongPanelInline from '@/components/search/SearchAlongPanel.vue';
 import SidebarLayersPanel from '@/components/sidebar/SidebarLayersPanel.vue';
 import CursorTooltip from '@/components/ui/CursorTooltip.vue';
 import IntersectionLineEditStatus from '@/components/ui/IntersectionLineEditStatus.vue';
+import MapEffects from '@/components/ui/MapEffects.vue';
 import ModalsContainer from '@/components/ui/ModalsContainer.vue';
 import PdfViewer from '@/components/ui/PdfViewer.vue';
 import PrecisionModeIndicator from '@/components/ui/PrecisionModeIndicator.vue';
@@ -172,7 +174,7 @@ function endSidebarResize(event: PointerEvent) {
 }
 const panelStyle = computed(() => {
   const top =
-    uiStore.navigatingElement || uiStore.freeHandDrawing.isDrawing
+    uiStore.gameMode || uiStore.navigatingElement || uiStore.freeHandDrawing.isDrawing
       ? 64
       : uiStore.topBarOpen
         ? topBarHeight.value

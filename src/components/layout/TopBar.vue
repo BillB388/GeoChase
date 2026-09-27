@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!uiStore.navigatingElement && !uiStore.freeHandDrawing.isDrawing">
+  <div v-if="!uiStore.gameMode && !uiStore.navigatingElement && !uiStore.freeHandDrawing.isDrawing">
     <!-- Top navigation drawer -->
     <v-navigation-drawer
       v-model="uiStore.topBarOpen"

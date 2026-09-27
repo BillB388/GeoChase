@@ -1,5 +1,6 @@
 <template>
   <v-btn
+    v-if="!uiStore.gameMode"
     :aria-label="$t('tools.toggle')"
     :aria-pressed="uiStore.tools.isToolbarOpen || !!uiStore.tools.activeTool"
     class="tools-button"

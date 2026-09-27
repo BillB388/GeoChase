@@ -73,6 +73,7 @@ export interface ToolsState {
 export const useUIStore = defineStore('ui', () => {
   // State
   const openModals = ref<Set<string>>(new Set());
+  const gameMode = ref(false);
   const drawingMode = ref<DrawingMode>('none');
   const toasts = ref<Toast[]>([]);
   const isLoading = ref(false);
@@ -128,6 +129,7 @@ export const useUIStore = defineStore('ui', () => {
   const activeToastCount = computed(() => toasts.value.length);
   const canInteractWithLines = computed(
     () =>
+      !gameMode.value &&
       !freeHandDrawing.value.isDrawing &&
       !tools.value.activeTool &&
       !navigatingElement.value &&
@@ -415,6 +417,7 @@ export const useUIStore = defineStore('ui', () => {
 
   return {
     canInteractWithLines,
+    gameMode,
     // State
     openModals,
     drawingMode,

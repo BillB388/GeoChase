@@ -1,6 +1,17 @@
 <template>
+  <div v-if="uiStore.gameMode" class="navigation-bar" data-testid="game-controls">
+    <div class="navigation-bar-content">
+      <div class="navigation-instructions">
+        <span class="navigation-text">{{ $t('game.controls') }}</span>
+      </div>
+
+      <button class="navigation-exit-btn" type="button" @click="uiStore.gameMode = false">
+        {{ $t('game.exit') }}
+      </button>
+    </div>
+  </div>
   <!-- Navigation Mode -->
-  <div v-if="uiStore.navigatingElement" class="navigation-bar">
+  <div v-else-if="uiStore.navigatingElement" class="navigation-bar">
     <div class="navigation-bar-content">
       <div class="navigation-instructions">
         <span class="navigation-icon">🧭</span>

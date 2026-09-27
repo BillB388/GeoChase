@@ -86,7 +86,7 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
       }
     );
     const unsubscribeRightClick = mapContainer.onMapRightClick((lat, lon) => {
-      if (uiStore.freeHandDrawing.isDrawing) return;
+      if (uiStore.gameMode || uiStore.freeHandDrawing.isDrawing) return;
       uiStore.startCreating('point', { lat, lon });
       uiStore.openModal('pointModal');
     });
