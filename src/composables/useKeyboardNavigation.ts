@@ -57,14 +57,6 @@ export function useKeyboardNavigation(
   }
 
   const handleKeydown = (event: KeyboardEvent) => {
-    // View capture escape handling
-    if (uiStore.viewCaptureState.isCapturing && event.key === 'Escape') {
-      event.preventDefault();
-      uiStore.stopViewCapture();
-      uiStore.openModal('animationModal'); // Re-open the modal
-      return;
-    }
-
     // Free hand drawing escape handling
     if (uiStore.freeHandDrawing.isDrawing && event.key === 'Escape' && onFreeHandEscape) {
       event.preventDefault();

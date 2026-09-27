@@ -3,16 +3,22 @@ import type { useDrawing } from '@/composables/useDrawing';
  * Composable for free hand drawing mode with mouse tracking and line preview
  */
 import type { useMap } from '@/composables/useMap';
+import type { PointElement } from '@/types/project';
 import type { CursorTooltipData } from '@/types/ui';
 import type { MapBrowserEvent } from 'ol';
 import type { Ref, WatchStopHandle } from 'vue';
 import { Feature } from 'ol';
 import { LineString } from 'ol/geom';
+import Interaction from 'ol/interaction/Interaction';
 import { toLonLat } from 'ol/proj';
 import { Stroke, Style } from 'ol/style';
 import { watch } from 'vue';
+import { useMapCursor } from '@/composables/useMapCursor';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { i18n } from '@/plugins/i18n';
+import { createIntersectionRay } from '@/services/intersectionEditing';
+import { useLayersStore } from '@/stores/layers';
+import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
 
 export function useFreeHandDrawing(
@@ -25,6 +31,113 @@ export function useFreeHandDrawing(
   let previewFeature: Feature<LineString> | null = null;
   let lockedAzimuth: number | null = null;
   let lockedDistance: number | null = null;
+  const layers = useLayersStore();
+  const projects = useProjectsStore();
+  let intersectionLock: {
+    point: PointElement;
+    ray: ReturnType<typeof createIntersectionRay>;
+  } | null = null;
+  let lastPointer: MapBrowserEvent | null = null;
+  const setCursor = useMapCursor(mapContainer, 20);
+  let pendingDrag: { point: PointElement; pixel: number[]; pointerId: number } | null = null;
+  let dragging = false;
+  let pointInteraction: Interaction | undefined;
+
+  function sameCoordinates(a: PointElement['coordinates'], b: PointElement['coordinates']) {
+    return Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lon - b.lon) < 1e-9;
+  }
+
+  function pointAt(
+    pixel: number[],
+    excluded?: PointElement['coordinates']
+  ): PointElement | undefined {
+    return mapContainer.map.value?.forEachFeatureAtPixel(
+      pixel,
+      (feature) => {
+        const id = feature.getId();
+        if (
+          typeof id === 'string' &&
+          mapContainer.pointsSource.value?.getFeatureById(id) === feature &&
+          uiStore.isElementVisible('point', id)
+        ) {
+          const point = layers.points.find((point) => point.id === id);
+          if (point && (!excluded || !sameCoordinates(point.coordinates, excluded))) return point;
+        }
+      },
+      { hitTolerance: 10 }
+    );
+  }
+
+  function snapPoint(event: MapBrowserEvent) {
+    const start = parseStartCoordinates(uiStore.freeHandDrawing.startCoord);
+    // A preset azimuth remains an explicit direction constraint after choosing the start.
+    if (start && uiStore.freeHandDrawing.azimuth !== undefined) return;
+    return pointAt(event.pixel, start ?? undefined);
+  }
+
+  function updateIntersectionLock(snapped: PointElement | undefined, alt: boolean) {
+    if (!alt) {
+      if (intersectionLock) lockedAzimuth = null;
+      intersectionLock = null;
+    } else if (!intersectionLock && snapped) {
+      const start = parseStartCoordinates(uiStore.freeHandDrawing.startCoord);
+      if (!start) return;
+      try {
+        intersectionLock = {
+          point: snapped,
+          ray: createIntersectionRay(start, snapped.coordinates, projects.activeProjection),
+        };
+        lockedAzimuth = null;
+        lockedDistance = null;
+      } catch {
+        // Coincident points cannot define an intersection direction.
+      }
+    }
+    uiStore.freeHandDrawing.intersectionPointName = intersectionLock?.point.name;
+  }
+
+  function pointerState(event: MapBrowserEvent, altOverride?: boolean) {
+    const coordinate = event.coordinate;
+    const lonLat = toLonLat(coordinate);
+    const candidate = snapPoint(event);
+    const alt = altOverride ?? (event.originalEvent?.altKey || false);
+    updateIntersectionLock(candidate, alt);
+    const snapped = intersectionLock ? undefined : candidate;
+    const endpoint = intersectionLock?.ray.pointAt(
+      intersectionLock.ray.closest(coordinate).parameter
+    );
+    const lng = endpoint?.lon ?? snapped?.coordinates.lon ?? lonLat[0];
+    const lat = endpoint?.lat ?? snapped?.coordinates.lat ?? lonLat[1];
+    uiStore.freeHandDrawing.snappedPointName = snapped?.name;
+    setCursor(snapped ? 'pointer' : 'crosshair');
+    return {
+      lat,
+      lng,
+      snapped,
+      isAltPressed: !intersectionLock && !snapped && alt,
+      isCtrlPressed: !intersectionLock && !snapped && (event.originalEvent?.ctrlKey || false),
+    };
+  }
+
+  function resetGesture() {
+    pendingDrag = null;
+    dragging = false;
+    intersectionLock = null;
+    lastPointer = null;
+    setCursor(null);
+    lockedAzimuth = null;
+    lockedDistance = null;
+    cursorTooltip.value.visible = false;
+  }
+
+  function cancelGesture() {
+    if (uiStore.freeHandDrawing.isDrawing) uiStore.stopFreeHandDrawing();
+    resetGesture();
+  }
+
+  function cancelPointer(event: PointerEvent) {
+    if (pendingDrag?.pointerId === event.pointerId) cancelGesture();
+  }
 
   // Helper to parse start coordinates
   const parseStartCoordinates = (
@@ -164,7 +277,7 @@ export function useFreeHandDrawing(
     }
   };
 
-  const handleMouseMove = (event: MapBrowserEvent) => {
+  const handleMouseMove = (event: MapBrowserEvent, altOverride?: boolean) => {
     if (!uiStore.freeHandDrawing.isDrawing) {
       // Don't clobber the tooltip when another feature (e.g. a tool like the
       // ruler) is currently driving it.
@@ -179,11 +292,8 @@ export function useFreeHandDrawing(
       return;
     }
 
-    // Get coordinates from OpenLayers event
-    const coordinate = event.coordinate;
-    const lonLat = toLonLat(coordinate);
-    const lng = lonLat[0];
-    const lat = lonLat[1];
+    lastPointer = event;
+    const { lat, lng, isAltPressed, isCtrlPressed } = pointerState(event, altOverride);
 
     if (lng === undefined || lat === undefined) {
       cursorTooltip.value.visible = false;
@@ -191,8 +301,6 @@ export function useFreeHandDrawing(
     }
 
     const { startCoord, azimuth } = uiStore.freeHandDrawing;
-    const isAltPressed = event.originalEvent?.altKey || false;
-    const isCtrlPressed = event.originalEvent?.ctrlKey || false;
 
     // Update cursor tooltip position
     const pixel = event.pixel;
@@ -254,16 +362,15 @@ export function useFreeHandDrawing(
       return;
     }
 
+    // Consume drawing clicks before completion re-enables other map interactions.
+    event.stopPropagation();
+
     const map = mapContainer.map?.value;
     if (!map) {
       return;
     }
 
-    // Get coordinates from OpenLayers event
-    const coordinate = event.coordinate;
-    const lonLat = toLonLat(coordinate);
-    const lng = lonLat[0];
-    const lat = lonLat[1];
+    const { lat, lng, snapped, isAltPressed, isCtrlPressed } = pointerState(event);
 
     // Type guard for coordinates
     if (lng === undefined || lat === undefined) {
@@ -272,27 +379,19 @@ export function useFreeHandDrawing(
 
     const { startCoord, azimuth, name } = uiStore.freeHandDrawing;
 
-    const isAltPressed = event.originalEvent?.altKey || false;
-    const isCtrlPressed = event.originalEvent?.ctrlKey || false;
-
-    // Parse start coordinates
-    let startLat: number, startLon: number;
-    if (startCoord && startCoord.trim() !== '') {
-      const parts = startCoord.split(',').map((s: string) => Number.parseFloat(s.trim()));
-      if (parts.length === 2 && !parts.some((p: number) => Number.isNaN(p))) {
-        startLat = parts[0]!;
-        startLon = parts[1]!;
-      } else {
+    const start = parseStartCoordinates(startCoord);
+    if (!start) {
+      if (startCoord?.trim()) {
         uiStore.addToast('Invalid start coordinates', 'error');
         uiStore.stopFreeHandDrawing();
-        return;
+      } else {
+        uiStore.freeHandDrawing.startCoord = `${lat}, ${lng}`;
+        uiStore.freeHandDrawing.snappedPointName = undefined;
+        uiStore.addToast('Start point set. Click again to set the endpoint.', 'info');
       }
-    } else {
-      // Set start point on first click
-      uiStore.freeHandDrawing.startCoord = `${lat}, ${lng}`;
-      uiStore.addToast('Start point set. Click again to set the endpoint.', 'info');
       return;
     }
+    const { lat: startLat, lon: startLon } = start;
 
     let endLat: number, endLon: number;
     // getDistance returns meters, convert to km
@@ -344,6 +443,10 @@ export function useFreeHandDrawing(
 
     // Draw the actual line
     let lineName = name;
+    const origin = layers.points.find((point) =>
+      sameCoordinates(point.coordinates, { lat: startLat, lon: startLon })
+    );
+    if (!lineName && snapped && origin) lineName = `${origin.name} → ${snapped.name}`;
     if (!lineName) {
       // getDistance returns meters, convert to km
       const dist = getDistance([startLon, startLat], [endLon, endLat]) / 1000;
@@ -352,18 +455,22 @@ export function useFreeHandDrawing(
       lineName = `Line ${dist.toFixed(1)}km • ${finalBearing.toFixed(1)}°/${inverseBearing.toFixed(1)}°`;
     }
 
+    const through = intersectionLock?.point.coordinates;
+    const totalDistance = through
+      ? getDistance([startLon, startLat], [endLon, endLat]) / 1000
+      : undefined;
     drawing.drawLineSegment(
       startLat,
       startLon,
       endLat,
       endLon,
       lineName,
-      'coordinate',
-      undefined,
-      azimuth,
-      undefined,
-      undefined,
-      undefined
+      through ? 'intersection' : 'coordinate',
+      totalDistance,
+      through ? undefined : azimuth,
+      through?.lat,
+      through?.lon,
+      totalDistance
     );
 
     uiStore.addToast('Line segment added successfully!', 'success');
@@ -389,13 +496,91 @@ export function useFreeHandDrawing(
     }
   };
 
+  function handleAlt(event: KeyboardEvent) {
+    if (event.key !== 'Alt' || event.repeat || !uiStore.freeHandDrawing.isDrawing || !lastPointer)
+      return;
+    event.preventDefault();
+    handleMouseMove(lastPointer, event.type === 'keydown');
+  }
+
   // Setup event listeners
   let stopToolWatch: WatchStopHandle | undefined;
 
   const setup = () => {
-    if (mapContainer.map?.value) {
-      mapContainer.map.value.on('pointermove', handleMouseMove);
-      mapContainer.map.value.on('click', handleMapClick);
+    const map = mapContainer.map.value;
+    if (map) {
+      pointInteraction = new Interaction({
+        handleEvent(event) {
+          const original = event.originalEvent;
+          if (event.type === 'pointerdown') {
+            if (pendingDrag) {
+              cancelGesture();
+              return false;
+            }
+            if (
+              !uiStore.canInteractWithLines ||
+              uiStore.intersectionLineEdit ||
+              !('button' in original) ||
+              original.button !== 0 ||
+              !('pointerId' in original) ||
+              original.isPrimary === false
+            )
+              return true;
+            const point = pointAt(event.pixel);
+            if (!point) return true;
+            pendingDrag = { point, pixel: [...event.pixel], pointerId: original.pointerId };
+            // Reserve this gesture before DragPan sees its initial pointerdown.
+            return false;
+          }
+          if (
+            !pendingDrag ||
+            !('pointerId' in original) ||
+            original.pointerId !== pendingDrag.pointerId
+          )
+            return true;
+          if (event.type === 'pointerdrag') {
+            if (!dragging) {
+              if (
+                Math.hypot(
+                  event.pixel[0]! - pendingDrag.pixel[0]!,
+                  event.pixel[1]! - pendingDrag.pixel[1]!
+                ) < 5
+              )
+                return false;
+              if (!uiStore.canInteractWithLines) {
+                resetGesture();
+                return false;
+              }
+              const { lat, lon } = pendingDrag.point.coordinates;
+              uiStore.startFreeHandDrawing(`${lat}, ${lon}`, undefined, '', true);
+              uiStore.freeHandDrawing.draggingFromPoint = true;
+              dragging = true;
+            }
+            handleMouseMove(event);
+            return false;
+          }
+          if (event.type === 'pointerup') {
+            const wasDragging = dragging;
+            pendingDrag = null;
+            dragging = false;
+            if (!wasDragging) return true;
+            uiStore.freeHandDrawing.draggingFromPoint = false;
+            const target = document.elementFromPoint(original.clientX, original.clientY);
+            if (!target || !map.getViewport().contains(target)) cancelGesture();
+            else if (intersectionLock || snapPoint(event)) void handleMapClick(event);
+            else handleMouseMove(event);
+            return false;
+          }
+          return true;
+        },
+      });
+      map.addInteraction(pointInteraction);
+      map.getViewport().addEventListener('pointercancel', cancelPointer);
+      window.addEventListener('blur', cancelGesture);
+      document.addEventListener('keydown', handleAlt);
+      document.addEventListener('keyup', handleAlt);
+      map.on('pointermove', handleMouseMove);
+      map.on('click', handleMapClick);
     }
 
     // Watch for free hand drawing mode changes to clean up preview
@@ -403,16 +588,25 @@ export function useFreeHandDrawing(
     stopToolWatch = watch(
       () => uiStore.freeHandDrawing.isDrawing,
       (isDrawing) => {
-        if (!isDrawing && previewFeature && mapContainer.linesSource?.value) {
-          mapContainer.linesSource.value.removeFeature(previewFeature);
+        if (!isDrawing) {
+          if (previewFeature) mapContainer.linesSource.value?.removeFeature(previewFeature);
           previewFeature = null;
+          resetGesture();
         }
-      }
+      },
+      { flush: 'sync' }
     );
   };
 
   // Cleanup
   const cleanup = () => {
+    cancelGesture();
+    window.removeEventListener('blur', cancelGesture);
+    document.removeEventListener('keydown', handleAlt);
+    document.removeEventListener('keyup', handleAlt);
+    const map = mapContainer.map.value;
+    map?.getViewport().removeEventListener('pointercancel', cancelPointer);
+    if (pointInteraction) map?.removeInteraction(pointInteraction);
     stopToolWatch?.();
     stopToolWatch = undefined;
     if (mapContainer.map?.value) {

@@ -92,11 +92,7 @@ export function useDrawing(mapRef: MapContainer) {
   };
 
   // Helper to redraw element on map
-  const redrawElementOnMap = async (
-    elementType: string,
-    elementId: string,
-    animate: boolean
-  ): Promise<void> => {
+  const redrawElementOnMap = async (elementType: string, elementId: string): Promise<void> => {
     switch (elementType) {
       case 'route': {
         const route = layersStore.routes.find((route) => route.id === elementId);
@@ -119,7 +115,7 @@ export function useDrawing(mapRef: MapContainer) {
       case 'lineSegment': {
         const segment = layersStore.lineSegments.find((s) => s.id === elementId);
         if (segment && segment.id) {
-          await redrawLineSegment(segment, animate);
+          await redrawLineSegment(segment);
         }
         break;
       }
@@ -140,8 +136,8 @@ export function useDrawing(mapRef: MapContainer) {
     }
   };
 
-  // Helper to redraw line segment with optional animation
-  const redrawLineSegment = async (segment: LineSegmentElement, animate: boolean) => {
+  // Helper to redraw line segment on the map
+  const redrawLineSegment = (segment: LineSegmentElement) => {
     // Handle parallel lines (horizontal lines at constant latitude)
     if (segment.mode === 'parallel' && segment.longitude !== undefined) {
       lineDrawing.redrawParallelOnMap(segment.id, segment.longitude, segment.color);
@@ -150,31 +146,17 @@ export function useDrawing(mapRef: MapContainer) {
 
     // Handle regular line segments (coordinate, azimuth, intersection modes)
     if (segment.endpoint) {
-      if (animate) {
-        await lineDrawing.animateLineSegmentOnMap(
-          segment.id,
-          segment.center.lat,
-          segment.center.lon,
-          segment.endpoint.lat,
-          segment.endpoint.lon,
-          segment.mode as 'coordinate' | 'azimuth' | 'intersection',
-          segment.intersectionPoint?.lat,
-          segment.intersectionPoint?.lon,
-          segment.color
-        );
-      } else {
-        lineDrawing.redrawLineSegmentOnMap(
-          segment.id,
-          segment.center.lat,
-          segment.center.lon,
-          segment.endpoint.lat,
-          segment.endpoint.lon,
-          segment.mode as 'coordinate' | 'azimuth' | 'intersection',
-          segment.intersectionPoint?.lat,
-          segment.intersectionPoint?.lon,
-          segment.color
-        );
-      }
+      lineDrawing.redrawLineSegmentOnMap(
+        segment.id,
+        segment.center.lat,
+        segment.center.lon,
+        segment.endpoint.lat,
+        segment.endpoint.lon,
+        segment.mode as 'coordinate' | 'azimuth' | 'intersection',
+        segment.intersectionPoint?.lat,
+        segment.intersectionPoint?.lon,
+        segment.color
+      );
     }
   };
 
@@ -182,8 +164,7 @@ export function useDrawing(mapRef: MapContainer) {
   const updateElementVisibility = async (
     elementType: string,
     elementId: string | undefined,
-    visible: boolean,
-    animate = false
+    visible: boolean
   ) => {
     if (!mapRef.map?.value || !elementId) {
       return;
@@ -200,7 +181,7 @@ export function useDrawing(mapRef: MapContainer) {
     if (found && !visible) {
       removeElementFromMap(elementType, elementId, source);
     } else if (visible && !found) {
-      await redrawElementOnMap(elementType, elementId, animate);
+      await redrawElementOnMap(elementType, elementId);
     }
 
     // For intersection markers, also toggle their visibility

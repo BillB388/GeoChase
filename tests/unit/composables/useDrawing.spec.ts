@@ -17,7 +17,6 @@ const mockDrawParallel = vi.fn();
 const mockUpdateParallel = vi.fn();
 const mockRedrawLineSegmentOnMap = vi.fn();
 const mockRedrawParallelOnMap = vi.fn();
-const mockAnimateLineSegmentOnMap = vi.fn();
 
 const mockDrawPoint = vi.fn();
 const mockRedrawPointOnMap = vi.fn();
@@ -45,7 +44,6 @@ vi.mock('@/composables/useLineDrawing', () => ({
       updateParallel: mockUpdateParallel,
       redrawLineSegmentOnMap: mockRedrawLineSegmentOnMap,
       redrawParallelOnMap: mockRedrawParallelOnMap,
-      animateLineSegmentOnMap: mockAnimateLineSegmentOnMap,
     };
   }),
 }));
@@ -313,7 +311,7 @@ describe('useDrawing', () => {
       expect(mockRedrawParallelOnMap).toHaveBeenCalledWith('line-1', 45.5, '#ff00ff');
     });
 
-    it('should redraw regular line segment when showing hidden element without animation', async () => {
+    it('should redraw regular line segment when showing hidden element', async () => {
       mockGetFeatureById.mockReturnValue(null);
       layersStore.addLineSegment({
         id: 'line-1',
@@ -324,7 +322,7 @@ describe('useDrawing', () => {
         color: '#ff00ff',
       });
 
-      await drawing.updateElementVisibility('lineSegment', 'line-1', true, false);
+      await drawing.updateElementVisibility('lineSegment', 'line-1', true);
 
       expect(mockRedrawLineSegmentOnMap).toHaveBeenCalledWith(
         'line-1',
@@ -335,33 +333,6 @@ describe('useDrawing', () => {
         'coordinate',
         undefined,
         undefined,
-        '#ff00ff'
-      );
-    });
-
-    it('should animate line segment when showing hidden element with animation', async () => {
-      mockGetFeatureById.mockReturnValue(null);
-      layersStore.addLineSegment({
-        id: 'line-1',
-        name: 'Test Line',
-        center: { lat: 48.8566, lon: 2.3522 },
-        endpoint: { lat: 48.9, lon: 2.4 },
-        mode: 'azimuth',
-        intersectionPoint: { lat: 48.85, lon: 2.36 },
-        color: '#ff00ff',
-      });
-
-      await drawing.updateElementVisibility('lineSegment', 'line-1', true, true);
-
-      expect(mockAnimateLineSegmentOnMap).toHaveBeenCalledWith(
-        'line-1',
-        48.8566,
-        2.3522,
-        48.9,
-        2.4,
-        'azimuth',
-        48.85,
-        2.36,
         '#ff00ff'
       );
     });
@@ -1207,7 +1178,6 @@ describe('useDrawing', () => {
 
       // Should not call redraw methods since there's no endpoint
       expect(mockRedrawLineSegmentOnMap).not.toHaveBeenCalled();
-      expect(mockAnimateLineSegmentOnMap).not.toHaveBeenCalled();
     });
 
     it('should handle polygon not found in deleteElement polygon lookup', () => {

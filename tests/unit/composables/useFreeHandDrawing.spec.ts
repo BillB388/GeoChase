@@ -56,6 +56,11 @@ describe('useFreeHandDrawing', () => {
     mockMapContainer = {
       map: {
         value: {
+          forEachFeatureAtPixel: vi.fn(),
+          addInteraction: vi.fn(),
+          removeInteraction: vi.fn(),
+          getViewport: () => document.createElement('div'),
+          getTargetElement: () => document.createElement('div'),
           on: vi.fn(),
           un: vi.fn(),
         },
@@ -424,6 +429,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -444,6 +450,7 @@ describe('useFreeHandDrawing', () => {
       const clickHandler = mapRef.value.on.mock.calls.find((call: any) => call[0] === 'click')?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -465,6 +472,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [0, 0],
         pixel: [500, 400],
         originalEvent: {},
@@ -485,6 +493,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -506,6 +515,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -527,6 +537,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: { altKey: false, ctrlKey: false },
@@ -549,6 +560,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -586,6 +598,7 @@ describe('useFreeHandDrawing', () => {
 
       // Lock azimuth with Alt during mouse move
       pointermoveHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: { altKey: true, ctrlKey: false },
@@ -593,6 +606,7 @@ describe('useFreeHandDrawing', () => {
 
       // Click with Alt still pressed
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.37 * 111_319.49, 48.87 * 111_319.49],
         pixel: [510, 410],
         originalEvent: { altKey: true, ctrlKey: false },
@@ -618,6 +632,7 @@ describe('useFreeHandDrawing', () => {
 
       // Lock distance with Ctrl during mouse move
       pointermoveHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: { altKey: false, ctrlKey: true },
@@ -625,6 +640,7 @@ describe('useFreeHandDrawing', () => {
 
       // Click with Ctrl still pressed
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.37 * 111_319.49, 48.87 * 111_319.49],
         pixel: [510, 410],
         originalEvent: { altKey: false, ctrlKey: true },
@@ -646,6 +662,7 @@ describe('useFreeHandDrawing', () => {
       )?.[1];
 
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -683,6 +700,7 @@ describe('useFreeHandDrawing', () => {
 
       // Create preview layer
       pointermoveHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -690,6 +708,7 @@ describe('useFreeHandDrawing', () => {
 
       // Click to finalize
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: {},
@@ -773,6 +792,7 @@ describe('useFreeHandDrawing', () => {
 
       // Click to finalize and reset
       clickHandler({
+        stopPropagation: vi.fn(),
         coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
         pixel: [500, 400],
         originalEvent: { altKey: true, ctrlKey: true },
@@ -1031,6 +1051,7 @@ describe('useFreeHandDrawing', () => {
       // Click should handle null linesSource gracefully
       expect(() => {
         clickHandler({
+          stopPropagation: vi.fn(),
           coordinate: [2.36 * 111_319.49, 48.86 * 111_319.49],
           pixel: [500, 400],
           originalEvent: {},

@@ -44,6 +44,9 @@ export interface SearchAlongPanel {
 }
 
 export interface FreeHandDrawing {
+  snappedPointName?: string;
+  intersectionPointName?: string;
+  draggingFromPoint?: boolean;
   isDrawing: boolean;
   startCoord: string | null;
   azimuth: number | undefined;
@@ -58,35 +61,6 @@ export interface BearingsPanel {
 export interface NotePreFillElement {
   type: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
   id: string;
-}
-
-export interface AnimationState {
-  isPlaying: boolean;
-  currentElementIndex: number;
-  countdown: number;
-}
-
-export interface ViewCapture {
-  lat: number;
-  lon: number;
-  zoom: number;
-  screenshot?: string; // Base64 encoded image data URL
-}
-
-export interface AnimationConfig {
-  type: 'smoothZoomOut' | 'startToFinish';
-  startingPoint: string; // element ID
-  zoomSpeed: number; // 1-10
-  transitionSpeed: number; // 1-10
-  hideLabelsAndNotes: boolean;
-  disableZoomOnElement: boolean; // For startToFinish: show all elements in view without zooming to each
-  startView?: ViewCapture; // Custom start view
-  endView?: ViewCapture; // Custom end view
-}
-
-export interface ViewCaptureState {
-  isCapturing: boolean;
-  captureType: 'start' | 'end' | null;
 }
 
 export type ToolId = 'ruler';
@@ -105,6 +79,10 @@ export const useUIStore = defineStore('ui', () => {
   const selectedProjectIndex = ref<number | null>(null);
   const topBarOpen = ref(true);
   const sidebarOpen = ref(true);
+  const sidebarElementRequest = ref<{
+    elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
+    elementId: string;
+  } | null>(null);
   const leftSidebarOpen = ref(false);
   const elementVisibility = ref<Record<string, boolean>>({});
   const editingElement = ref<EditingElement | null>(null);
@@ -131,23 +109,6 @@ export const useUIStore = defineStore('ui', () => {
     sourcePointId: null,
   });
   const notePreFillElement = ref<NotePreFillElement | null>(null);
-  const animationState = ref<AnimationState>({
-    isPlaying: false,
-    currentElementIndex: -1,
-    countdown: 0,
-  });
-  const animationConfig = ref<AnimationConfig>({
-    type: 'smoothZoomOut',
-    startingPoint: '',
-    zoomSpeed: 5,
-    transitionSpeed: 5,
-    hideLabelsAndNotes: false,
-    disableZoomOnElement: false,
-  });
-  const viewCaptureState = ref<ViewCaptureState>({
-    isCapturing: false,
-    captureType: null,
-  });
   const tools = ref<ToolsState>({
     isToolbarOpen: false,
     activeTool: null,
@@ -170,8 +131,6 @@ export const useUIStore = defineStore('ui', () => {
       !freeHandDrawing.value.isDrawing &&
       !tools.value.activeTool &&
       !navigatingElement.value &&
-      !viewCaptureState.value.isCapturing &&
-      !animationState.value.isPlaying &&
       openModals.value.size === 0 &&
       !bearingsPanel.value.isOpen &&
       !showTutorial.value
@@ -355,7 +314,8 @@ export const useUIStore = defineStore('ui', () => {
   function startFreeHandDrawing(
     startCoord: string | null,
     azimuth: number | undefined,
-    name: string
+    name: string,
+    keepSidebarOpen = false
   ): void {
     freeHandDrawing.value = {
       isDrawing: true,
@@ -363,7 +323,7 @@ export const useUIStore = defineStore('ui', () => {
       azimuth,
       name,
     };
-    sidebarOpen.value = false;
+    if (!keepSidebarOpen) sidebarOpen.value = false;
   }
 
   function stopFreeHandDrawing(): void {
@@ -421,62 +381,6 @@ export const useUIStore = defineStore('ui', () => {
     notePreFillElement.value = null;
   }
 
-  function startAnimation(): void {
-    animationState.value = {
-      isPlaying: true,
-      currentElementIndex: -1,
-      countdown: 3,
-    };
-  }
-
-  function stopAnimation(): void {
-    animationState.value = {
-      isPlaying: false,
-      currentElementIndex: -1,
-      countdown: 0,
-    };
-  }
-
-  function setAnimationCountdown(countdown: number): void {
-    animationState.value.countdown = countdown;
-  }
-
-  function setAnimationIndex(index: number): void {
-    animationState.value.currentElementIndex = index;
-  }
-
-  function setAnimationConfig(config: AnimationConfig): void {
-    animationConfig.value = config;
-  }
-
-  function startViewCapture(captureType: 'start' | 'end'): void {
-    viewCaptureState.value = {
-      isCapturing: true,
-      captureType,
-    };
-  }
-
-  function stopViewCapture(): void {
-    viewCaptureState.value = {
-      isCapturing: false,
-      captureType: null,
-    };
-  }
-
-  function captureView(view: ViewCapture): void {
-    if (!viewCaptureState.value.isCapturing || !viewCaptureState.value.captureType) {
-      return;
-    }
-
-    if (viewCaptureState.value.captureType === 'start') {
-      animationConfig.value.startView = view;
-    } else {
-      animationConfig.value.endView = view;
-    }
-
-    stopViewCapture();
-  }
-
   function setMapProvider(
     provider: 'geoportail' | 'osm' | 'google-plan' | 'google-satellite' | 'google-relief'
   ): void {
@@ -519,6 +423,7 @@ export const useUIStore = defineStore('ui', () => {
     selectedProjectIndex,
     topBarOpen,
     sidebarOpen,
+    sidebarElementRequest,
     leftSidebarOpen,
     elementVisibility,
     editingElement,
@@ -533,9 +438,6 @@ export const useUIStore = defineStore('ui', () => {
     searchBarVisible,
     bearingsPanel,
     notePreFillElement,
-    animationState,
-    animationConfig,
-    viewCaptureState,
     tools,
     mapProvider,
     pdfPanelOpen,
@@ -593,14 +495,6 @@ export const useUIStore = defineStore('ui', () => {
     closeBearings,
     setNotePreFill,
     clearNotePreFill,
-    startAnimation,
-    stopAnimation,
-    setAnimationCountdown,
-    setAnimationIndex,
-    setAnimationConfig,
-    startViewCapture,
-    stopViewCapture,
-    captureView,
     setMapProvider,
     togglePdfPanel,
     setPdfPanelOpen,

@@ -1,18 +1,21 @@
 <template>
-  <!-- Top bar (only shown when not in navigation/free hand mode or view capture mode) -->
-  <TopBar v-if="!uiStore.viewCaptureState.isCapturing" @resize="topBarHeight = $event" />
+  <!-- Top bar (only shown when not in navigation/free hand mode) -->
+  <TopBar @resize="topBarHeight = $event" />
 
   <!-- Navigation bar (shown during navigation/free hand modes) -->
-  <NavigationBar v-if="!uiStore.viewCaptureState.isCapturing" />
+  <NavigationBar />
 
   <!-- Fullscreen map -->
   <div id="map" :class="{ 'freehand-drawing': uiStore.freeHandDrawing.isDrawing }" />
 
-  <MapElementContextMenu v-if="contextMenu" :selection="contextMenu" />
+  <MapElementContextMenu
+    v-if="contextMenu"
+    :key="`${contextMenu.elementType}:${contextMenu.elementId}`"
+    :selection="contextMenu"
+  />
 
   <!-- Sidebar -->
   <v-navigation-drawer
-    v-if="!uiStore.viewCaptureState.isCapturing"
     v-model="sidebarOpen"
     :class="{ 'sidebar-resizing': sidebarResize !== null }"
     data-testid="layers-sidebar"
@@ -48,15 +51,11 @@
   </v-navigation-drawer>
 
   <!-- Sidebar toggle button -->
-  <SidebarToggleButton
-    v-if="!uiStore.viewCaptureState.isCapturing"
-    v-model="sidebarOpen"
-    :sidebar-width="sidebarWidth"
-  />
+  <SidebarToggleButton v-model="sidebarOpen" :sidebar-width="sidebarWidth" />
 
   <!-- PDF Panel (right side) -->
   <v-navigation-drawer
-    v-if="!uiStore.viewCaptureState.isCapturing && projectsStore.hasPdf()"
+    v-if="projectsStore.hasPdf()"
     v-model="uiStore.pdfPanelOpen"
     location="right"
     :style="panelStyle"
@@ -77,7 +76,6 @@
 
   <!-- Modals -->
   <ModalsContainer />
-  <AnimationCountdown />
 
   <!-- Toast notifications -->
   <ToastNotifications />
@@ -88,9 +86,6 @@
 
   <!-- Precision mode indicator -->
   <PrecisionModeIndicator :precision-lens="precisionLens" />
-
-  <!-- View capture helper -->
-  <ViewCaptureHelper />
 
   <!-- Tools -->
   <ToolsToolbar />
@@ -107,7 +102,6 @@ import ToolsButton from '@/components/layout/ToolsButton.vue';
 import ToolsToolbar from '@/components/layout/ToolsToolbar.vue';
 import TopBar from '@/components/layout/TopBar.vue';
 import SearchAlongPanelInline from '@/components/search/SearchAlongPanel.vue';
-import AnimationCountdown from '@/components/shared/AnimationCountdown.vue';
 import SidebarLayersPanel from '@/components/sidebar/SidebarLayersPanel.vue';
 import CursorTooltip from '@/components/ui/CursorTooltip.vue';
 import IntersectionLineEditStatus from '@/components/ui/IntersectionLineEditStatus.vue';
@@ -116,9 +110,7 @@ import PdfViewer from '@/components/ui/PdfViewer.vue';
 import PrecisionModeIndicator from '@/components/ui/PrecisionModeIndicator.vue';
 import SidebarToggleButton from '@/components/ui/SidebarToggleButton.vue';
 import ToastNotifications from '@/components/ui/ToastNotifications.vue';
-import ViewCaptureHelper from '@/components/ui/ViewCaptureHelper.vue';
 import { drawingKey, mapKey, noteTooltipsKey } from '@/composables/mapContext';
-import { useAnimation } from '@/composables/useAnimation';
 import { useAppSetup } from '@/composables/useAppSetup';
 import { useAutoSave } from '@/composables/useAutoSave';
 import { useDrawing } from '@/composables/useDrawing';
@@ -182,7 +174,7 @@ const panelStyle = computed(() => {
   const top =
     uiStore.navigatingElement || uiStore.freeHandDrawing.isDrawing
       ? 64
-      : uiStore.topBarOpen && !uiStore.animationState.isPlaying
+      : uiStore.topBarOpen
         ? topBarHeight.value
         : 0;
   return { top: `${top}px`, height: `calc(100dvh - ${top}px)` };
@@ -333,9 +325,6 @@ const cursorTooltip = ref<{
 
 // Auto-save logic
 useAutoSave();
-
-// Animation logic
-useAnimation(mapContainer, drawing, sidebarOpen);
 
 const { initialize: initializeApp, contextMenu } = useAppSetup(
   mapContainer,

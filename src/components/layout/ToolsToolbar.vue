@@ -1,13 +1,6 @@
 <template>
   <Transition name="tools-toolbar">
-    <div
-      v-if="
-        uiStore.tools.isToolbarOpen &&
-        !uiStore.animationState.isPlaying &&
-        !uiStore.viewCaptureState.isCapturing
-      "
-      class="tools-toolbar"
-    >
+    <div v-if="uiStore.tools.isToolbarOpen" class="tools-toolbar">
       <v-btn
         :aria-label="$t('tools.ruler')"
         color="surface-bright"

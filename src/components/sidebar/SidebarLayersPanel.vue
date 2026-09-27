@@ -1,5 +1,5 @@
 <template>
-  <div class="layers-panel">
+  <div ref="layersPanel" class="layers-panel">
     <!-- Title -->
     <h3 class="layers-panel-title">{{ $t('layers.title') }}</h3>
 
@@ -459,7 +459,7 @@ import type {
   PolygonElement,
   RouteElement,
 } from '@/types/project';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import LayerContextMenu from '@/components/layers/LayerContextMenu.vue';
 import { useDrawingContext, useMapContext } from '@/composables/mapContext';
@@ -621,6 +621,54 @@ const linesExpanded = ref(true);
 const pointsExpanded = ref(true);
 const polygonsExpanded = ref(true);
 const notesExpanded = ref(true);
+const layersPanel = ref<HTMLElement | null>(null);
+let revealAnimation: Animation | undefined;
+
+watch(
+  () => uiStore.sidebarElementRequest,
+  async (request, _previous, onCleanup) => {
+    if (!request) return;
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+      revealAnimation?.cancel();
+    });
+    const sections = {
+      circle: { expanded: circlesExpanded, items: filteredCircles },
+      lineSegment: { expanded: linesExpanded, items: filteredLines },
+      route: { expanded: routesExpanded, items: filteredRoutes },
+      point: { expanded: pointsExpanded, items: filteredPoints },
+      polygon: { expanded: polygonsExpanded, items: filteredPolygons },
+    };
+    const section = sections[request.elementType];
+    if (!section.items.value.some((item) => item.id === request.elementId)) {
+      searchQuery.value = '';
+    }
+    section.expanded.value = true;
+    await nextTick();
+    if (cancelled) return;
+    const row = Array.from(
+      layersPanel.value?.querySelectorAll<HTMLElement>('.layer-item') ?? []
+    ).find(
+      (item) =>
+        item.dataset.layerType === request.elementType && item.dataset.layerId === request.elementId
+    );
+    if (!row) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    row.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'center' });
+    const highlight = 'rgba(var(--v-theme-primary), 0.3)';
+    revealAnimation = row.animate(
+      reducedMotion
+        ? [{ backgroundColor: highlight }, { backgroundColor: highlight }]
+        : [
+            { backgroundColor: 'transparent' },
+            { backgroundColor: highlight, offset: 0.5 },
+            { backgroundColor: 'transparent' },
+          ],
+      { duration: reducedMotion ? 1800 : 700, iterations: reducedMotion ? 1 : 3 }
+    );
+  }
+);
 
 // Check if all elements of a type are visible
 const allCirclesVisible = computed(() => {

@@ -1,6 +1,5 @@
 <template>
   <v-btn
-    v-if="!uiStore.animationState.isPlaying"
     :aria-label="modelValue ? 'Close sidebar' : 'Open sidebar'"
     :aria-pressed="modelValue"
     class="sidebar-toggle"
@@ -23,8 +22,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useUIStore } from '@/stores/ui';
-
 interface Props {
   modelValue: boolean;
   sidebarWidth: number;
@@ -36,8 +33,6 @@ interface Emits {
 
 defineProps<Props>();
 defineEmits<Emits>();
-
-const uiStore = useUIStore();
 </script>
 
 <style scoped>

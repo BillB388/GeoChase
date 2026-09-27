@@ -145,10 +145,6 @@ test.describe('Search Functionality', () => {
       // Map should still be interactive
       const map = page.locator('#map');
       await expect(map).toBeVisible();
-
-      // Other buttons should still work
-      const animationBtn = page.locator('[data-testid="animation-btn"]');
-      await expect(animationBtn).toBeVisible();
     });
 
     test('should maintain search state after clicking elsewhere', async ({

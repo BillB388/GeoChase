@@ -1,6 +1,5 @@
 <template>
   <v-btn
-    v-if="!uiStore.animationState.isPlaying && !uiStore.viewCaptureState.isCapturing"
     :aria-label="$t('tools.toggle')"
     :aria-pressed="uiStore.tools.isToolbarOpen || !!uiStore.tools.activeTool"
     class="tools-button"

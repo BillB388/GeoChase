@@ -274,7 +274,7 @@ export function useMap(
 
       const targetCoordinate = fromLonLat([lon, lat]);
 
-      // Set center and zoom directly (no panel offsets during animation)
+      // Set center and zoom directly
       view.setCenter(targetCoordinate);
       if (zoom !== undefined) {
         view.setZoom(zoom);
@@ -359,8 +359,6 @@ export function useMap(
       // Ensure map size is updated before animation
       map.value.updateSize();
 
-      // For smooth animations during view capture mode, don't apply panel offsets
-      // since panels are hidden during animation
       const targetCoordinate = fromLonLat([lon, lat]);
 
       // Use OpenLayers animate for smooth transition
@@ -599,71 +597,6 @@ export function useMap(
     initialViewData = viewData;
   };
 
-  /**
-   * Capture a screenshot of the current map view
-   * Returns a base64 encoded image data URL
-   */
-  const captureScreenshot = (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (!map.value) {
-        reject(new Error('Map not initialized'));
-        return;
-      }
-
-      // Use OpenLayers' once method to wait for the next render complete
-      map.value.once('rendercomplete', () => {
-        try {
-          // Get the map canvas
-          const mapCanvas = document.createElement('canvas');
-          const size = map.value!.getSize();
-          if (!size || size[0] === undefined || size[1] === undefined) {
-            reject(new Error('Could not get map size'));
-            return;
-          }
-
-          mapCanvas.width = size[0];
-          mapCanvas.height = size[1];
-          const mapContext = mapCanvas.getContext('2d');
-          if (!mapContext) {
-            reject(new Error('Could not get canvas context'));
-            return;
-          }
-
-          // Get all canvas elements from the map
-          const canvases = document.querySelectorAll(`#${containerId} canvas`);
-          for (const canvas of canvases) {
-            const htmlCanvas = canvas as HTMLCanvasElement;
-            if (htmlCanvas.width > 0) {
-              const opacity = (canvas.parentNode as HTMLElement)?.style.opacity || '1';
-              mapContext.globalAlpha = Number.parseFloat(opacity);
-              const transform = htmlCanvas.style.transform;
-
-              // Get canvas position
-              const matrix = transform?.match(/^matrix(?:3d)?\(([^)]+)\)$/);
-              if (matrix && matrix[1]) {
-                const values = matrix[1].split(', ');
-                const x = Number.parseFloat(values[4] || '0');
-                const y = Number.parseFloat(values[5] || '0');
-                mapContext.drawImage(htmlCanvas, x, y);
-              } else {
-                mapContext.drawImage(htmlCanvas, 0, 0);
-              }
-            }
-          }
-
-          // Convert to data URL
-          const dataURL = mapCanvas.toDataURL('image/png');
-          resolve(dataURL);
-        } catch (error) {
-          reject(error);
-        }
-      });
-
-      // Trigger a render
-      map.value.render();
-    });
-  };
-
   return {
     map,
     isMapInitialized,
@@ -696,6 +629,5 @@ export function useMap(
     onMapClick,
     onMapRightClick,
     setInitialViewData,
-    captureScreenshot,
   };
 }

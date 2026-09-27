@@ -10,7 +10,6 @@ import { useLineCrossingPoints } from '@/composables/useLineCrossingPoints';
 import { useMapEventHandlers } from '@/composables/useMapEventHandlers';
 import { useMapInitialization } from '@/composables/useMapInitialization';
 import { useRuler } from '@/composables/useRuler';
-import { useViewCapture } from '@/composables/useViewCapture';
 
 /**
  * Main app setup composable that orchestrates all initialization and event handlers
@@ -32,7 +31,6 @@ export function useAppSetup(
     ruler.handleEscape
   );
   const mapEventHandlers = useMapEventHandlers(mapContainer);
-  const viewCapture = useViewCapture(mapContainer);
 
   const initialize = async () => {
     // Initialize map and load project
@@ -40,17 +38,15 @@ export function useAppSetup(
 
     // Setup all event handlers
     const unsubscribeRightClick = mapEventHandlers.setup();
-    const unsubscribeViewCapture = viewCapture.setup();
-    freeHandDrawing.setup();
     ruler.setup();
     keyboardNavigation.setup();
     intersectionEditing.setup();
     crossingPoints.setup();
+    freeHandDrawing.setup();
 
     // Cleanup on unmount
     return () => {
       unsubscribeRightClick();
-      unsubscribeViewCapture();
       freeHandDrawing.cleanup();
       ruler.cleanup();
       keyboardNavigation.cleanup();

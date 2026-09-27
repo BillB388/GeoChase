@@ -1,11 +1,5 @@
 <template>
-  <div
-    v-if="
-      !uiStore.navigatingElement &&
-      !uiStore.freeHandDrawing.isDrawing &&
-      !uiStore.animationState.isPlaying
-    "
-  >
+  <div v-if="!uiStore.navigatingElement && !uiStore.freeHandDrawing.isDrawing">
     <!-- Top navigation drawer -->
     <v-navigation-drawer
       v-model="uiStore.topBarOpen"
@@ -282,24 +276,6 @@
             </v-btn>
           </div>
 
-          <!-- Animation button -->
-          <v-btn
-            :aria-label="
-              uiStore.animationState.isPlaying ? $t('animation.stop') : $t('animation.play')
-            "
-            color="surface-bright"
-            data-testid="animation-btn"
-            :icon="uiStore.animationState.isPlaying ? 'mdi-stop' : 'mdi-play'"
-            variant="flat"
-            @click="handleAnimationToggle"
-          >
-            <v-icon>{{ uiStore.animationState.isPlaying ? 'mdi-stop' : 'mdi-play' }}</v-icon>
-
-            <v-tooltip activator="parent" location="bottom">
-              {{ uiStore.animationState.isPlaying ? $t('animation.stop') : $t('animation.play') }}
-            </v-tooltip>
-          </v-btn>
-
           <!-- Language button -->
           <v-btn
             :aria-label="$t('common.language')"
@@ -426,14 +402,6 @@ function handleLoadProject() {
 function handleCreateNote() {
   uiStore.clearNotePreFill();
   uiStore.openModal('noteModal');
-}
-
-function handleAnimationToggle() {
-  if (uiStore.animationState.isPlaying) {
-    uiStore.stopAnimation();
-  } else {
-    uiStore.openModal('animationModal');
-  }
 }
 
 const {

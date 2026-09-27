@@ -60,7 +60,6 @@ function saveSettings() {
       );
       projects.autoSaveActiveProject(data, projection.value);
       layers.loadLayers(data);
-      ui.stopAnimation();
       ui.stopNavigating();
       ui.stopFreeHandDrawing();
       ui.stopTool();

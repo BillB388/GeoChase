@@ -16,126 +16,11 @@ import { useProjectGeometry } from './useProjectGeometry';
 const DEFAULT_COLOR = '#000000';
 
 export function useLineDrawing(mapRef: MapContainer) {
-  const { lineCoordinates, interpolateLine, getDistance } = useProjectGeometry();
+  const { lineCoordinates, getDistance } = useProjectGeometry();
   const layersStore = useLayersStore();
   const pointDrawing = usePointDrawing(mapRef);
 
   const generateId = () => uuidv4();
-
-  // Helper function to animate a line segment drawing from start to end
-  const animateLineSegmentOnMap = (
-    lineId: string,
-    startLat: number,
-    startLon: number,
-    endLat: number,
-    endLon: number,
-    mode: 'coordinate' | 'azimuth' | 'intersection' = 'coordinate',
-    intersectLat?: number,
-    intersectLon?: number,
-    color?: string,
-    duration = 800 // Animation duration in ms
-  ): Promise<void> => {
-    return new Promise((resolve) => {
-      if (!mapRef.map?.value || !mapRef.linesSource?.value) {
-        resolve();
-        return;
-      }
-
-      const startTime = performance.now();
-      const path = lineCoordinates({ lat: startLat, lon: startLon }, { lat: endLat, lon: endLon });
-
-      // Create the feature ONCE and update its geometry during animation
-      const initialCoordinates = [
-        fromLonLat([startLon, startLat]),
-        fromLonLat([startLon, startLat]),
-      ];
-      const geometry = new LineString(initialCoordinates);
-      const animatingFeature = new Feature({
-        geometry,
-        id: lineId,
-        type: 'lineSegment',
-      });
-
-      animatingFeature.setId(lineId);
-      animatingFeature.setStyle(
-        new Style({
-          stroke: new Stroke({
-            color: color || DEFAULT_COLOR,
-            width: 3,
-          }),
-        })
-      );
-
-      // Add the feature once at the start
-      mapRef.linesSource.value.addFeature(animatingFeature);
-
-      const animate = (currentTime: number) => {
-        if (!mapRef.linesSource?.value) {
-          resolve();
-          return;
-        }
-
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const currentEnd = interpolateLine(
-          { lat: startLat, lon: startLon },
-          { lat: endLat, lon: endLon },
-          progress
-        );
-        const count = Math.floor(progress * (path.length - 1)) + 1;
-        geometry.setCoordinates(
-          progress === 1
-            ? path
-            : [...path.slice(0, count), fromLonLat([currentEnd.lon, currentEnd.lat])]
-        );
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          // CRITICAL: Notify OpenLayers that the source has changed to trigger re-render
-          if (mapRef.linesSource?.value) {
-            mapRef.linesSource.value.changed();
-          }
-
-          // For intersection mode, show the intersection point marker
-          if (
-            mode === 'intersection' &&
-            intersectLat !== undefined &&
-            intersectLon !== undefined &&
-            mapRef.linesSource?.value
-          ) {
-            const markerGeometry = new Point(fromLonLat([intersectLon, intersectLat]));
-            const markerFeature = new Feature({
-              geometry: markerGeometry,
-              id: `intersection-${lineId}`,
-              type: 'intersectionMarker',
-            });
-
-            markerFeature.setId(`intersection-${lineId}`);
-            markerFeature.setStyle(
-              new Style({
-                image: new CircleStyle({
-                  radius: 8,
-                  fill: new Fill({ color: '#FFD700' }),
-                  stroke: new Stroke({
-                    color: '#FFA500',
-                    width: 2,
-                  }),
-                }),
-              })
-            );
-
-            mapRef.linesSource.value.addFeature(markerFeature);
-          }
-
-          resolve();
-        }
-      };
-
-      requestAnimationFrame(animate);
-    });
-  };
 
   // Helper function to redraw a line segment on the map without adding to store
   const redrawLineSegmentOnMap = (
@@ -576,6 +461,5 @@ export function useLineDrawing(mapRef: MapContainer) {
     updateParallel,
     redrawLineSegmentOnMap,
     redrawParallelOnMap,
-    animateLineSegmentOnMap,
   };
 }

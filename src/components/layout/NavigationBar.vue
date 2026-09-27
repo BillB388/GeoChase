@@ -29,11 +29,46 @@
             {{ $t('freehand.clickToSetStart') }}
           </template>
 
+          <template v-else-if="uiStore.freeHandDrawing.intersectionPointName">
+            {{
+              $t('freehand.intersectionThrough', {
+                name: uiStore.freeHandDrawing.intersectionPointName,
+              })
+            }}
+            • {{ $t('freehand.releaseAltToUnlock') }} •
+            {{
+              uiStore.freeHandDrawing.draggingFromPoint
+                ? $t('freehand.releaseToConfirm')
+                : $t('freehand.clickToConfirm')
+            }}
+          </template>
+
+          <template v-else-if="uiStore.freeHandDrawing.snappedPointName">
+            {{ $t('freehand.snappedToPoint', { name: uiStore.freeHandDrawing.snappedPointName }) }}
+            • {{ $t('freehand.holdAltForIntersection') }}
+            •
+            {{
+              uiStore.freeHandDrawing.draggingFromPoint
+                ? $t('freehand.releaseToConfirm')
+                : $t('freehand.clickToConfirm')
+            }}
+          </template>
+
+          <template v-else-if="uiStore.freeHandDrawing.draggingFromPoint">
+            {{ $t('freehand.dragToPoint') }}
+          </template>
+
           <template v-else>
             {{ $t('freehand.moveToSetEndpoint') }} • {{ $t('freehand.clickToConfirm') }}
           </template>
 
-          <template v-if="uiStore.freeHandDrawing.azimuth === undefined">
+          <template
+            v-if="
+              uiStore.freeHandDrawing.azimuth === undefined &&
+              !uiStore.freeHandDrawing.snappedPointName &&
+              !uiStore.freeHandDrawing.intersectionPointName
+            "
+          >
             • {{ $t('freehand.holdAlt') }} <strong>ALT</strong> {{ $t('freehand.toLockAzimuth') }} •
             {{ $t('freehand.holdCtrl') }} <strong>CTRL</strong> {{ $t('freehand.toLockDistance') }}
           </template>

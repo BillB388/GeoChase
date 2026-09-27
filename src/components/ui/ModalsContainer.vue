@@ -16,7 +16,6 @@
   <LoadProjectModal v-if="uiStore.isModalOpen('loadProjectModal')" />
   <BearingsModal v-if="uiStore.bearingsPanel.isOpen" />
   <NoteModal v-if="uiStore.isModalOpen('noteModal')" />
-  <AnimationModal v-if="uiStore.isModalOpen('animationModal')" />
   <LanguageModal />
   <TutorialModal />
 </template>
@@ -24,7 +23,6 @@
 <script lang="ts" setup>
 import AddPointOnSegmentModal from '@/components/modals/AddPointOnSegmentModal.vue';
 import AngleLineModal from '@/components/modals/AngleLineModal.vue';
-import AnimationModal from '@/components/modals/AnimationModal.vue';
 import AzimuthLineModal from '@/components/modals/AzimuthLineModal.vue';
 import BearingsModal from '@/components/modals/BearingsModal.vue';
 import CircleModal from '@/components/modals/CircleModal.vue';

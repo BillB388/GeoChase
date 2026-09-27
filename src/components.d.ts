@@ -13,8 +13,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddPointOnSegmentModal: typeof import('./components/modals/AddPointOnSegmentModal.vue')['default']
     AngleLineModal: typeof import('./components/modals/AngleLineModal.vue')['default']
-    AnimationCountdown: typeof import('./components/shared/AnimationCountdown.vue')['default']
-    AnimationModal: typeof import('./components/modals/AnimationModal.vue')['default']
     AzimuthLineModal: typeof import('./components/modals/AzimuthLineModal.vue')['default']
     BaseModal: typeof import('./components/shared/BaseModal.vue')['default']
     BearingsModal: typeof import('./components/modals/BearingsModal.vue')['default']
@@ -56,6 +54,5 @@ declare module 'vue' {
     TopBar: typeof import('./components/layout/TopBar.vue')['default']
     TutorialModal: typeof import('./components/modals/TutorialModal.vue')['default']
     TwoPointsLineModal: typeof import('./components/modals/TwoPointsLineModal.vue')['default']
-    ViewCaptureHelper: typeof import('./components/ui/ViewCaptureHelper.vue')['default']
   }
 }

@@ -262,19 +262,6 @@ test.describe('Project Management', () => {
     });
   });
 
-  test.describe('Animation Button', () => {
-    test('should display animation button', async ({ page, blankProject }) => {
-      await expect(page.locator('[data-testid="animation-btn"]')).toBeVisible();
-    });
-
-    test('should open animation modal', async ({ page, blankProject }) => {
-      await page.locator('[data-testid="animation-btn"]').click();
-      await page.waitForTimeout(300);
-
-      await expect(page.locator('.v-dialog')).toBeVisible();
-    });
-  });
-
   test.describe('Map Provider Selector', () => {
     test('should display map provider selector', async ({ page, blankProject }) => {
       await expect(page.locator('.v-navigation-drawer .v-select')).toBeVisible();

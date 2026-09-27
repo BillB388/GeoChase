@@ -80,6 +80,14 @@ describe('useMapEventHandlers', () => {
       expect(openModalSpy).toHaveBeenCalledWith('pointModal');
     });
 
+    it('should not open point creation while drawing', () => {
+      uiStore.startFreeHandDrawing(null, undefined, '');
+      const openModalSpy = vi.spyOn(uiStore, 'openModal');
+      mockRightClickHandler(48.856613, 2.352222);
+      expect(openModalSpy).not.toHaveBeenCalled();
+      expect(uiStore.freeHandDrawing.isDrawing).toBe(true);
+    });
+
     it('should handle negative coordinates', () => {
       const startCreatingSpy = vi.spyOn(uiStore, 'startCreating');
 

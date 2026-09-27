@@ -75,35 +75,6 @@ describe('useKeyboardNavigation', () => {
     });
   });
 
-  describe('View Capture Mode', () => {
-    it('should stop view capture on Escape', () => {
-      const stopViewCaptureSpy = vi.spyOn(uiStore, 'stopViewCapture');
-      const openModalSpy = vi.spyOn(uiStore, 'openModal');
-
-      uiStore.viewCaptureState.isCapturing = true;
-
-      const event = new KeyboardEvent('keydown', { key: 'Escape' });
-      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-
-      keyboardNav.handleKeydown(event);
-
-      expect(preventDefaultSpy).toHaveBeenCalled();
-      expect(stopViewCaptureSpy).toHaveBeenCalled();
-      expect(openModalSpy).toHaveBeenCalledWith('animationModal');
-    });
-
-    it('should ignore other keys during view capture', () => {
-      uiStore.viewCaptureState.isCapturing = true;
-
-      const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-
-      keyboardNav.handleKeydown(event);
-
-      expect(preventDefaultSpy).not.toHaveBeenCalled();
-    });
-  });
-
   describe('Free Hand Drawing Mode', () => {
     it('should call onFreeHandEscape callback on Escape', () => {
       uiStore.freeHandDrawing.isDrawing = true;

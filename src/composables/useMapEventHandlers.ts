@@ -58,6 +58,8 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
         ) {
           const element = elementAt(event.pixel);
           if (element) {
+            uiStore.sidebarOpen = true;
+            uiStore.sidebarElementRequest = { ...element };
             const rect = map!.getViewport().getBoundingClientRect();
             contextMenu.value = {
               ...element,
@@ -73,10 +75,18 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
     map.addInteraction(interaction);
     map.getViewport().addEventListener('pointerleave', clearHover);
     map.on('movestart', clearHover);
-    const stopWatch = watch(() => [available(), uiStore.elementVisibility], clearHover, {
-      deep: true,
-    });
+    const stopWatch = watch(
+      () => [available(), uiStore.elementVisibility],
+      () => {
+        clearHover();
+        if (!available()) contextMenu.value = null;
+      },
+      {
+        deep: true,
+      }
+    );
     const unsubscribeRightClick = mapContainer.onMapRightClick((lat, lon) => {
+      if (uiStore.freeHandDrawing.isDrawing) return;
       uiStore.startCreating('point', { lat, lon });
       uiStore.openModal('pointModal');
     });
