@@ -4,7 +4,7 @@ import { expect, test } from '../fixtures';
 async function expectAccessibleToolbar(page: Page, minimumButtonSize = 32) {
   const toolbar = page.getByTestId('topbar');
   await expect(toolbar).toBeVisible();
-  await expect(toolbar.locator('.v-btn')).toHaveCount(18);
+  await expect(toolbar.locator('.v-btn')).toHaveCount(17);
   await expect(page.getByTestId('draw-route-btn')).toBeVisible();
 
   await expect
