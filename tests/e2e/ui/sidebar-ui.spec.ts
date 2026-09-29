@@ -124,7 +124,8 @@ test.describe('Sidebar UI', () => {
 
     test('should show lines section when lines exist', async ({ page, blankProject }) => {
       // Create a line (azimuth mode)
-      await page.locator('button .mdi-compass-outline').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await page.waitForTimeout(300);
 
       const dialog = page.locator('.v-dialog');

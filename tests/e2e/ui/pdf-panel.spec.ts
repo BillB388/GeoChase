@@ -62,13 +62,10 @@ test.describe('PDF Panel', () => {
       await expect(page.locator('[data-testid="pdf-btn"]')).toBeVisible();
     });
 
-    test('should show PDF tooltip on hover', async ({ page, blankProject }) => {
-      const pdfBtn = page.locator('[data-testid="pdf-btn"]');
-      await pdfBtn.hover();
-      await page.waitForTimeout(300);
-
-      // Should show PDF title in tooltip (matches i18n pdf.title)
-      await expect(page.getByText(/PDF Document|Document PDF/i)).toBeVisible();
+    test('should label the PDF button visibly and accessibly', async ({ page, blankProject }) => {
+      const pdfBtn = page.getByTestId('pdf-btn');
+      await expect(pdfBtn).toHaveText('PDF');
+      await expect(pdfBtn).toHaveAccessibleName('PDF Document');
     });
   });
 

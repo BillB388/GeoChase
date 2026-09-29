@@ -4,8 +4,8 @@ test.describe('Drag and Drop Lines', () => {
   test.describe('Point Draggability', () => {
     test('should make points draggable', async ({ page, blankProject }) => {
       // Fixture already provides 3 points (Paris, London, Berlin)
-      // Point items should have draggable attribute
-      const pointItems = page.locator('.layer-item[draggable="true"]');
+      // Pointer-driven dragging uses the point rows; native HTML dragging is disabled.
+      const pointItems = page.locator('.layer-item[data-layer-type="point"]');
       await expect(pointItems.first()).toBeVisible();
       // Should have at least 3 draggable points from fixture
       await expect(pointItems).toHaveCount(3);
@@ -14,7 +14,7 @@ test.describe('Drag and Drop Lines', () => {
     test('should have cursor pointer on points', async ({ page, blankProject }) => {
       // Fixture already provides 3 points (Paris, London, Berlin)
       // Points should be visible in sidebar
-      const pointItems = page.locator('.layer-item[draggable="true"]');
+      const pointItems = page.locator('.layer-item[data-layer-type="point"]');
       await expect(pointItems.first()).toBeVisible();
     });
   });
@@ -29,10 +29,10 @@ test.describe('Drag and Drop Lines', () => {
     test('should create line by dragging point to another', async ({ page, blankProject }) => {
       // Use fixture points (Paris and London)
       const parisPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Paris' }) });
       const londonPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'London' }) });
 
       // Perform drag and drop
@@ -46,10 +46,10 @@ test.describe('Drag and Drop Lines', () => {
     test('should show line in layers after drag drop', async ({ page, blankProject }) => {
       // Use fixture points (Paris and London)
       const parisPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Paris' }) });
       const londonPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'London' }) });
 
       // Perform drag and drop
@@ -65,10 +65,10 @@ test.describe('Drag and Drop Lines', () => {
     test('should name line after points', async ({ page, blankProject }) => {
       // Use fixture points (Paris and London)
       const parisPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Paris' }) });
       const londonPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'London' }) });
 
       // Perform drag and drop
@@ -88,7 +88,7 @@ test.describe('Drag and Drop Lines', () => {
     test('should highlight drop target on drag over', async ({ page, blankProject }) => {
       // Fixture provides 3 points (Paris, London, Berlin)
       // Just verify points exist (visual feedback is hard to test)
-      const pointItems = page.locator('.layer-item[draggable="true"]');
+      const pointItems = page.locator('.layer-item[data-layer-type="point"]');
       await expect(pointItems).toHaveCount(3);
     });
   });
@@ -97,7 +97,7 @@ test.describe('Drag and Drop Lines', () => {
     test('should not create line when dropping on same point', async ({ page, blankProject }) => {
       // Use Paris from fixture
       const parisPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Paris' }) });
 
       // Try to drag to itself (shouldn't create anything)
@@ -115,13 +115,13 @@ test.describe('Drag and Drop Lines', () => {
     test('should create multiple lines from same point', async ({ page, blankProject }) => {
       // Use fixture points (Paris, London, Berlin)
       const parisPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Paris' }) });
       const londonPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'London' }) });
       const berlinPoint = page
-        .locator('.layer-item[draggable="true"]')
+        .locator('.layer-item[data-layer-type="point"]')
         .filter({ has: page.locator('.layer-item-name', { hasText: 'Berlin' }) });
 
       // Create first line: Paris → London

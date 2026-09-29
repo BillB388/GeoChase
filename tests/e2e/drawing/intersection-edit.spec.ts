@@ -251,11 +251,15 @@ for (const shape of ['circle', 'polygon'] as const) {
 test('ignores hidden snap targets', async ({ page, blankProject }) => {
   await seed(page);
   const target = (await mapState(page)).targetPixel!;
-  await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
-  await page.locator('.layer-item').filter({ hasText: 'Snap target' }).getByRole('button').click();
+  await page.getByRole('button', { name: 'Open notebook', exact: true }).click();
+  await page
+    .locator('.layer-item')
+    .filter({ hasText: 'Snap target' })
+    .locator('.layer-item-actions button')
+    .click();
   await page.getByText('Hide', { exact: true }).click();
   await expect.poll(async () => (await mapState(page)).targetPixel).toBeNull();
-  await page.getByRole('button', { name: 'Close sidebar', exact: true }).click();
+  await page.getByRole('button', { name: 'Hide notebook', exact: true }).click();
   await expect
     .poll(async () => {
       const box = await page.getByTestId('layers-sidebar').boundingBox();

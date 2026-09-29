@@ -36,7 +36,8 @@ test.describe('Keyboard Shortcuts', () => {
 
     test('should close azimuth line modal with escape key', async ({ page, blankProject }) => {
       // Open azimuth line modal
-      await page.locator('button .mdi-compass-outline').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -52,7 +53,8 @@ test.describe('Keyboard Shortcuts', () => {
 
     test('should close free-hand modal with escape key', async ({ page, blankProject }) => {
       // Open free-hand modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -68,7 +70,8 @@ test.describe('Keyboard Shortcuts', () => {
 
     test('should close angle line modal with escape key', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -244,7 +247,8 @@ test.describe('Keyboard Shortcuts', () => {
   test.describe('Free-Hand Drawing Escape', () => {
     test('should exit free-hand drawing mode with escape', async ({ page, blankProject }) => {
       // Open free-hand modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Start drawing

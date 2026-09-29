@@ -21,14 +21,14 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Reserve 2 cores for system/dev server, minimum 1 worker */
-  workers: Math.max(1, cpus - 2),
+  /* Keep browser and dev-server load bounded, including on high-core machines. */
+  workers: Math.min(4, Math.max(1, cpus - 2)),
 
   /* Reporter to use - 'list' for fast console output, 'html' for detailed reports */
   reporter: process.env.CI ? 'html' : 'list',
 
-  /* Shorter timeout for faster failure detection */
-  timeout: 15_000,
+  /* Multi-step journeys include menu transitions and project reloads. */
+  timeout: 30_000,
 
   /* Stop immediately on first failure */
   maxFailures: 1,

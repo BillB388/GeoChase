@@ -33,7 +33,8 @@ async function createCircleAndNavigate(page: any) {
 
 // Helper to start free-hand drawing
 async function startFreeHandDrawing(page: any) {
-  await page.locator('button .mdi-gesture').locator('..').click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Free Hand', { exact: true }).click();
   await page.waitForTimeout(300);
   await page
     .locator('button')

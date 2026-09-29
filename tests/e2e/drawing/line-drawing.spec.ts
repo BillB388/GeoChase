@@ -74,7 +74,8 @@ test.describe('Line Drawing', () => {
   test.describe('Azimuth Line', () => {
     test('should create a line with azimuth and distance', async ({ page, blankProject }) => {
       // Click azimuth line button
-      await page.getByRole('button', { name: 'Azimuth Line', exact: true }).click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5000 });
 
       const dialog = page.locator('[role="dialog"]');
@@ -104,7 +105,8 @@ test.describe('Line Drawing', () => {
 
     test('should create azimuth line with custom name', async ({ page, blankProject }) => {
       // Click azimuth line button
-      await page.getByRole('button', { name: 'Azimuth Line', exact: true }).click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5000 });
 
       const dialog = page.locator('[role="dialog"]');
@@ -138,7 +140,8 @@ test.describe('Line Drawing', () => {
   test.describe('Parallel Line', () => {
     test('should create a parallel line at specific latitude', async ({ page, blankProject }) => {
       // Click parallel line button
-      await page.getByRole('button', { name: 'Parallel Line', exact: true }).click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Parallel Line', { exact: true }).click();
       await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5000 });
 
       const dialog = page.locator('[role="dialog"]');
@@ -251,7 +254,8 @@ test.describe('Line Drawing', () => {
       await page.waitForTimeout(500);
 
       // Create second line (azimuth)
-      await page.getByRole('button', { name: 'Azimuth Line', exact: true }).click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await page.locator('[role="dialog"]').waitFor({ state: 'visible', timeout: 5000 });
 
       dialog = page.locator('[role="dialog"]');

@@ -93,6 +93,9 @@ jobs:
       - name: Verify GitHub Pages build
         run: npm run test:pages
 
+      - name: Run complete E2E suite
+        run: npm run test:e2e -- --max-failures=0
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:

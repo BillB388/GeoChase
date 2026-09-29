@@ -2,9 +2,8 @@ import { expect, test } from '../fixtures';
 
 // Helper to open parallel line modal
 async function openParallelLineModal(page: any) {
-  // Click the parallel line button (mdi-minus icon in top bar)
-  const parallelBtn = page.locator('button .mdi-minus').locator('..');
-  await parallelBtn.click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Parallel Line', { exact: true }).click();
   await page.waitForTimeout(300);
 }
 

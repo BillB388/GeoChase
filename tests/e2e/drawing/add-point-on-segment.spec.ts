@@ -3,7 +3,8 @@ import { expect, test } from '../fixtures';
 // Helper to create a line using azimuth modal (more reliable than drag-drop)
 async function createLine(page: any) {
   // Open azimuth line modal
-  await page.locator('button .mdi-compass-outline').locator('..').click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Azimuth Line', { exact: true }).click();
   await page.waitForTimeout(300);
 
   const dialog = page.locator('.v-dialog');

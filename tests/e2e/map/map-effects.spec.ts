@@ -72,7 +72,9 @@ for (const type of ['point', 'lineSegment', 'circle', 'polygon', 'route']) {
     blankProject,
   }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
-    await page.evaluate((type) => {
+    await page.addInitScript((type) => {
+      if (sessionStorage.getItem('game-target-seeded')) return;
+      sessionStorage.setItem('game-target-seeded', '1');
       const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
       const project = projects[0];
       project.viewData = {
@@ -186,7 +188,7 @@ test('the camera follows the tank without changing zoom and input focus stops mo
   await expect(page.getByTestId('game-tank')).toBeVisible();
   const initial = await viewState(page);
   await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(2400);
+  await expect.poll(async () => (await viewState(page)).center).not.toEqual(initial.center);
   await page.keyboard.up('ArrowRight');
   const moved = await viewState(page);
   expect(moved.center).not.toEqual(initial.center);

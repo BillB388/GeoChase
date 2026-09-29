@@ -4,7 +4,8 @@ test.describe('Language Settings', () => {
   test.describe('Language Modal', () => {
     test('should open language modal from topbar', async ({ page, blankProject }) => {
       // Click the language button (translate icon)
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Verify language modal is open
@@ -19,7 +20,8 @@ test.describe('Language Settings', () => {
 
     test('should display both language options', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Verify English option is visible
@@ -31,7 +33,8 @@ test.describe('Language Settings', () => {
 
     test('should highlight currently selected language', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // English should be selected (based on fixture setting)
@@ -41,7 +44,8 @@ test.describe('Language Settings', () => {
 
     test('should close language modal with close button', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -60,7 +64,8 @@ test.describe('Language Settings', () => {
   test.describe('Language Switching', () => {
     test('should switch from English to French', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Click French option
@@ -96,7 +101,8 @@ test.describe('Language Settings', () => {
 
     test('should switch from French to English', async ({ page, blankProject }) => {
       // First switch to French
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
       await page
         .locator('.language-card')
@@ -110,7 +116,8 @@ test.describe('Language Settings', () => {
       await page.waitForTimeout(500);
 
       // Now switch back to English
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
       await page
         .locator('.language-card')
@@ -138,7 +145,8 @@ test.describe('Language Settings', () => {
 
     test('should persist language after page reload', async ({ page, blankProject }) => {
       // Switch to French
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
       await page
         .locator('.language-card')
@@ -171,7 +179,8 @@ test.describe('Language Settings', () => {
 
     test('should show success toast when language is changed', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Click French option
@@ -197,7 +206,8 @@ test.describe('Language Settings', () => {
   test.describe('Language Selection UI', () => {
     test('should show check icon on selected language', async ({ page, blankProject }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // English card should have check icon
@@ -224,7 +234,8 @@ test.describe('Language Settings', () => {
       blankProject,
     }) => {
       // Open language modal
-      await page.locator('button .mdi-translate').locator('..').click();
+      await page.getByRole('button', { name: /^(More|Plus)$/ }).click();
+      await page.getByText(/^(Language|Langue)$/).click();
       await page.waitForTimeout(300);
 
       // Confirm button should be enabled (English is already selected)

@@ -275,7 +275,8 @@ for (const startMode of ['preset', 'map point', 'map empty']) {
       blankProject,
     }) => {
       await page.setViewportSize({ width: 1600, height: 900 });
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       const dialog = page.getByRole('dialog');
       await expect(dialog).toBeVisible();
       await dialog.locator('input').first().fill('My custom line');

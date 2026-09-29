@@ -42,7 +42,7 @@ test('changes a drawing color, cancels safely and remembers choices after reload
     await page
       .locator('.layer-item')
       .filter({ hasText: 'Color test line' })
-      .getByRole('button')
+      .locator('.layer-item-actions button')
       .click();
     await page.getByText('Drawing color', { exact: true }).click();
     await expect(page.getByRole('dialog')).toBeVisible();

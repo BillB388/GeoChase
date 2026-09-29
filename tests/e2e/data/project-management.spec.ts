@@ -83,18 +83,27 @@ test.describe('Project Management', () => {
       await expect(page.locator('.v-dialog')).not.toBeVisible();
     });
 
-    test('should show error when creating project without name', async ({ page, blankProject }) => {
-      await page.locator('[data-testid="save-menu-btn"]').click();
-      await page.waitForTimeout(300);
-      await page.locator('[data-testid="new-project-btn"]').click();
-      await page.waitForTimeout(300);
+    test('should prevent creating a project without a nonblank name', async ({
+      page,
+      blankProject,
+    }) => {
+      await page.getByTestId('save-menu-btn').click();
+      await page.getByTestId('new-project-btn').click();
 
-      // Leave name empty and click create
-      await page.locator('[data-testid="create-project-btn"]').click();
-      await page.waitForTimeout(300);
+      const name = page.getByTestId('project-name-input').locator('input');
+      const create = page.getByTestId('create-project-btn');
+      await expect(create).toBeDisabled();
+      await name.fill(' '.repeat(3));
+      await expect(create).toBeDisabled();
 
-      // Should show error toast
+      // Keyboard submission must also reject a blank name.
+      await name.press('Enter');
       await expect(page.locator('.v-snackbar').first()).toBeVisible();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(create).toBeDisabled();
+
+      await name.fill('Valid project name');
+      await expect(create).toBeEnabled();
     });
 
     test('should create project with valid name', async ({ page, blankProject }) => {
@@ -220,7 +229,7 @@ test.describe('Project Management', () => {
 
       // Should show project name
       await expect(
-        page.locator('.v-list-item').filter({ hasText: 'My Named Project' })
+        page.getByTestId('projects-list').getByText('My Named Project', { exact: true })
       ).toBeVisible();
     });
 
@@ -231,9 +240,13 @@ test.describe('Project Management', () => {
       await page.locator('[data-testid="load-project-btn"]').click();
       await page.waitForTimeout(300);
 
-      // Should show load and delete buttons (folder-open and delete icons)
-      await expect(page.locator('.v-dialog .mdi-folder-open').first()).toBeVisible();
-      await expect(page.locator('.v-dialog .mdi-delete').first()).toBeVisible();
+      const projects = page.getByTestId('projects-list');
+      await expect(
+        projects.getByRole('button', { name: 'Load Project : Test Project', exact: true })
+      ).toBeVisible();
+      await expect(
+        projects.getByRole('button', { name: 'Delete : Test Project', exact: true })
+      ).toBeVisible();
     });
   });
 
@@ -274,28 +287,32 @@ test.describe('Project Management', () => {
 
   test.describe('Top Bar Toggle', () => {
     test('should have collapse button', async ({ page, blankProject }) => {
-      await expect(page.locator('button .mdi-chevron-up').locator('..')).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Collapse top bar', exact: true })
+      ).toBeVisible();
     });
 
     test('should collapse top bar', async ({ page, blankProject }) => {
-      await page.locator('button .mdi-chevron-up').locator('..').click();
+      await page.getByRole('button', { name: 'Collapse top bar', exact: true }).click();
       await page.waitForTimeout(500);
 
       // Top bar should be collapsed - look for expand icon
-      await expect(page.locator('button .mdi-chevron-down').locator('..')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Expand top bar', exact: true })).toBeVisible();
     });
 
     test('should expand top bar after collapse', async ({ page, blankProject }) => {
       // Collapse
-      await page.locator('button .mdi-chevron-up').locator('..').click();
+      await page.getByRole('button', { name: 'Collapse top bar', exact: true }).click();
       await page.waitForTimeout(500);
 
       // Expand
-      await page.locator('button .mdi-chevron-down').locator('..').click();
+      await page.getByRole('button', { name: 'Expand top bar', exact: true }).click();
       await page.waitForTimeout(500);
 
       // Should show collapse icon again
-      await expect(page.locator('button .mdi-chevron-up').locator('..')).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Collapse top bar', exact: true })
+      ).toBeVisible();
     });
   });
 });

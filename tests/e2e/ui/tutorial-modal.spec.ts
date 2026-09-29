@@ -4,7 +4,7 @@ test.describe('Tutorial Modal', () => {
   test.describe('Opening and Closing', () => {
     test('should open tutorial modal from help button', async ({ page, blankProject }) => {
       // Click the help button (help-circle icon)
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify tutorial modal is open
@@ -19,7 +19,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should close tutorial modal with close button', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -38,7 +38,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should close tutorial modal with escape key', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -56,7 +56,7 @@ test.describe('Tutorial Modal', () => {
   test.describe('Tab Navigation', () => {
     test('should display Getting Started tab by default', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Getting Started tab should be selected
@@ -74,7 +74,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Drawing Tools tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Drawing Tools tab
@@ -90,7 +90,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Search tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Search tab
@@ -106,7 +106,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Navigation tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Navigation tab
@@ -124,7 +124,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Layers tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Layers tab
@@ -142,7 +142,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Notes tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Notes tab
@@ -157,7 +157,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Points tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Points tab
@@ -175,7 +175,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Projects tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Projects tab
@@ -193,7 +193,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to PDF tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click PDF tab
@@ -206,7 +206,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should navigate to Tips & Tricks tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Tips tab
@@ -223,7 +223,7 @@ test.describe('Tutorial Modal', () => {
   test.describe('Tab Content', () => {
     test('should display all main tabs', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify all tabs are visible
@@ -247,7 +247,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should have icons on all tabs', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify tabs have icons
@@ -271,7 +271,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should display tutorial steps in Drawing tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Drawing tab
@@ -291,7 +291,7 @@ test.describe('Tutorial Modal', () => {
 
     test('should display search workflow in Tips tab', async ({ page, blankProject }) => {
       // Open tutorial modal
-      await page.locator('button .mdi-help-circle').locator('..').click();
+      await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Tips tab

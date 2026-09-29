@@ -140,7 +140,8 @@ test('creates a line when dropped on the first line of a wrapped point name', as
   const target = page
     .locator('.layer-item')
     .filter({ has: page.getByText(longName, { exact: true }) });
-  await source.dragTo(target, { targetPosition: { x: 30, y: 20 } });
+  // Aim inside the first text line, clear of the 20px reorder boundary.
+  await source.dragTo(target, { targetPosition: { x: 30, y: 24 } });
   await expect(page.locator('.layer-item-name').filter({ hasText: 'Alpha → Bravo' })).toHaveCount(
     1
   );

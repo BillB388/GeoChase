@@ -4,7 +4,8 @@ test.describe('Angle Line', () => {
   test.describe('Angle Line Modal', () => {
     test('should open angle line modal', async ({ page, blankProject }) => {
       // Click the angle line button (mdi-angle-acute icon)
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -17,7 +18,8 @@ test.describe('Angle Line', () => {
 
     test('should have point selector', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have point selector
@@ -28,7 +30,8 @@ test.describe('Angle Line', () => {
 
     test('should have angle input', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have angle input
@@ -39,7 +42,8 @@ test.describe('Angle Line', () => {
 
     test('should have distance input', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have distance input (there should be 2 number inputs: angle and distance)
@@ -51,7 +55,8 @@ test.describe('Angle Line', () => {
 
     test('should have name input', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have name input
@@ -62,7 +67,8 @@ test.describe('Angle Line', () => {
 
     test('should have create endpoint checkbox', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have create endpoint checkbox
@@ -73,7 +79,8 @@ test.describe('Angle Line', () => {
 
     test('should close modal with cancel button', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click cancel button
@@ -89,7 +96,8 @@ test.describe('Angle Line', () => {
 
     test('should close modal with escape key', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Press escape
@@ -102,7 +110,8 @@ test.describe('Angle Line', () => {
 
     test('should have default angle value of 90', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have default angle value
@@ -113,7 +122,8 @@ test.describe('Angle Line', () => {
 
     test('should have default distance value of 1', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Should have default distance value
@@ -126,7 +136,8 @@ test.describe('Angle Line', () => {
   test.describe('Validation', () => {
     test('should require point selection to submit', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Submission is prevented before any selection is made.
@@ -141,7 +152,8 @@ test.describe('Angle Line', () => {
 
     test('should show dropdown for point selection', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Open the point selector dropdown
@@ -159,7 +171,8 @@ test.describe('Angle Line', () => {
   test.describe('Angle Input', () => {
     test('should accept angle values from -360 to 360', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       const dialog = page.locator('.v-dialog');
@@ -172,7 +185,8 @@ test.describe('Angle Line', () => {
 
     test('should accept negative angle values', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       const dialog = page.locator('.v-dialog');
@@ -187,7 +201,8 @@ test.describe('Angle Line', () => {
 
     test('should accept positive angle values', async ({ page, blankProject }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       const dialog = page.locator('.v-dialog');
@@ -207,7 +222,8 @@ test.describe('Angle Line', () => {
       blankProject,
     }) => {
       // Open angle line modal
-      await page.locator('button .mdi-angle-acute').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Line at Angle', { exact: true }).click();
       await page.waitForTimeout(300);
 
       const dialog = page.locator('.v-dialog');

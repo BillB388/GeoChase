@@ -354,7 +354,7 @@ test.describe('Search Panel Interactions', () => {
       await openSearchPanel(page);
 
       // Close sidebar button should be visible
-      await expect(page.getByRole('button', { name: /Close sidebar|Fermer/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Hide notebook', exact: true })).toBeVisible();
     });
   });
 });

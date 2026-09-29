@@ -4,7 +4,8 @@ test.describe('Free-Hand Drawing', () => {
   test.describe('Free-Hand Line Modal', () => {
     test('should open free-hand line modal', async ({ page, blankProject }) => {
       // Click the free-hand line button (gesture icon)
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify modal is open
@@ -17,7 +18,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should display instructions alert', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify instructions alert is shown
@@ -26,7 +28,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should have optional name field', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify name field is present (labeled as optional)
@@ -36,7 +39,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should have optional start coordinate field', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify coordinate selector is present
@@ -45,7 +49,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should have optional azimuth field', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify azimuth number input is present
@@ -55,7 +60,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should close modal with cancel button', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click cancel button
@@ -71,7 +77,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should close modal with escape key', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Press escape
@@ -86,7 +93,8 @@ test.describe('Free-Hand Drawing', () => {
   test.describe('Free-Hand Drawing Mode', () => {
     test('should start drawing mode when clicking start button', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Click Start Drawing button
@@ -102,7 +110,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should start with predefined start coordinate', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Select a start coordinate from dropdown (inside the dialog)
@@ -128,7 +137,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should start with predefined azimuth', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Enter an azimuth value
@@ -149,7 +159,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should start with custom name', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Enter a custom name
@@ -170,7 +181,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should validate azimuth range 0-360', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Verify azimuth input has min/max attributes
@@ -183,7 +195,8 @@ test.describe('Free-Hand Drawing', () => {
   test.describe('Coordinate Selection', () => {
     test('should show saved coordinates in dropdown', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Open coordinate dropdown (inside the dialog)
@@ -202,7 +215,8 @@ test.describe('Free-Hand Drawing', () => {
 
     test('should select coordinate from dropdown', async ({ page, blankProject }) => {
       // Open free-hand line modal
-      await page.locator('button .mdi-gesture').locator('..').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Free Hand', { exact: true }).click();
       await page.waitForTimeout(300);
 
       // Open coordinate dropdown (inside the dialog)

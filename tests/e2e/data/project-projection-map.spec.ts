@@ -58,9 +58,14 @@ test('renders existing and new lines using the active project, including after s
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('textbox', { name: 'Line Name', exact: true }).fill('New route');
   await dialog.locator('.v-select').first().locator('.v-select__menu-icon').click();
-  await page.getByRole('option', { name: /^West / }).click();
+  const startOptions = page.getByRole('listbox', { name: 'Start Point', exact: true });
+  await startOptions.getByRole('option', { name: /^West / }).click();
+  await expect(startOptions).not.toBeVisible();
   await dialog.locator('.v-select').last().locator('.v-select__menu-icon').click();
-  await page.getByRole('option', { name: /^East / }).click();
+  await page
+    .getByRole('listbox', { name: 'End Point', exact: true })
+    .getByRole('option', { name: /^East / })
+    .click();
   await dialog.getByRole('button', { name: 'Add', exact: true }).click();
   await expect.poll(async () => (await renderedCoordinates(page)).length).toBe(2);
   expect((await renderedCoordinates(page)).every((path) => path.length > 100)).toBe(true);

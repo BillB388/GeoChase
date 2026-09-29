@@ -1,12 +1,9 @@
 import { expect, test } from '../fixtures';
 
-// Helper to click the intersection button (has custom SVG icon, no mdi-* class)
+// Open the intersection tool through its toolbar menu.
 async function clickIntersectionButton(page: any) {
-  // The intersection button is the one with a custom SVG (not mdi-icon)
-  // It's after compass-outline (azimuth) and before mdi-minus (parallel)
-  // Click the button that contains an SVG with a circle element
-  const intersectionBtn = page.locator('button:has(svg circle)').first();
-  await intersectionBtn.click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Intersection', { exact: true }).click();
 }
 
 test.describe('Intersection Line', () => {

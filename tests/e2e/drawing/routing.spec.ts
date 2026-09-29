@@ -125,23 +125,23 @@ test('route calculation, persistence, visibility, editing and GPX export', async
   expect(saved.coordinates.length).toBeGreaterThan(2);
   await expect(page.locator('[data-layer-type="lineSegment"]')).toHaveCount(0);
   expect((await mapRoute(page)).coordinates?.length).toBe(saved.coordinates.length);
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Hide', { exact: true }).click();
   await expect(row).toHaveClass(/layer-item-hidden/);
   expect((await mapRoute(page)).count).toBe(0);
   await page.keyboard.press('Escape');
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Show', { exact: true }).click();
   await expect(row).not.toHaveClass(/layer-item-hidden/);
   expect((await mapRoute(page)).count).toBe(1);
   await page.keyboard.press('Escape');
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Edit', { exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Route name' })).toHaveValue(
     'Paris walking route'
   );
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Drawing color', { exact: true }).click();
   await page.getByRole('button', { name: '#6366F1', exact: true }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -156,7 +156,7 @@ test('route calculation, persistence, visibility, editing and GPX export', async
   await page.reload();
   await expect(row).toBeVisible();
   expect((await mapRoute(page)).color).toBe('#6366F1');
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Navigate', { exact: true }).click();
   await expect(page.locator('.navigation-bar')).toBeVisible();
   await expect.poll(async () => (await mapRoute(page)).animating).toBe(false);
@@ -176,9 +176,9 @@ test('route calculation, persistence, visibility, editing and GPX export', async
     Math.hypot(backward.center[0]! - origin[0]!, backward.center[1]! - origin[1]!)
   ).toBeLessThan(2);
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
+  await page.getByTestId('save-menu-btn').click();
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export Project GPX', exact: true }).click();
+  await page.getByTestId('export-gpx-btn').click();
   const download = await downloadPromise;
   const rendered = await readFile((await download.path())!, 'utf8');
   expect((rendered.match(/<trkpt /g) ?? []).length).toBe(saved.coordinates.length);
@@ -278,7 +278,7 @@ test('route notes, nearby search along detours and deletion', async ({ page }) =
   await page.getByRole('button', { name: 'Calculate and save', exact: true }).click();
   const row = page.locator('[data-layer-type="route"]');
   await expect(row).toBeVisible();
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Add Note', { exact: true }).click();
   await page.getByTestId('note-title-input').locator('input').fill('Route clue');
   await page.getByTestId('note-content-input').locator('textarea').fill('Explore the bend');
@@ -293,7 +293,7 @@ test('route notes, nearby search along detours and deletion', async ({ page }) =
     .toBe('route');
   await page.reload();
   await expect(row).toBeVisible();
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Location Near', { exact: true }).click();
   await expect(page.getByText('Village on the detour', { exact: true })).toBeVisible();
   await expect(page.getByText('Village on the chord', { exact: true })).toHaveCount(0);
@@ -301,7 +301,7 @@ test('route notes, nearby search along detours and deletion', async ({ page }) =
   await page.reload();
   await expect(row).toBeVisible();
   page.once('dialog', (dialog) => dialog.accept());
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Delete', { exact: true }).click();
   await expect(row).toHaveCount(0);
   expect((await mapRoute(page)).count).toBe(0);
@@ -364,7 +364,7 @@ test('intermediate stops can be reordered, saved, edited and removed', async ({ 
     { lat: 48.855, lon: 2.358 },
   ]);
   await page.reload();
-  await row.getByRole('button').click();
+  await row.locator('.layer-item-actions button').click();
   await page.getByText('Edit', { exact: true }).click();
   await expect(page.getByTestId('route-step')).toHaveCount(2);
   await expect(page.getByTestId('route-step').first()).toContainText('Notre-Dame');
