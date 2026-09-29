@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="open" max-width="580" scrollable>
+  <FloatingDialog v-model="open" max-width="580" scrollable>
     <v-card class="theme-picker">
       <v-card-title class="theme-picker-heading">
         <span>{{ $t('workspace.themes') }}</span>
@@ -71,12 +71,13 @@
         }}</v-btn></v-card-actions
       >
     </v-card>
-  </v-dialog>
+  </FloatingDialog>
 </template>
 <script setup lang="ts">
 import type { Palette } from '@/services/themes';
 import { computed } from 'vue';
 import { useTheme } from 'vuetify';
+import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { palettes, themes } from '@/services/themes';
 const open = defineModel<boolean>({ default: false });
 const theme = useTheme();
