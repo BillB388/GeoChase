@@ -1,5 +1,11 @@
 <template>
-  <FloatingDialog v-model="isOpen" max-width="600px" @keydown.esc="closeModal">
+  <FloatingDialog
+    v-model="isOpen"
+    :blocking="!projectsStore.activeProject"
+    max-width="600px"
+    :persistent="!projectsStore.activeProject"
+    @keydown.esc="closeModal"
+  >
     <v-card class="project-library">
       <v-card-title>{{ $t('project.loadProject') }}</v-card-title>
 
@@ -76,9 +82,13 @@
       <v-card-actions>
         <v-spacer />
 
-        <v-btn data-testid="close-load-modal-btn" variant="text" @click="closeModal">{{
-          $t('common.close')
-        }}</v-btn>
+        <v-btn
+          data-testid="close-load-modal-btn"
+          :disabled="!projectsStore.activeProject"
+          variant="text"
+          @click="closeModal"
+          >{{ $t('common.close') }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </FloatingDialog>
@@ -90,6 +100,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { useDrawingContext, useMapContext, useNoteTooltipsContext } from '@/composables/mapContext';
+import { clearUnassignedWork } from '@/services/projectRecovery';
 import { useLayersStore } from '@/stores/layers';
 import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
@@ -174,13 +185,26 @@ function deleteProject(projectId: string) {
   if (project && confirm(`${t('common.delete')} "${project.name}"?`)) {
     const index = projectsStore.projects.findIndex((p) => p.id === projectId);
     if (index !== -1) {
+      const wasActive = projectsStore.activeProjectId === projectId;
       projectsStore.deleteProject(index);
+      if (wasActive) {
+        noteTooltipsRef.value?.clearAllTooltips();
+        mapContainer.clearLayers();
+        layersStore.clearLayers();
+        projectsStore.setActiveProject(null);
+        clearUnassignedWork();
+      }
+      if (projectsStore.projectCount === 0) {
+        uiStore.closeModal('loadProjectModal');
+        uiStore.openModal('newProjectModal');
+      }
       uiStore.addToast(t('project.deleted'), 'success');
     }
   }
 }
 
 function closeModal() {
+  if (!projectsStore.activeProject) return;
   uiStore.closeModal('loadProjectModal');
 }
 </script>

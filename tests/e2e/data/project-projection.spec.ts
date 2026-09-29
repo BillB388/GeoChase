@@ -278,3 +278,57 @@ test('recovers historical standalone coordinates as project points', async ({ pa
     await page.evaluate(() => localStorage.getItem('geosketch_savedCoordinates'))
   ).not.toBeNull();
 });
+
+test('keeps project management open after deleting the active project', async ({
+  page,
+  blankProject,
+  createProject,
+}) => {
+  const other = await createProject({ id: 'remaining-project', name: 'Remaining project' });
+  await page.reload();
+  await page.getByTestId('save-menu-btn').click();
+  await page.getByTestId('load-project-btn').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByTestId(`delete-project-${blankProject.id}`).click();
+  await expect(page.getByTestId('projects-list')).toBeVisible();
+  await expect(page.getByTestId('project-name-input')).not.toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('projects-list')).toBeVisible();
+  await expect(page.getByTestId('close-load-modal-btn')).toBeDisabled();
+  expect(await page.evaluate(() => localStorage.getItem('geochase_unassigned_work'))).toBeNull();
+  await page.getByTestId(`load-project-${other.id}`).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect((await savedProject(page)).id).toBe(other.id);
+  expect((await savedProject(page)).data.points).toHaveLength(0);
+});
+
+test('opens empty project creation only after deleting the last saved project', async ({
+  page,
+  blankProject,
+  createProject,
+}) => {
+  const other = await createProject({ id: 'last-project', name: 'Last project' });
+  await page.reload();
+  await page.getByTestId('save-menu-btn').click();
+  await page.getByTestId('load-project-btn').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByTestId(`delete-project-${blankProject.id}`).click();
+  await expect(page.getByTestId('projects-list')).toBeVisible();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByTestId(`delete-project-${other.id}`).click();
+  await expect(page.getByTestId('projects-list')).not.toBeVisible();
+  await expect(page.getByTestId('project-name-input')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await expect(page.getByTestId('project-name-input').locator('input')).toHaveValue('');
+  await expect(page.getByRole('dialog')).not.toContainText('Save your work');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('project-name-input')).toBeVisible();
+  await page.getByTestId('project-name-input').locator('input').fill('Fresh start');
+  await page.getByTestId('create-project-btn').click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect((await savedProject(page)).data.points).toHaveLength(0);
+  await page.reload();
+  expect((await savedProject(page)).name).toBe('Fresh start');
+  expect((await savedProject(page)).data.points).toHaveLength(0);
+});

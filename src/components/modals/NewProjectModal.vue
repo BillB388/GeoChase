@@ -119,8 +119,14 @@ function restoreSource(key: string) {
 
 watch(
   () => projectsStore.activeProject,
-  (project) => {
-    if (project) return;
+  (project, previousProject) => {
+    if (project) {
+      recoverySources.value = [];
+      selectedRecovery.value = null;
+      return;
+    }
+    // Deliberate deletion is handled by the project manager, not recovery.
+    if (previousProject || uiStore.isModalOpen('loadProjectModal')) return;
     // Live work takes priority over older snapshots or stored projects.
     if (!layersStore.isEmpty) return;
     recoverySources.value = getRecoverySources();
@@ -142,7 +148,12 @@ watch(
 watch(
   () => [projectsStore.activeProject, layersStore.exportLayers(), projection.value],
   () => {
-    if (projectsStore.activeProject || layersStore.isEmpty) return;
+    if (
+      projectsStore.activeProject ||
+      layersStore.isEmpty ||
+      uiStore.isModalOpen('loadProjectModal')
+    )
+      return;
     try {
       saveUnassignedWork(layersStore.exportLayers(), projection.value);
     } catch {
@@ -155,7 +166,10 @@ watch(
 const isOpen = computed({
   get: () =>
     uiStore.isModalOpen('newProjectModal') ||
-    (!projectsStore.activeProject && !uiStore.isModalOpen('languageModal') && isLanguageSet()),
+    (!projectsStore.activeProject &&
+      !uiStore.isModalOpen('languageModal') &&
+      !uiStore.isModalOpen('loadProjectModal') &&
+      isLanguageSet()),
   set: (value) => {
     if (!value) {
       closeModal();
