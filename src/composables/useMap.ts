@@ -6,6 +6,9 @@ import type { useUIStore } from '@/stores/ui';
 import type { MapBrowserEvent } from 'ol';
 import type BaseLayer from 'ol/layer/Base';
 import type { Ref, WatchStopHandle } from 'vue';
+import { shiftKeyOnly } from 'ol/events/condition';
+import { defaults as defaultInteractions } from 'ol/interaction/defaults';
+import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import Map from 'ol/Map';
@@ -125,19 +128,29 @@ export function useMap(
         url: getMapTilesUrl(initialProvider),
         crossOrigin: 'anonymous',
         maxZoom: 18,
-        transition: 0, // Disable tile fade-in to prevent mixing tiles from different zoom levels
-        cacheSize: 512, // Increased cache size to keep more tiles in memory (default is 128)
+        transition: 250,
         interpolate: true, // Enable smooth image interpolation during scaling
+      });
+
+      // Match cartes.gouv.fr: native tile fallback/fading with lower levels
+      // preloaded, rather than filtering tiles or freezing a canvas snapshot.
+      const baseLayer = new TileLayer({
+        className: 'base-map-layer',
+        preload: initialProvider === 'geoportail' ? Infinity : 3,
+        cacheSize: 1024,
+        source: tileSource.value,
       });
 
       // Create map centered on saved location (if available) or default location
       map.value = new Map({
         target: containerId,
+        // IGN keeps the default smooth wheel zoom and adds integer zoom steps
+        // when Shift is held. Both use OpenLayers' default 250 ms animation.
+        interactions: defaultInteractions().extend([
+          new MouseWheelZoom({ constrainResolution: true, condition: shiftKeyOnly }),
+        ]),
         layers: [
-          new TileLayer({
-            preload: 3, // Preload tiles 3 zoom levels ahead for smoother animations
-            source: tileSource.value,
-          }),
+          baseLayer,
           circlesLayer.value,
           linesLayer.value,
           routesLayer.value,
@@ -176,10 +189,15 @@ export function useMap(
         stopProviderWatch = watch(
           () => uiStore.mapProvider,
           (newProvider) => {
+            baseLayer.setPreload(newProvider === 'geoportail' ? Infinity : 3);
             // tileSource is always set at this point (created before watcher registration)
             tileSource.value!.setUrl(getMapTilesUrl(newProvider));
-            // Clear the tile cache to force reload with new provider
+            // Source.clear() only clears reprojected tiles. The renderer keeps
+            // previous URL keys as fallback, including tiles at other zooms.
+            // Discard that renderer on provider changes, but retain native
+            // caching and fading for zooms within the same provider.
             tileSource.value!.clear();
+            baseLayer.clearRenderer();
           }
         );
       }

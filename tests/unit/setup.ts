@@ -174,6 +174,8 @@ vi.mock('ol/layer/Tile', () => {
   return {
     default: vi.fn(function () {
       return {
+        setPreload: vi.fn(),
+        clearRenderer: vi.fn(),
         setSource: vi.fn(),
         getSource: vi.fn(),
         setVisible: vi.fn(),
