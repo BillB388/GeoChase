@@ -127,6 +127,10 @@ export const useUIStore = defineStore('ui', () => {
   const isModalOpen = computed(() => (modalId: string) => openModals.value.has(modalId));
 
   const activeToastCount = computed(() => toasts.value.length);
+  const toolInstructionsVisible = computed(
+    () => gameMode.value || !!navigatingElement.value || freeHandDrawing.value.isDrawing
+  );
+
   const canInteractWithLines = computed(
     () =>
       !gameMode.value &&
@@ -417,6 +421,7 @@ export const useUIStore = defineStore('ui', () => {
 
   return {
     canInteractWithLines,
+    toolInstructionsVisible,
     gameMode,
     // State
     openModals,

@@ -1,9 +1,7 @@
 <template>
-  <!-- Top bar (only shown when not in navigation/free hand mode) -->
+  <!-- Shared top bar for workspace controls and tool instructions -->
   <TopBar @resize="topBarHeight = $event" />
 
-  <!-- Navigation bar (shown during navigation/free hand modes) -->
-  <NavigationBar />
   <MapEffects />
 
   <!-- Fullscreen map -->
@@ -101,7 +99,6 @@ import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch }
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import MapControls from '@/components/layout/MapControls.vue';
-import NavigationBar from '@/components/layout/NavigationBar.vue';
 import ToolsButton from '@/components/layout/ToolsButton.vue';
 import ToolsToolbar from '@/components/layout/ToolsToolbar.vue';
 import TopBar from '@/components/layout/TopBar.vue';
@@ -176,12 +173,7 @@ function endSidebarResize(event: PointerEvent) {
   if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
 }
 const panelStyle = computed(() => {
-  const top =
-    uiStore.gameMode || uiStore.navigatingElement || uiStore.freeHandDrawing.isDrawing
-      ? 64
-      : uiStore.topBarOpen
-        ? topBarHeight.value
-        : 0;
+  const top = uiStore.topBarOpen || uiStore.toolInstructionsVisible ? topBarHeight.value : 0;
   return { top: `${top}px`, height: `calc(100dvh - ${top}px)` };
 });
 

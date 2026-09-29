@@ -431,7 +431,7 @@ export function useMap(
     const shouldAccountForPanels = options?.accountForPanels !== false;
 
     if (shouldAccountForPanels && uiStore) {
-      if (uiStore.topBarOpen) {
+      if (uiStore.topBarOpen || uiStore.toolInstructionsVisible) {
         paddingTop += panelSizes?.topBarHeight.value ?? 64;
       }
 

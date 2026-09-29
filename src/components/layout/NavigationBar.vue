@@ -1,5 +1,5 @@
 <template>
-  <div v-if="uiStore.gameMode" class="navigation-bar" data-testid="game-controls">
+  <div v-if="instructions.gameMode" class="navigation-bar" data-testid="game-controls">
     <div class="navigation-bar-content">
       <div class="navigation-instructions">
         <span class="navigation-text">{{ $t('game.controls') }}</span>
@@ -11,7 +11,7 @@
     </div>
   </div>
   <!-- Navigation Mode -->
-  <div v-else-if="uiStore.navigatingElement" class="navigation-bar">
+  <div v-else-if="instructions.navigatingElement" class="navigation-bar">
     <div class="navigation-bar-content">
       <div class="navigation-instructions">
         <span class="navigation-icon">🧭</span>
@@ -30,42 +30,44 @@
   </div>
 
   <!-- Free Hand Drawing Mode -->
-  <div v-else-if="uiStore.freeHandDrawing.isDrawing" class="navigation-bar">
+  <div v-else-if="instructions.freeHandDrawing.isDrawing" class="navigation-bar">
     <div class="navigation-bar-content">
       <div class="navigation-instructions">
         <span class="navigation-icon">✏️</span>
 
         <span class="navigation-text">
-          <template v-if="!uiStore.freeHandDrawing.startCoord">
+          <template v-if="!instructions.freeHandDrawing.startCoord">
             {{ $t('freehand.clickToSetStart') }}
           </template>
 
-          <template v-else-if="uiStore.freeHandDrawing.intersectionPointName">
+          <template v-else-if="instructions.freeHandDrawing.intersectionPointName">
             {{
               $t('freehand.intersectionThrough', {
-                name: uiStore.freeHandDrawing.intersectionPointName,
+                name: instructions.freeHandDrawing.intersectionPointName,
               })
             }}
             • {{ $t('freehand.releaseAltToUnlock') }} •
             {{
-              uiStore.freeHandDrawing.draggingFromPoint
+              instructions.freeHandDrawing.draggingFromPoint
                 ? $t('freehand.releaseToConfirm')
                 : $t('freehand.clickToConfirm')
             }}
           </template>
 
-          <template v-else-if="uiStore.freeHandDrawing.snappedPointName">
-            {{ $t('freehand.snappedToPoint', { name: uiStore.freeHandDrawing.snappedPointName }) }}
+          <template v-else-if="instructions.freeHandDrawing.snappedPointName">
+            {{
+              $t('freehand.snappedToPoint', { name: instructions.freeHandDrawing.snappedPointName })
+            }}
             • {{ $t('freehand.holdAltForIntersection') }}
             •
             {{
-              uiStore.freeHandDrawing.draggingFromPoint
+              instructions.freeHandDrawing.draggingFromPoint
                 ? $t('freehand.releaseToConfirm')
                 : $t('freehand.clickToConfirm')
             }}
           </template>
 
-          <template v-else-if="uiStore.freeHandDrawing.draggingFromPoint">
+          <template v-else-if="instructions.freeHandDrawing.draggingFromPoint">
             {{ $t('freehand.dragToPoint') }}
           </template>
 
@@ -75,9 +77,9 @@
 
           <template
             v-if="
-              uiStore.freeHandDrawing.azimuth === undefined &&
-              !uiStore.freeHandDrawing.snappedPointName &&
-              !uiStore.freeHandDrawing.intersectionPointName
+              instructions.freeHandDrawing.azimuth === undefined &&
+              !instructions.freeHandDrawing.snappedPointName &&
+              !instructions.freeHandDrawing.intersectionPointName
             "
           >
             • {{ $t('freehand.holdAlt') }} <strong>ALT</strong> {{ $t('freehand.toLockAzimuth') }} •
@@ -96,10 +98,24 @@
 </template>
 
 <script lang="ts" setup>
+import { shallowRef, watch } from 'vue';
 import { useUIStore } from '@/stores/ui';
 
 const uiStore = useUIStore();
-
+function readInstructions() {
+  return {
+    gameMode: uiStore.gameMode,
+    navigatingElement: uiStore.navigatingElement,
+    freeHandDrawing: { ...uiStore.freeHandDrawing },
+  };
+}
+const instructions = shallowRef(readInstructions());
+// Keep the outgoing content intact until its parent finishes the slide-out.
+watch(readInstructions, (state) => {
+  if (state.gameMode || state.navigatingElement || state.freeHandDrawing.isDrawing) {
+    instructions.value = state;
+  }
+});
 function handleExitNavigation(): void {
   uiStore.stopNavigating();
 }
@@ -111,18 +127,13 @@ function handleExitFreeHand(): void {
 
 <style scoped>
 .navigation-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   background: rgb(var(--v-theme-primary));
   border-bottom: none;
-  padding: 12px 24px;
+  padding: 16px 24px;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .navigation-bar-content {
@@ -138,6 +149,7 @@ function handleExitFreeHand(): void {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   color: rgb(var(--v-theme-on-primary));
   font-size: 14px;
   font-weight: 500;
@@ -150,12 +162,14 @@ function handleExitFreeHand(): void {
 }
 
 .navigation-text {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: block;
+  min-width: 0;
+  line-height: 1.8;
 }
 
 .navigation-text strong {
+  display: inline-block;
+  white-space: nowrap;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.2);
   padding: 2px 6px;
@@ -187,18 +201,18 @@ function handleExitFreeHand(): void {
 
 @media (max-width: 768px) {
   .navigation-bar-content {
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .navigation-instructions {
-    flex-direction: column;
+    flex: 1 1 100%;
+    flex-direction: row;
     gap: 8px;
-    text-align: center;
+    text-align: left;
   }
-
-  .navigation-text {
-    flex-wrap: wrap;
-    justify-content: center;
+  .navigation-exit-btn {
+    margin-left: auto;
   }
 }
 </style>

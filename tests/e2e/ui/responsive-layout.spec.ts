@@ -112,3 +112,54 @@ test('group arrows collapse and expand without changing visibility', async ({
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(visibility).not.toHaveAttribute('title', initialVisibility!);
 });
+
+test('tool instructions replace the toolbar and keep panels below it while resizing', async ({
+  page,
+  blankProject,
+}) => {
+  const normalHeight = (await page.getByTestId('topbar').boundingBox())!.height;
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Free Hand', { exact: true }).click();
+  await page.getByRole('button', { name: 'Start Drawing', exact: true }).click();
+  const toolbar = page.getByTestId('topbar');
+  await expect(toolbar.locator('.navigation-bar')).toBeVisible();
+  await expect.poll(async () => (await toolbar.boundingBox())!.height).toBe(normalHeight);
+  await expect
+    .poll(async () => {
+      const bar = await toolbar.locator('.navigation-bar').boundingBox();
+      const content = await toolbar.locator('.navigation-bar-content').boundingBox();
+      return Math.abs(bar!.y + bar!.height / 2 - (content!.y + content!.height / 2));
+    })
+    .toBeLessThanOrEqual(1);
+  await expect(page.getByTestId('save-menu-btn')).not.toBeVisible();
+  for (const width of [1280, 650, 390]) {
+    await page.setViewportSize({ width, height: 850 });
+    const open = page.getByRole('button', { name: 'Open notebook', exact: true });
+    if (await open.isVisible()) await open.click();
+    await expect
+      .poll(async () => {
+        const bar = await toolbar.boundingBox();
+        const panel = await page.getByTestId('layers-sidebar').boundingBox();
+        const content = await toolbar.locator('.navigation-bar').boundingBox();
+        return (
+          !!bar &&
+          !!panel &&
+          !!content &&
+          Math.abs(panel.y - (bar.y + bar.height)) <= 1 &&
+          content.y >= bar.y &&
+          content.y + content.height <= bar.y + bar.height + 1
+        );
+      })
+      .toBe(true);
+  }
+  await page.getByRole('button', { name: 'Cancel Drawing', exact: true }).click();
+  await expect(toolbar.locator('.navigation-bar')).not.toBeVisible();
+  await expect(page.getByTestId('save-menu-btn')).toBeVisible();
+  await expect
+    .poll(async () => {
+      const bar = await toolbar.boundingBox();
+      const panel = await page.getByTestId('layers-sidebar').boundingBox();
+      return !!bar && !!panel && Math.abs(panel.y - (bar.y + bar.height)) <= 1;
+    })
+    .toBe(true);
+});

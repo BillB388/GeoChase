@@ -1,215 +1,230 @@
 <template>
-  <div v-if="!uiStore.gameMode && !uiStore.navigatingElement && !uiStore.freeHandDrawing.isDrawing">
+  <div>
     <v-navigation-drawer
-      v-model="uiStore.topBarOpen"
       class="topbar"
       color="surface"
       data-testid="topbar"
       location="top"
+      :model-value="uiStore.topBarOpen || uiStore.toolInstructionsVisible"
       permanent
       :width="toolbarHeight"
     >
       <div ref="toolbarContent" class="topbar-content">
-        <header class="workspace-header">
-          <div aria-label="GeoChase" class="brand">
-            <span class="brand-symbol"><v-icon icon="mdi-compass-outline" size="27" /></span>
+        <Transition name="tool-instructions">
+          <div v-if="uiStore.toolInstructionsVisible" class="tool-instructions-layer">
+            <NavigationBar :style="{ minHeight: `${normalToolbarHeight}px` }" />
+          </div>
+        </Transition>
 
-            <div>
-              <strong>{{ $t('topbar.title') }}</strong>
+        <div
+          ref="normalToolbarContent"
+          :aria-hidden="uiStore.toolInstructionsVisible || undefined"
+          class="normal-toolbar"
+          :class="{ 'normal-toolbar-hidden': uiStore.toolInstructionsVisible }"
+          :inert="uiStore.toolInstructionsVisible"
+        >
+          <header class="workspace-header">
+            <div aria-label="GeoChase" class="brand">
+              <span class="brand-symbol"><v-icon icon="mdi-compass-outline" size="27" /></span>
+
+              <div>
+                <strong>{{ $t('topbar.title') }}</strong>
+              </div>
             </div>
-          </div>
 
-          <div class="topbar-address"><SidebarAddressSearch /></div>
+            <div class="topbar-address"><SidebarAddressSearch /></div>
 
-          <div class="header-actions">
-            <v-menu location="bottom end">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  append-icon="mdi-chevron-down"
-                  :aria-label="$t('project.title')"
-                  class="project-menu"
-                  color="primary"
-                  data-testid="save-menu-btn"
-                  prepend-icon="mdi-folder-outline"
-                  variant="tonal"
-                  >{{ $t('project.title') }}</v-btn
-                >
-              </template>
+            <div class="header-actions">
+              <v-menu location="bottom end">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    append-icon="mdi-chevron-down"
+                    :aria-label="$t('project.title')"
+                    class="project-menu"
+                    color="primary"
+                    data-testid="save-menu-btn"
+                    prepend-icon="mdi-folder-outline"
+                    variant="tonal"
+                    >{{ $t('project.title') }}</v-btn
+                  >
+                </template>
 
-              <v-list data-testid="save-menu-dropdown" density="compact">
-                <v-list-item data-testid="new-project-btn" @click="handleNewProject">
-                  <template #prepend>
-                    <v-icon size="small">mdi-plus-circle</v-icon>
-                  </template>
+                <v-list data-testid="save-menu-dropdown" density="compact">
+                  <v-list-item data-testid="new-project-btn" @click="handleNewProject">
+                    <template #prepend>
+                      <v-icon size="small">mdi-plus-circle</v-icon>
+                    </template>
 
-                  <v-list-item-title>{{ $t('project.newProject') }}</v-list-item-title>
-                </v-list-item>
+                    <v-list-item-title>{{ $t('project.newProject') }}</v-list-item-title>
+                  </v-list-item>
 
-                <v-list-item data-testid="load-project-btn" @click="handleLoadProject">
-                  <template #prepend>
-                    <v-icon size="small">mdi-folder-open</v-icon>
-                  </template>
+                  <v-list-item data-testid="load-project-btn" @click="handleLoadProject">
+                    <template #prepend>
+                      <v-icon size="small">mdi-folder-open</v-icon>
+                    </template>
 
-                  <v-list-item-title>{{ $t('project.loadProject') }}</v-list-item-title>
-                </v-list-item>
+                    <v-list-item-title>{{ $t('project.loadProject') }}</v-list-item-title>
+                  </v-list-item>
 
-                <v-list-item
-                  data-testid="project-settings-btn"
-                  :disabled="!projectsStore.activeProject"
-                  @click="uiStore.openModal('projectSettingsModal')"
-                >
-                  <template #prepend><v-icon size="small">mdi-cog</v-icon></template>
-                  <v-list-item-title>{{ $t('project.settings') }}</v-list-item-title>
-                </v-list-item>
+                  <v-list-item
+                    data-testid="project-settings-btn"
+                    :disabled="!projectsStore.activeProject"
+                    @click="uiStore.openModal('projectSettingsModal')"
+                  >
+                    <template #prepend><v-icon size="small">mdi-cog</v-icon></template>
+                    <v-list-item-title>{{ $t('project.settings') }}</v-list-item-title>
+                  </v-list-item>
 
-                <v-divider />
+                  <v-divider />
 
-                <v-list-item
-                  data-testid="export-gpx-btn"
-                  prepend-icon="mdi-download"
-                  :title="`${$t('project.exportProject')} GPX`"
-                  @click="handleExportGPX"
-                />
+                  <v-list-item
+                    data-testid="export-gpx-btn"
+                    prepend-icon="mdi-download"
+                    :title="`${$t('project.exportProject')} GPX`"
+                    @click="handleExportGPX"
+                  />
 
-                <v-list-item data-testid="export-json-btn" @click="handleExportJSON">
-                  <template #prepend>
-                    <v-icon size="small">mdi-file-export</v-icon>
-                  </template>
+                  <v-list-item data-testid="export-json-btn" @click="handleExportJSON">
+                    <template #prepend>
+                      <v-icon size="small">mdi-file-export</v-icon>
+                    </template>
 
-                  <v-list-item-title>{{ $t('project.exportProject') }}</v-list-item-title>
-                </v-list-item>
+                    <v-list-item-title>{{ $t('project.exportProject') }}</v-list-item-title>
+                  </v-list-item>
 
-                <v-list-item data-testid="import-json-btn" @click="handleImportJSON">
-                  <template #prepend>
-                    <v-icon size="small">mdi-file-import</v-icon>
-                  </template>
+                  <v-list-item data-testid="import-json-btn" @click="handleImportJSON">
+                    <template #prepend>
+                      <v-icon size="small">mdi-file-import</v-icon>
+                    </template>
 
-                  <v-list-item-title>{{ $t('project.importProject') }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+                    <v-list-item-title>{{ $t('project.importProject') }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
 
-            <v-btn
-              :aria-label="$t('tutorial.title')"
-              class="help-button"
-              icon="mdi-help-circle-outline"
-              variant="text"
-              @click="uiStore.setShowTutorial(true)"
-            />
+              <v-btn
+                :aria-label="$t('tutorial.title')"
+                class="help-button"
+                icon="mdi-help-circle-outline"
+                variant="text"
+                @click="uiStore.setShowTutorial(true)"
+              />
 
-            <v-menu location="bottom end">
-              <template #activator="{ props }"
-                ><v-btn
-                  v-bind="props"
-                  :aria-label="$t('common.more')"
-                  icon="mdi-dots-horizontal"
-                  variant="text"
-              /></template>
+              <v-menu location="bottom end">
+                <template #activator="{ props }"
+                  ><v-btn
+                    v-bind="props"
+                    :aria-label="$t('common.more')"
+                    icon="mdi-dots-horizontal"
+                    variant="text"
+                /></template>
 
-              <v-list>
-                <v-list-item
-                  data-testid="theme-picker-btn"
-                  prepend-icon="mdi-palette-outline"
-                  :title="$t('workspace.themes')"
-                  @click="themePickerOpen = true"
-                />
+                <v-list>
+                  <v-list-item
+                    data-testid="theme-picker-btn"
+                    prepend-icon="mdi-palette-outline"
+                    :title="$t('workspace.themes')"
+                    @click="themePickerOpen = true"
+                  />
 
-                <v-divider class="my-1" />
+                  <v-divider class="my-1" />
 
-                <v-list-item
-                  prepend-icon="mdi-translate"
-                  :title="$t('common.language')"
-                  @click="uiStore.openModal('languageModal')"
-                />
+                  <v-list-item
+                    prepend-icon="mdi-translate"
+                    :title="$t('common.language')"
+                    @click="uiStore.openModal('languageModal')"
+                  />
 
-                <v-list-item
-                  href="https://github.com/Staormin/GeoChase"
-                  prepend-icon="mdi-github"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  :title="$t('topbar.github')"
-                />
-              </v-list>
-            </v-menu>
-          </div>
-        </header>
+                  <v-list-item
+                    href="https://github.com/Staormin/GeoChase"
+                    prepend-icon="mdi-github"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    :title="$t('topbar.github')"
+                  />
+                </v-list>
+              </v-menu>
+            </div>
+          </header>
 
-        <div class="workspace-toolbar">
-          <div :aria-label="$t('sidebar.drawings')" class="drawing-tools" role="group">
-            <v-btn
-              v-for="tool in primaryTools"
-              :key="tool.modal"
-              :aria-label="$t(tool.title)"
-              :data-testid="tool.testId"
-              :prepend-icon="tool.icon"
-              variant="text"
-              @click="uiStore.openModal(tool.modal)"
-              >{{ $t(tool.label) }}</v-btn
-            >
-
-            <v-menu location="bottom start">
-              <template #activator="{ props }"
-                ><v-btn
-                  v-bind="props"
-                  append-icon="mdi-chevron-down"
-                  data-testid="advanced-tools-btn"
-                  prepend-icon="mdi-vector-combine"
-                  variant="text"
-                  >{{ $t('workspace.construct') }}</v-btn
-                ></template
+          <div class="workspace-toolbar">
+            <div :aria-label="$t('sidebar.drawings')" class="drawing-tools" role="group">
+              <v-btn
+                v-for="tool in primaryTools"
+                :key="tool.modal"
+                :aria-label="$t(tool.title)"
+                :data-testid="tool.testId"
+                :prepend-icon="tool.icon"
+                variant="text"
+                @click="uiStore.openModal(tool.modal)"
+                >{{ $t(tool.label) }}</v-btn
               >
 
-              <v-list class="construction-menu">
-                <v-list-subheader>{{ $t('workspace.advancedTools') }}</v-list-subheader>
+              <v-menu location="bottom start">
+                <template #activator="{ props }"
+                  ><v-btn
+                    v-bind="props"
+                    append-icon="mdi-chevron-down"
+                    data-testid="advanced-tools-btn"
+                    prepend-icon="mdi-vector-combine"
+                    variant="text"
+                    >{{ $t('workspace.construct') }}</v-btn
+                  ></template
+                >
 
-                <v-list-item
-                  v-for="tool in advancedTools"
-                  :key="tool.modal"
-                  :prepend-icon="tool.icon"
-                  :title="$t(tool.title)"
-                  @click="uiStore.openModal(tool.modal)"
-                />
-              </v-list>
-            </v-menu>
+                <v-list class="construction-menu">
+                  <v-list-subheader>{{ $t('workspace.advancedTools') }}</v-list-subheader>
 
-            <span aria-hidden="true" class="tool-divider" />
+                  <v-list-item
+                    v-for="tool in advancedTools"
+                    :key="tool.modal"
+                    :prepend-icon="tool.icon"
+                    :title="$t(tool.title)"
+                    @click="uiStore.openModal(tool.modal)"
+                  />
+                </v-list>
+              </v-menu>
 
-            <v-btn
-              :aria-label="$t('note.title')"
-              data-testid="create-note-btn"
-              prepend-icon="mdi-note-text-outline"
-              variant="text"
-              @click="handleCreateNote"
-              >{{ $t('common.note') }}</v-btn
-            >
+              <span aria-hidden="true" class="tool-divider" />
 
-            <v-btn
-              :aria-label="$t('pdf.title')"
-              data-testid="pdf-btn"
-              prepend-icon="mdi-file-document-outline"
-              variant="text"
-              @click="handlePdfClick"
-              >{{ $t('workspace.pdf') }}</v-btn
-            >
-          </div>
+              <v-btn
+                :aria-label="$t('note.title')"
+                data-testid="create-note-btn"
+                prepend-icon="mdi-note-text-outline"
+                variant="text"
+                @click="handleCreateNote"
+                >{{ $t('common.note') }}</v-btn
+              >
 
-          <div class="topbar-provider">
-            <v-select
-              v-model="uiStore.mapProvider"
-              :aria-label="$t('map.provider')"
-              density="compact"
-              hide-details
-              :items="mapProviders"
-              prepend-inner-icon="mdi-map-outline"
-              variant="outlined"
-            />
+              <v-btn
+                :aria-label="$t('pdf.title')"
+                data-testid="pdf-btn"
+                prepend-icon="mdi-file-document-outline"
+                variant="text"
+                @click="handlePdfClick"
+                >{{ $t('workspace.pdf') }}</v-btn
+              >
+            </div>
+
+            <div class="topbar-provider">
+              <v-select
+                v-model="uiStore.mapProvider"
+                :aria-label="$t('map.provider')"
+                density="compact"
+                hide-details
+                :items="mapProviders"
+                prepend-inner-icon="mdi-map-outline"
+                variant="outlined"
+              />
+            </div>
           </div>
         </div>
       </div>
     </v-navigation-drawer>
 
     <div
+      v-if="!uiStore.toolInstructionsVisible"
       class="topbar-toggle-wrap"
       :style="{ top: uiStore.topBarOpen ? `${toolbarHeight}px` : '0' }"
     >
@@ -231,6 +246,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import NavigationBar from '@/components/layout/NavigationBar.vue';
 import ThemePicker from '@/components/layout/ThemePicker.vue';
 import SidebarAddressSearch from '@/components/sidebar/SidebarAddressSearch.vue';
 import { useProjectFiles } from '@/composables/useProjectFiles';
@@ -242,6 +258,19 @@ const themePickerOpen = ref(false);
 const emit = defineEmits<{ resize: [height: number] }>();
 const toolbarContent = ref<HTMLElement | null>(null);
 const toolbarHeight = ref(64);
+const normalToolbarContent = ref<HTMLElement | null>(null);
+const normalToolbarHeight = ref(134);
+
+watch(normalToolbarContent, (element, _, onCleanup) => {
+  if (!element) return;
+  const updateHeight = () => {
+    normalToolbarHeight.value = Math.ceil(element.getBoundingClientRect().height);
+  };
+  const observer = new ResizeObserver(updateHeight);
+  observer.observe(element);
+  updateHeight();
+  onCleanup(() => observer.disconnect());
+});
 
 watch(toolbarContent, (element, _, onCleanup) => {
   if (!element) return;
@@ -393,6 +422,57 @@ function handlePdfClick() {
 .topbar {
   border-bottom: 1px solid var(--gc-border);
   box-shadow: 0 2px 12px #173b4510;
+}
+.topbar-content {
+  position: relative;
+  overflow: hidden;
+}
+.normal-toolbar {
+  transform: translateY(0);
+  opacity: 1;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease,
+    visibility 0s;
+}
+.normal-toolbar-hidden {
+  position: absolute;
+  inset: 0 0 auto;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition:
+    transform 240ms cubic-bezier(0.4, 0, 1, 1),
+    opacity 180ms ease,
+    visibility 0s 240ms;
+}
+.tool-instructions-enter-active,
+.tool-instructions-leave-active {
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 240ms ease;
+}
+.tool-instructions-enter-active {
+  transition-delay: 80ms;
+}
+.tool-instructions-leave-active {
+  position: absolute;
+  inset: 0 0 auto;
+  pointer-events: none;
+}
+.tool-instructions-enter-from,
+.tool-instructions-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .normal-toolbar,
+  .normal-toolbar-hidden,
+  .tool-instructions-enter-active,
+  .tool-instructions-leave-active {
+    transition: none;
+  }
 }
 .workspace-header {
   min-height: 76px;
