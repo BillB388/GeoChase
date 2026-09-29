@@ -739,23 +739,23 @@ watch(isOpen, (newValue) => {
 
 <style scoped>
 .tutorial-card {
-  background-color: #1e293b;
+  background-color: rgb(var(--v-theme-surface-bright));
 }
 
 .tutorial-title {
-  background-color: #0f172a;
-  color: #ffffff;
+  background-color: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .tutorial-content {
   max-height: 500px;
   overflow-y: auto;
   padding: 24px;
-  background-color: #1e293b;
+  background-color: rgb(var(--v-theme-surface-bright));
 }
 
 .tutorial-tabs {
-  background-color: #1e293b;
+  background-color: rgb(var(--v-theme-surface-bright));
 }
 
 .tutorial-section {
@@ -765,14 +765,14 @@ watch(isOpen, (newValue) => {
 .tutorial-section h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
   margin-bottom: 12px;
 }
 
 .tutorial-section h4 {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e7ff;
+  color: var(--gc-ink);
 }
 
 .tutorial-step {
@@ -785,23 +785,23 @@ watch(isOpen, (newValue) => {
 .tutorial-list {
   margin: 8px 0;
   padding-left: 24px;
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
   font-size: 14px;
   line-height: 1.6;
 }
 
 .tutorial-list li {
   margin: 6px 0;
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .tutorial-list strong {
-  color: #e0e7ff;
+  color: var(--gc-ink);
   font-weight: 600;
 }
 
 p {
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
   font-size: 14px;
   line-height: 1.6;
 }
@@ -811,7 +811,7 @@ p {
 }
 
 :deep(.v-tab--selected) {
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 :deep(.v-window) {
@@ -819,18 +819,18 @@ p {
 }
 
 :deep(.v-icon) {
-  color: #94a3b8;
+  color: var(--gc-muted);
 }
 
 :deep(.v-tab--selected .v-icon) {
-  color: #3b82f6;
+  color: var(--accent);
 }
 
 :deep(.v-card-actions) {
-  background-color: #0f172a;
+  background-color: rgb(var(--v-theme-surface));
 }
 
 :deep(.v-btn) {
-  color: #ffffff;
+  color: rgb(var(--v-theme-on-surface));
 }
 </style>

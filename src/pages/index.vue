@@ -21,6 +21,7 @@
     :class="{ 'sidebar-resizing': sidebarResize !== null }"
     data-testid="layers-sidebar"
     location="left"
+    :permanent="screenWidth >= 960"
     :style="panelStyle"
     :width="sidebarWidth"
   >
@@ -89,6 +90,7 @@
   <PrecisionModeIndicator :precision-lens="precisionLens" />
 
   <!-- Tools -->
+  <MapControls />
   <ToolsToolbar />
   <ToolsButton />
 </template>
@@ -98,6 +100,7 @@ import type { useNoteTooltips } from '@/composables/useNoteTooltips';
 import { computed, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
+import MapControls from '@/components/layout/MapControls.vue';
 import NavigationBar from '@/components/layout/NavigationBar.vue';
 import ToolsButton from '@/components/layout/ToolsButton.vue';
 import ToolsToolbar from '@/components/layout/ToolsToolbar.vue';
@@ -131,7 +134,7 @@ const topBarHeight = ref(64);
 const availablePanelWidth = computed(() => Math.max(0, screenWidth.value - 56));
 const savedSidebarWidth = Number(localStorage.getItem('geochase_sidebarWidth'));
 const preferredSidebarWidth = ref(
-  Number.isFinite(savedSidebarWidth) && savedSidebarWidth >= 280 ? savedSidebarWidth : 640
+  Number.isFinite(savedSidebarWidth) && savedSidebarWidth >= 280 ? savedSidebarWidth : 360
 );
 const sidebarMaxWidth = computed(() => Math.min(900, availablePanelWidth.value));
 const sidebarMinWidth = computed(() => Math.min(280, sidebarMaxWidth.value));
@@ -251,7 +254,8 @@ provide(mapKey, mapContainer);
 provide(drawingKey, drawing);
 provide(noteTooltipsKey, noteTooltipsRef);
 
-const sidebarOpen = ref(true);
+const sidebarOpen = ref(screenWidth.value >= 960);
+uiStore.sidebarOpen = sidebarOpen.value;
 const topBarOpen = ref(true);
 
 // Sync local sidebarOpen with uiStore

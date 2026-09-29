@@ -988,5 +988,37 @@
     "tank": "Char",
     "controls": "Mode jeu • Flèches / ZQSD / WASD : déplacer • Espace : tirer • Échap : quitter",
     "exit": "Quitter le jeu"
+  },
+  "workspace": {
+    "construct": "Construire",
+    "advancedTools": "Constructions avancées",
+    "noProject": "Votre prochaine découverte",
+    "projectHint": "Créez un projet pour conserver vos recherches.",
+    "discover": "Découvrir les outils",
+    "newProjectDescription": "Un espace pour vos repères, vos tracés et vos indices. Votre progression est enregistrée automatiquement sur cet appareil.",
+    "projectPlaceholder": "Ex. Les secrets de Brocéliande",
+    "createProject": "Créer le projet",
+    "closeSidebar": "Masquer le carnet",
+    "openSidebar": "Ouvrir le carnet",
+    "pdf": "PDF",
+    "mapNavigation": "Navigation sur la carte",
+    "lightTheme": "Thème clair",
+    "darkTheme": "Thème sombre",
+    "themes": "Thèmes",
+    "themeHint": "Choisissez l’ambiance de votre espace de travail.",
+    "paletteNames": {
+      "classic": "Clair",
+      "ocean": "Océan",
+      "forest": "Forêt",
+      "iris": "Iris",
+      "lagoon": "Lagon",
+      "terracotta": "Terre cuite",
+      "rose": "Rose",
+      "amber": "Ambre",
+      "mint": "Menthe",
+      "indigo": "Indigo",
+      "plum": "Prune",
+      "classicDark": "Sombre"
+    }
   }
 }

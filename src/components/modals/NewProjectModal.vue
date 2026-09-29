@@ -4,6 +4,8 @@
       <v-card-title>{{ $t('project.newProject') }}</v-card-title>
 
       <v-card-text>
+        <p class="project-intro">{{ $t('workspace.newProjectDescription') }}</p>
+
         <v-form @submit.prevent="submitForm">
           <v-text-field
             v-model="projectName"
@@ -12,7 +14,7 @@
             data-testid="project-name-input"
             density="compact"
             :label="$t('project.projectName')"
-            :placeholder="$t('project.projectName')"
+            :placeholder="$t('workspace.projectPlaceholder')"
             variant="outlined"
             @keydown.enter.prevent="submitForm"
           />
@@ -28,8 +30,13 @@
           $t('common.cancel')
         }}</v-btn>
 
-        <v-btn color="primary" data-testid="create-project-btn" @click="submitForm">
-          {{ $t('common.add') }}
+        <v-btn
+          color="primary"
+          data-testid="create-project-btn"
+          :disabled="!projectName.trim()"
+          @click="submitForm"
+        >
+          {{ $t('workspace.createProject') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -110,3 +117,12 @@ function closeModal() {
   uiStore.closeModal('newProjectModal');
 }
 </script>
+
+<style scoped>
+.project-intro {
+  color: var(--gc-muted);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+</style>

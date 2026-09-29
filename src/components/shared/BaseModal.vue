@@ -52,7 +52,7 @@ const emit = defineEmits<{
 }>();
 
 function handleEnter() {
-  if (props.submitOnEnter) {
+  if (props.submitOnEnter && !props.submitDisabled) {
     emit('submit');
   }
 }

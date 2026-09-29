@@ -19,7 +19,7 @@
           :loading="addressSearchLoading"
           :placeholder="$t('search.addressPlaceholder')"
           prepend-inner-icon="mdi-magnify"
-          variant="solo"
+          variant="outlined"
           @click="onInputClick"
         />
       </div>

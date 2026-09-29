@@ -2,6 +2,7 @@ import os from 'node:os';
 import { defineConfig, devices } from '@playwright/test';
 
 const cpus = os.availableParallelism?.() ?? os.cpus().length;
+const baseURL = process.env.GEOCHASE_TEST_URL || 'http://localhost:3000';
 
 /**
  * Playwright configuration for E2E testing
@@ -35,7 +36,7 @@ export default defineConfig({
   /* Shared settings for all the projects below */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: 'http://localhost:3000',
+    baseURL,
 
     /* Disable trace for faster execution (enable on-first-retry if debugging needed) */
     trace: 'off',
@@ -73,7 +74,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes to start
   },

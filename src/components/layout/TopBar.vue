@@ -1,218 +1,40 @@
 <template>
   <div v-if="!uiStore.gameMode && !uiStore.navigatingElement && !uiStore.freeHandDrawing.isDrawing">
-    <!-- Top navigation drawer -->
     <v-navigation-drawer
       v-model="uiStore.topBarOpen"
       class="topbar"
       color="surface"
       data-testid="topbar"
-      elevation="4"
       location="top"
       permanent
       :width="toolbarHeight"
     >
       <div ref="toolbarContent" class="topbar-content">
-        <!-- Left section: Title and Search -->
-        <div class="topbar-search">
-          <!-- App title -->
-          <div class="topbar-title font-weight-bold">{{ $t('topbar.title') }}</div>
+        <header class="workspace-header">
+          <div aria-label="GeoChase" class="brand">
+            <span class="brand-symbol"><v-icon icon="mdi-compass-outline" size="27" /></span>
 
-          <!-- Search bar next to title -->
-          <div class="topbar-address">
-            <SidebarAddressSearch />
+            <div>
+              <strong>{{ $t('topbar.title') }}</strong>
+            </div>
           </div>
-        </div>
 
-        <!-- Drawing tools stay in the layout so they cannot cover other controls. -->
-        <div
-          :aria-label="$t('sidebar.drawings')"
-          class="topbar-drawing topbar-buttons"
-          role="group"
-        >
-          <v-btn
-            :aria-label="$t('drawing.circle')"
-            color="surface-bright"
-            data-testid="draw-circle-btn"
-            icon="mdi-circle-outline"
-            variant="flat"
-            @click="uiStore.openModal('circleModal')"
-          >
-            <v-icon>mdi-circle-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.circle') }}</v-tooltip>
-          </v-btn>
+          <div class="topbar-address"><SidebarAddressSearch /></div>
 
-          <v-btn
-            :aria-label="$t('drawing.twoPoints')"
-            color="surface-bright"
-            data-testid="draw-line-btn"
-            icon="mdi-vector-line"
-            variant="flat"
-            @click="uiStore.openModal('twoPointsLineModal')"
-          >
-            <v-icon>mdi-vector-line</v-icon>
-
-            <v-tooltip activator="parent" location="bottom">{{
-              $t('drawing.twoPoints')
-            }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('route.title')"
-            color="surface-bright"
-            data-testid="draw-route-btn"
-            icon="mdi-routes"
-            variant="flat"
-            @click="uiStore.openModal('routeModal')"
-          >
-            <v-icon>mdi-routes</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('route.title') }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.azimuth')"
-            color="surface-bright"
-            icon="mdi-compass-outline"
-            variant="flat"
-            @click="uiStore.openModal('azimuthLineModal')"
-          >
-            <v-icon>mdi-compass-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.azimuth') }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.intersection')"
-            color="surface-bright"
-            icon
-            variant="flat"
-            @click="uiStore.openModal('intersectionLineModal')"
-          >
-            <v-icon>
-              <svg
-                fill="currentColor"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <!-- Diagonal line -->
-                <path d="M4,20 L20,4" fill="none" stroke="currentColor" stroke-width="2" />
-                <!-- Center point/circle -->
-                <circle cx="12" cy="12" fill="currentColor" r="3" />
-              </svg>
-            </v-icon>
-
-            <v-tooltip activator="parent" location="bottom">{{
-              $t('drawing.intersection')
-            }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.parallel')"
-            color="surface-bright"
-            icon="mdi-minus"
-            variant="flat"
-            @click="uiStore.openModal('parallelLineModal')"
-          >
-            <v-icon>mdi-minus</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.parallel') }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.freehand')"
-            color="surface-bright"
-            icon="mdi-gesture"
-            variant="flat"
-            @click="uiStore.openModal('freeHandLineModal')"
-          >
-            <v-icon>mdi-gesture</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.freehand') }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.point')"
-            color="surface-bright"
-            data-testid="draw-point-btn"
-            icon="mdi-map-marker"
-            variant="flat"
-            @click="uiStore.openModal('pointModal')"
-          >
-            <v-icon>mdi-map-marker</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.point') }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.angleFromLine')"
-            color="surface-bright"
-            icon="mdi-angle-acute"
-            variant="flat"
-            @click="uiStore.openModal('angleLineModal')"
-          >
-            <v-icon>mdi-angle-acute</v-icon>
-
-            <v-tooltip activator="parent" location="bottom">{{
-              $t('drawing.angleFromLine')
-            }}</v-tooltip>
-          </v-btn>
-
-          <v-btn
-            :aria-label="$t('drawing.polygon')"
-            color="surface-bright"
-            icon="mdi-pentagon-outline"
-            variant="flat"
-            @click="uiStore.openModal('polygonModal')"
-          >
-            <v-icon>mdi-pentagon-outline</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('drawing.polygon') }}</v-tooltip>
-          </v-btn>
-        </div>
-
-        <!-- Map selector section -->
-        <div class="topbar-provider">
-          <v-select
-            v-model="uiStore.mapProvider"
-            :aria-label="$t('map.provider')"
-            density="compact"
-            hide-details
-            :items="mapProviders"
-            variant="outlined"
-          >
-            <template #prepend-inner>
-              <v-icon size="small">mdi-map</v-icon>
-            </template>
-          </v-select>
-        </div>
-
-        <!-- Project and application actions -->
-        <div class="topbar-actions topbar-buttons">
-          <div class="topbar-buttons">
-            <v-btn
-              :aria-label="$t('note.title')"
-              color="surface-bright"
-              data-testid="create-note-btn"
-              icon="mdi-note-text"
-              variant="flat"
-              @click="handleCreateNote"
-            >
-              <v-icon>mdi-note-text</v-icon>
-              <v-tooltip activator="parent" location="bottom">{{ $t('note.title') }}</v-tooltip>
-            </v-btn>
-
-            <v-menu location="bottom">
+          <div class="header-actions">
+            <v-menu location="bottom end">
               <template #activator="{ props }">
                 <v-btn
-                  :aria-label="$t('project.title')"
-                  color="surface-bright"
-                  data-testid="save-menu-btn"
-                  icon="mdi-content-save"
-                  variant="flat"
                   v-bind="props"
+                  append-icon="mdi-chevron-down"
+                  :aria-label="$t('project.title')"
+                  class="project-menu"
+                  color="primary"
+                  data-testid="save-menu-btn"
+                  prepend-icon="mdi-folder-outline"
+                  variant="tonal"
+                  >{{ $t('project.title') }}</v-btn
                 >
-                  <v-icon>mdi-content-save</v-icon>
-
-                  <v-tooltip activator="parent" location="bottom">{{
-                    $t('project.title')
-                  }}</v-tooltip>
-                </v-btn>
               </template>
 
               <v-list data-testid="save-menu-dropdown" density="compact">
@@ -243,6 +65,12 @@
 
                 <v-divider />
 
+                <v-list-item
+                  prepend-icon="mdi-download"
+                  :title="`${$t('project.exportProject')} GPX`"
+                  @click="handleExportGPX"
+                />
+
                 <v-list-item data-testid="export-json-btn" @click="handleExportJSON">
                   <template #prepend>
                     <v-icon size="small">mdi-file-export</v-icon>
@@ -262,105 +90,153 @@
             </v-menu>
 
             <v-btn
-              :aria-label="`${$t('project.exportProject')} GPX`"
-              color="surface-bright"
-              icon="mdi-download"
-              variant="flat"
-              @click="handleExportGPX"
-            >
-              <v-icon>mdi-download</v-icon>
+              :aria-label="$t('tutorial.title')"
+              class="help-button"
+              icon="mdi-help-circle-outline"
+              variant="text"
+              @click="uiStore.setShowTutorial(true)"
+            />
 
-              <v-tooltip activator="parent" location="bottom"
-                >{{ $t('project.exportProject') }}{{ ' ' }}GPX</v-tooltip
+            <v-menu location="bottom end">
+              <template #activator="{ props }"
+                ><v-btn
+                  v-bind="props"
+                  :aria-label="$t('common.more')"
+                  icon="mdi-dots-horizontal"
+                  variant="text"
+              /></template>
+
+              <v-list>
+                <v-list-item
+                  data-testid="theme-picker-btn"
+                  prepend-icon="mdi-palette-outline"
+                  :title="$t('workspace.themes')"
+                  @click="themePickerOpen = true"
+                />
+
+                <v-divider class="my-1" />
+
+                <v-list-item
+                  prepend-icon="mdi-translate"
+                  :title="$t('common.language')"
+                  @click="uiStore.openModal('languageModal')"
+                />
+
+                <v-list-item
+                  href="https://github.com/Staormin/GeoChase"
+                  prepend-icon="mdi-github"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  :title="$t('topbar.github')"
+                />
+              </v-list>
+            </v-menu>
+          </div>
+        </header>
+
+        <div class="workspace-toolbar">
+          <div :aria-label="$t('sidebar.drawings')" class="drawing-tools" role="group">
+            <v-btn
+              v-for="tool in primaryTools"
+              :key="tool.modal"
+              :aria-label="$t(tool.title)"
+              :data-testid="tool.testId"
+              :prepend-icon="tool.icon"
+              variant="text"
+              @click="uiStore.openModal(tool.modal)"
+              >{{ $t(tool.label) }}</v-btn
+            >
+
+            <v-menu location="bottom start">
+              <template #activator="{ props }"
+                ><v-btn
+                  v-bind="props"
+                  append-icon="mdi-chevron-down"
+                  data-testid="advanced-tools-btn"
+                  prepend-icon="mdi-vector-combine"
+                  variant="text"
+                  >{{ $t('workspace.construct') }}</v-btn
+                ></template
               >
-            </v-btn>
+
+              <v-list class="construction-menu">
+                <v-list-subheader>{{ $t('workspace.advancedTools') }}</v-list-subheader>
+
+                <v-list-item
+                  v-for="tool in advancedTools"
+                  :key="tool.modal"
+                  :prepend-icon="tool.icon"
+                  :title="$t(tool.title)"
+                  @click="uiStore.openModal(tool.modal)"
+                />
+              </v-list>
+            </v-menu>
+
+            <span aria-hidden="true" class="tool-divider" />
+
+            <v-btn
+              :aria-label="$t('note.title')"
+              data-testid="create-note-btn"
+              prepend-icon="mdi-note-text-outline"
+              variant="text"
+              @click="handleCreateNote"
+              >{{ $t('common.note') }}</v-btn
+            >
+
+            <v-btn
+              :aria-label="$t('pdf.title')"
+              data-testid="pdf-btn"
+              prepend-icon="mdi-file-document-outline"
+              variant="text"
+              @click="handlePdfClick"
+              >{{ $t('workspace.pdf') }}</v-btn
+            >
           </div>
 
-          <!-- Language button -->
-          <v-btn
-            :aria-label="$t('common.language')"
-            color="surface-bright"
-            icon="mdi-translate"
-            variant="flat"
-            @click="uiStore.openModal('languageModal')"
-          >
-            <v-icon>mdi-translate</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('common.language') }}</v-tooltip>
-          </v-btn>
-
-          <!-- Help button -->
-          <v-btn
-            :aria-label="$t('tutorial.title')"
-            color="surface-bright"
-            icon="mdi-help-circle"
-            variant="flat"
-            @click="uiStore.setShowTutorial(true)"
-          >
-            <v-icon>mdi-help-circle</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('tutorial.title') }}</v-tooltip>
-          </v-btn>
-
-          <!-- PDF button -->
-          <v-btn
-            :aria-label="$t('pdf.title')"
-            color="surface-bright"
-            data-testid="pdf-btn"
-            icon="mdi-file-pdf-box"
-            variant="flat"
-            @click="handlePdfClick"
-          >
-            <v-icon>mdi-file-pdf-box</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('pdf.title') }}</v-tooltip>
-          </v-btn>
-
-          <!-- GitHub link -->
-          <v-btn
-            :aria-label="$t('topbar.github')"
-            color="surface-bright"
-            href="https://github.com/Staormin/GeoChase"
-            icon="mdi-github"
-            target="_blank"
-            variant="flat"
-          >
-            <v-icon>mdi-github</v-icon>
-            <v-tooltip activator="parent" location="bottom">{{ $t('topbar.github') }}</v-tooltip>
-          </v-btn>
+          <div class="topbar-provider">
+            <v-select
+              v-model="uiStore.mapProvider"
+              :aria-label="$t('map.provider')"
+              density="compact"
+              hide-details
+              :items="mapProviders"
+              prepend-inner-icon="mdi-map-outline"
+              variant="outlined"
+            />
+          </div>
         </div>
       </div>
     </v-navigation-drawer>
 
-    <!-- Collapse/Expand button (centered) -->
     <div
-      class="position-fixed w-100 d-flex justify-center"
-      :style="{
-        top: uiStore.topBarOpen ? `${toolbarHeight}px` : '0',
-        zIndex: 1050,
-        pointerEvents: 'none',
-        transition: 'top 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      }"
+      class="topbar-toggle-wrap"
+      :style="{ top: uiStore.topBarOpen ? `${toolbarHeight}px` : '0' }"
     >
       <v-btn
         :aria-label="uiStore.topBarOpen ? $t('topbar.collapseTopBar') : $t('topbar.expandTopBar')"
         class="topbar-toggle"
-        color="surface-bright"
-        elevation="4"
+        color="surface"
         :icon="uiStore.topBarOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
         size="small"
-        style="pointer-events: auto"
-        variant="elevated"
+        variant="flat"
         @click="uiStore.toggleTopBar()"
       />
     </div>
   </div>
+
+  <ThemePicker v-model="themePickerOpen" />
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ThemePicker from '@/components/layout/ThemePicker.vue';
 import SidebarAddressSearch from '@/components/sidebar/SidebarAddressSearch.vue';
 import { useProjectFiles } from '@/composables/useProjectFiles';
 import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
+
+const themePickerOpen = ref(false);
 
 const emit = defineEmits<{ resize: [height: number] }>();
 const toolbarContent = ref<HTMLElement | null>(null);
@@ -383,6 +259,54 @@ const { t } = useI18n();
 const uiStore = useUIStore();
 const projectsStore = useProjectsStore();
 
+const primaryTools = [
+  {
+    label: 'common.point',
+    title: 'drawing.point',
+    icon: 'mdi-map-marker-outline',
+    modal: 'pointModal',
+    testId: 'draw-point-btn',
+  },
+  {
+    label: 'common.circle',
+    title: 'drawing.circle',
+    icon: 'mdi-circle-outline',
+    modal: 'circleModal',
+    testId: 'draw-circle-btn',
+  },
+  {
+    label: 'common.line',
+    title: 'drawing.twoPoints',
+    icon: 'mdi-vector-line',
+    modal: 'twoPointsLineModal',
+    testId: 'draw-line-btn',
+  },
+  {
+    label: 'route.title',
+    title: 'route.title',
+    icon: 'mdi-routes',
+    modal: 'routeModal',
+    testId: 'draw-route-btn',
+  },
+  {
+    label: 'common.polygon',
+    title: 'drawing.polygon',
+    icon: 'mdi-pentagon-outline',
+    modal: 'polygonModal',
+    testId: 'draw-polygon-btn',
+  },
+] as const;
+const advancedTools = [
+  { title: 'drawing.azimuth', icon: 'mdi-compass-outline', modal: 'azimuthLineModal' },
+  {
+    title: 'drawing.intersection',
+    icon: 'mdi-vector-intersection',
+    modal: 'intersectionLineModal',
+  },
+  { title: 'drawing.parallel', icon: 'mdi-menu', modal: 'parallelLineModal' },
+  { title: 'drawing.freehand', icon: 'mdi-gesture', modal: 'freeHandLineModal' },
+  { title: 'drawing.angleFromLine', icon: 'mdi-angle-acute', modal: 'angleLineModal' },
+] as const;
 const mapProviders = [
   { title: 'Geoportail (IGN)', value: 'geoportail' },
   { title: 'OpenStreetMap', value: 'osm' },
@@ -465,155 +389,198 @@ function handlePdfClick() {
 </script>
 
 <style scoped>
-.topbar-content {
-  --toolbar-button-size: 32px;
+.topbar {
+  border-bottom: 1px solid var(--gc-border);
+  box-shadow: 0 2px 12px #173b4510;
+}
+.workspace-header {
+  min-height: 76px;
+  padding: 14px 24px;
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(200px, 540px) minmax(200px, 1fr);
+  align-items: center;
+  gap: 32px;
+}
+.brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 6px 10px;
+  gap: 10px;
+  flex: 0 0 250px;
 }
-
-.topbar-search {
-  display: flex;
-  flex: 1 1 320px;
-  align-items: center;
-  gap: 8px;
-  min-width: 200px;
-  max-width: 420px;
+.brand-symbol {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  border-radius: 13px 13px 13px 3px;
 }
-
-.topbar-title {
-  flex-shrink: 0;
-  font-size: 1rem;
+.brand strong {
+  display: block;
+  font-size: 23px;
+  letter-spacing: -1px;
+  line-height: 1.15;
 }
-
 .topbar-address {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  justify-self: center;
+  min-width: 120px;
+  max-width: 540px;
 }
-
-.topbar-provider {
-  flex: 1 1 180px;
-  min-width: 140px;
-  max-width: 200px;
+.header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
 }
-
-.topbar-drawing {
-  margin-inline: auto;
+.header-actions > .v-btn--icon {
+  width: 40px;
+  height: 40px;
 }
-
-.topbar-drawing,
-.topbar-actions {
-  flex-shrink: 0;
+.workspace-toolbar {
+  min-height: 58px;
+  padding: 7px 24px;
+  border-top: 1px solid var(--gc-border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--gc-toolbar);
 }
-
-.topbar-buttons {
+.drawing-tools {
   display: flex;
   align-items: center;
   gap: 2px;
   min-width: 0;
 }
-
-.topbar-buttons :deep(.v-btn) {
-  flex: 0 0 auto;
-  width: var(--toolbar-button-size);
-  min-width: var(--toolbar-button-size);
-  height: var(--toolbar-button-size);
-  border-radius: 4px;
+.drawing-tools .v-btn {
+  padding-inline: 11px;
+  height: 40px;
+  font-size: 12px;
+  color: var(--gc-ink);
 }
-
-.topbar :deep(.v-icon) {
-  font-size: 1.25rem;
+.drawing-tools .v-btn:hover {
+  color: var(--accent);
+  background: var(--gc-hover);
 }
-
-.topbar-buttons :deep(svg) {
-  width: 1em;
-  height: 1em;
+.tool-divider {
+  height: 24px;
+  border-left: 1px solid var(--gc-border);
+  margin: 0 7px;
 }
-
-.topbar :deep(.v-field) {
-  --v-input-control-height: 32px;
-  --v-field-input-padding-top: 4px;
-  --v-field-input-padding-bottom: 4px;
-  font-size: 0.875rem;
+.topbar-provider {
+  margin-left: auto;
+  flex: 0 0 192px;
 }
-
+.topbar-provider :deep(.v-field) {
+  font-size: 12px;
+  --v-input-control-height: 38px;
+}
 .topbar :deep(.v-field__input) {
   min-width: 0;
 }
-
+.topbar-toggle-wrap {
+  position: fixed;
+  left: 50%;
+  z-index: 1050;
+  transform: translateX(-50%);
+}
 .topbar-toggle {
-  width: 36px;
+  width: 40px;
   height: 24px;
-  border-radius: 0 0 6px 6px;
+  border: 1px solid var(--gc-border);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
 }
-
-@media (max-width: 1023px), (pointer: coarse) and (max-width: 1199px) {
-  .topbar-content {
-    display: grid;
-    grid-template-areas: 'search provider' 'drawing actions';
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px 8px;
+@media (max-width: 1199px) {
+  .workspace-header {
+    gap: 20px;
+    padding-inline: 16px;
   }
-
-  .topbar-search {
-    grid-area: search;
-    min-width: 0;
-    max-width: none;
+  .brand {
+    flex-basis: 190px;
   }
-
-  .topbar-provider {
-    grid-area: provider;
-    justify-self: end;
-    width: 180px;
+  .workspace-toolbar {
+    padding-inline: 12px;
+    gap: 8px;
   }
-
-  .topbar-drawing {
-    grid-area: drawing;
-    margin: 0;
-  }
-
-  .topbar-actions {
-    grid-area: actions;
-    justify-content: flex-end;
-  }
-}
-
-@media (max-width: 639px), (pointer: coarse) and (max-width: 839px) {
-  .topbar-content {
-    grid-template-areas: 'search provider' 'drawing drawing' 'actions actions';
-    grid-template-columns: minmax(0, 1fr) 140px;
+  .drawing-tools .v-btn {
     padding-inline: 8px;
   }
-
-  .topbar-title {
-    display: none;
-  }
-
   .topbar-provider {
-    width: 100%;
-  }
-
-  .topbar-drawing,
-  .topbar-actions {
-    justify-content: center;
-    flex-wrap: wrap;
+    flex-basis: 165px;
   }
 }
-
-@media (pointer: coarse) {
-  .topbar-content {
-    --toolbar-button-size: 44px;
+@media (max-width: 959px) {
+  .workspace-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
   }
-
-  .topbar :deep(.v-field) {
-    --v-input-control-height: 44px;
+  .brand {
+    flex: 1;
   }
-
-  .topbar-toggle {
-    width: 44px;
+  .topbar-address {
+    order: 3;
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .workspace-toolbar {
+    flex-wrap: wrap;
+  }
+  .drawing-tools {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+  .topbar-provider {
+    flex: 1;
+    max-width: 230px;
+    margin-left: 0;
+  }
+}
+@media (max-width: 599px) {
+  .workspace-header {
+    padding: 12px;
+    gap: 10px;
+  }
+  .brand {
+    flex-basis: 130px;
+    gap: 8px;
+  }
+  .brand strong {
+    font-size: 20px;
+  }
+  .brand-symbol {
+    width: 34px;
+    height: 34px;
+  }
+  .help-button {
+    display: none;
+  }
+  .header-actions {
+    gap: 0;
+  }
+  .project-menu {
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .workspace-toolbar {
+    padding: 6px 8px;
+  }
+  .drawing-tools {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .drawing-tools .v-btn {
+    flex-shrink: 0;
     height: 44px;
+  }
+  .topbar-provider {
+    max-width: none;
+  }
+  .topbar-provider :deep(.v-field) {
+    --v-input-control-height: 36px;
   }
 }
 </style>

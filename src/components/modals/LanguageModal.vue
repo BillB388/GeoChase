@@ -21,13 +21,18 @@
       <v-card-text>
         <p class="text-body-2 mb-4">{{ $t('language.selectYourLanguage') }}</p>
 
-        <div class="d-flex flex-column gap-3">
+        <div class="language-options">
           <v-card
+            :aria-pressed="selectedLanguage === 'en'"
             class="language-card"
             :class="{ selected: selectedLanguage === 'en' }"
             hover
+            role="button"
+            tabindex="0"
             variant="outlined"
             @click="selectLanguage('en')"
+            @keydown.enter="selectLanguage('en')"
+            @keydown.space.prevent="selectLanguage('en')"
           >
             <v-card-text class="d-flex align-center justify-space-between">
               <div class="d-flex align-center gap-3">
@@ -44,11 +49,16 @@
           </v-card>
 
           <v-card
+            :aria-pressed="selectedLanguage === 'fr'"
             class="language-card"
             :class="{ selected: selectedLanguage === 'fr' }"
             hover
+            role="button"
+            tabindex="0"
             variant="outlined"
             @click="selectLanguage('fr')"
+            @keydown.enter="selectLanguage('fr')"
+            @keydown.space.prevent="selectLanguage('fr')"
           >
             <v-card-text class="d-flex align-center justify-space-between">
               <div class="d-flex align-center gap-3">
@@ -132,13 +142,17 @@ function closeModal() {
 </script>
 
 <style scoped>
+.language-options {
+  display: grid;
+  gap: 12px;
+}
 .language-card {
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .language-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 

@@ -42,6 +42,7 @@
               <v-btn-group size="x-small">
                 <v-btn
                   v-if="project.id"
+                  :aria-label="`${$t('project.loadProject')} : ${project.name}`"
                   color="primary"
                   :data-testid="`load-project-${project.id}`"
                   icon="mdi-folder-open"
@@ -50,6 +51,7 @@
 
                 <v-btn
                   v-if="project.id"
+                  :aria-label="`${$t('common.delete')} : ${project.name}`"
                   color="error"
                   :data-testid="`delete-project-${project.id}`"
                   icon="mdi-delete"

@@ -5,7 +5,8 @@ test('drawing windows can move while the map remains interactive', async ({
   blankProject,
 }) => {
   void blankProject;
-  await page.locator('button .mdi-minus').locator('..').click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Parallel Line', { exact: true }).click();
   const dialog = page.locator('.floating-dialog .v-overlay__content');
   await expect(dialog).toBeVisible();
   const title = dialog.locator('.v-card-title').first();
@@ -32,7 +33,8 @@ test('drawing windows can move while the map remains interactive', async ({
   await dialog.getByRole('button', { name: /cancel/i }).click();
   await expect(dialog).not.toBeVisible();
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.locator('button .mdi-minus').locator('..').click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Parallel Line', { exact: true }).click();
   await expect(dialog).toBeVisible();
   await dialog.locator('input').first().press('Escape');
   await expect(dialog).not.toBeVisible();

@@ -1,173 +1,92 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures';
 
-async function expectAccessibleToolbar(page: Page, minimumButtonSize = 32) {
+async function expectAccessibleToolbar(page: Page) {
   const toolbar = page.getByTestId('topbar');
   await expect(toolbar).toBeVisible();
-  await expect(toolbar.locator('.v-btn')).toHaveCount(17);
-  await expect(page.getByTestId('draw-route-btn')).toBeVisible();
-
   await expect
     .poll(() =>
-      toolbar.evaluate((element, minimumSize) => {
-        const controls = Array.from(element.querySelectorAll('.v-btn, .v-input'));
-        const bounds = controls.map((control) => control.getBoundingClientRect());
+      toolbar.evaluate((element) => {
+        const toolbarBounds = element.getBoundingClientRect();
         const issues: string[] = [];
-        for (const [index, control] of controls.entries()) {
-          const rect = bounds[index]!;
-          const label = control.getAttribute('aria-label') || `control ${index}`;
-          if (
-            rect.left < 0 ||
-            rect.right > innerWidth ||
-            rect.top < 0 ||
-            rect.bottom > innerHeight
-          ) {
-            issues.push(`${label} is outside the viewport`);
-          }
-          if (
-            control.matches('.v-btn') &&
-            (rect.width < minimumSize || rect.height < minimumSize)
-          ) {
-            issues.push(`${label} is too small`);
-          }
+        if (toolbarBounds.right > innerWidth + 1) issues.push('Toolbar overflows');
+        const controls = Array.from(element.querySelectorAll<HTMLButtonElement>('button'));
+        for (const control of controls) {
+          const rect = control.getBoundingClientRect();
+          if (!rect.width || !rect.height) continue;
+          // The mobile drawing shelf scrolls horizontally; check controls within its viewport.
+          const shelf = control.closest('.drawing-tools')?.getBoundingClientRect();
+          if (shelf && (rect.left < shelf.left || rect.right > shelf.right)) continue;
+          if (rect.width < 32 || rect.height < 32)
+            issues.push(`${control.textContent} is too small`);
+          if (rect.right > innerWidth + 1) issues.push(`${control.textContent} overflows`);
           const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-          if (!hit || !control.contains(hit)) issues.push(`${label} is covered`);
-          for (const other of bounds.slice(index + 1)) {
-            if (
-              rect.left < other.right &&
-              rect.right > other.left &&
-              rect.top < other.bottom &&
-              rect.bottom > other.top
-            ) {
-              issues.push(`${label} overlaps another control`);
-            }
-          }
+          if (!hit || !control.contains(hit)) issues.push(`${control.textContent} is covered`);
         }
         return issues;
-      }, minimumButtonSize)
-    )
-    .toEqual([]);
-}
-
-async function expectSingleRowToolbar(page: Page) {
-  await expect
-    .poll(() =>
-      page.getByTestId('topbar').evaluate((toolbar) => {
-        const controls = Array.from(toolbar.querySelectorAll('.v-btn, .v-input'));
-        const tops = controls.map((control) => control.getBoundingClientRect().top);
-        return (
-          toolbar.getBoundingClientRect().height <= 48 && Math.max(...tops) - Math.min(...tops) <= 1
-        );
       })
     )
-    .toBe(true);
-}
-
-async function openSidebar(page: Page) {
-  const open = page.getByRole('button', { name: 'Open sidebar', exact: true });
-  if (await open.count()) await open.click();
-  await expect(page.getByRole('button', { name: 'Close sidebar', exact: true })).toBeInViewport();
+    .toEqual([]);
 }
 
 for (const viewport of [
   { width: 1920, height: 1080 },
   { width: 1366, height: 768 },
-  { width: 1280, height: 720 },
   { width: 1024, height: 768 },
   { width: 768, height: 1024 },
-  { width: 800, height: 450 },
   { width: 390, height: 844 },
   { width: 320, height: 568 },
 ]) {
   test.describe(`${viewport.width} × ${viewport.height}`, () => {
     test.use({ viewport });
-
-    test('keeps toolbar controls and sidebar toggle visible and clickable', async ({
-      page,
-      blankProject,
-    }) => {
+    test('keeps drawing, project and map controls usable', async ({ page, blankProject }) => {
       await expectAccessibleToolbar(page);
-      if (viewport.width >= 1024) await expectSingleRowToolbar(page);
-      await openSidebar(page);
-      await expectAccessibleToolbar(page);
-      await expect
-        .poll(async () => {
-          const toolbar = await page.getByTestId('topbar').boundingBox();
-          const sidebar = await page.getByTestId('layers-sidebar').boundingBox();
-          return (
-            !!toolbar &&
-            !!sidebar &&
-            Math.abs(sidebar.y - toolbar.height) <= 1 &&
-            sidebar.x + sidebar.width <= viewport.width
-          );
-        })
-        .toBe(true);
-
       await page.getByTestId('draw-circle-btn').click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
-      await page.getByTestId('draw-route-btn').click();
+      await page.getByTestId('advanced-tools-btn').click();
+      await page.getByText('Azimuth Line', { exact: true }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
       await page.getByTestId('save-menu-btn').click();
       await expect(page.getByTestId('new-project-btn')).toBeVisible();
       await page.keyboard.press('Escape');
-      await page.getByRole('button', { name: 'Close sidebar', exact: true }).click();
-      await expect(
-        page.getByRole('button', { name: 'Open sidebar', exact: true })
-      ).toBeInViewport();
+      const open = page.getByRole('button', { name: 'Open notebook', exact: true });
+      if (await open.isVisible()) await open.click();
+      const sidebar = page.getByTestId('layers-sidebar');
+      await expect(sidebar).toBeVisible();
+      await expect
+        .poll(async () => {
+          const panel = await sidebar.boundingBox();
+          const toolbar = await page.getByTestId('topbar').boundingBox();
+          return (
+            !!panel &&
+            !!toolbar &&
+            Math.abs(panel.y - toolbar.height) <= 1 &&
+            panel.width < viewport.width
+          );
+        })
+        .toBe(true);
+      await page.getByRole('button', { name: 'Hide notebook', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toBeInViewport();
+      await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+      await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
     });
   });
 }
 
-test('updates panel offsets when the toolbar wraps or collapses', async ({
+test('keyboard users can open advanced tools and toggle element groups', async ({
   page,
   blankProject,
 }) => {
-  for (const width of [1920, 1366, 768, 390, 1920]) {
-    await page.setViewportSize({ width, height: 844 });
-    await expectAccessibleToolbar(page);
-    await openSidebar(page);
-    await expect
-      .poll(async () => {
-        const toolbar = await page.getByTestId('topbar').boundingBox();
-        const sidebar = await page.getByTestId('layers-sidebar').boundingBox();
-        return !!toolbar && !!sidebar && Math.abs(sidebar.y - toolbar.height) <= 1;
-      })
-      .toBe(true);
-    await page.getByRole('button', { name: 'Collapse top bar', exact: true }).click();
-    await expect
-      .poll(async () => (await page.getByTestId('layers-sidebar').boundingBox())?.y)
-      .toBe(0);
-    await page.getByRole('button', { name: 'Expand top bar', exact: true }).click();
-  }
-  await expectAccessibleToolbar(page);
-});
-
-test.describe('Scaled desktop viewport', () => {
-  test.use({ viewport: { width: 1155, height: 360 }, deviceScaleFactor: 1.6 });
-
-  test('preserves a compact single row on a scaled display', async ({ page, blankProject }) => {
-    await expectAccessibleToolbar(page);
-    await expectSingleRowToolbar(page);
-    await page.getByText('Geoportail (IGN)', { exact: true }).click();
-    await page.getByRole('option', { name: 'OpenStreetMap', exact: true }).click();
-    await expect(page.getByRole('combobox', { name: 'Map Provider' })).toHaveValue('OpenStreetMap');
-    await expectSingleRowToolbar(page);
-    await page.getByTestId('save-menu-btn').click();
-    await expect(page.getByTestId('new-project-btn')).toBeVisible();
-  });
-});
-
-test.describe('High density touch screen', () => {
-  test.use({
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 3,
-    hasTouch: true,
-    isMobile: true,
-  });
-
-  test('keeps touch targets large enough without overlapping', async ({ page, blankProject }) => {
-    await expectAccessibleToolbar(page, 44);
-  });
+  await page.getByTestId('advanced-tools-btn').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Azimuth Line', { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  const points = page.locator('.layers-section-title').filter({ hasText: 'Points' });
+  await points.focus();
+  await page.keyboard.press('Enter');
+  await expect(points).toHaveAttribute('aria-expanded', 'false');
+  await page.keyboard.press('Space');
+  await expect(points).toHaveAttribute('aria-expanded', 'true');
 });

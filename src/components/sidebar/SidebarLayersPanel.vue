@@ -1,7 +1,27 @@
 <template>
   <div ref="layersPanel" class="layers-panel">
-    <!-- Title -->
-    <h3 class="layers-panel-title">{{ $t('layers.title') }}</h3>
+    <div class="project-heading">
+      <h1>{{ projectsStore.activeProject?.name || $t('workspace.noProject') }}</h1>
+
+      <p v-if="!projectsStore.activeProject">{{ $t('workspace.projectHint') }}</p>
+
+      <v-btn
+        v-if="!projectsStore.activeProject"
+        block
+        class="mt-3"
+        color="primary"
+        prepend-icon="mdi-plus"
+        variant="flat"
+        @click="uiStore.openModal('newProjectModal')"
+        >{{ $t('project.newProject') }}</v-btn
+      >
+    </div>
+
+    <div class="layers-heading">
+      <h2 class="layers-panel-title">{{ $t('layers.title') }}</h2>
+
+      <span class="element-count">{{ elementCount }}</span>
+    </div>
 
     <!-- Search bar (only show when there are elements) -->
     <div v-if="!layersStore.isEmpty" class="mb-3">
@@ -19,7 +39,44 @@
 
     <!-- Empty state -->
     <div v-if="layersStore.isEmpty" class="layers-empty">
-      <p>{{ $t('layers.emptyState') }}</p>
+      <svg aria-hidden="true" class="empty-map" fill="none" viewBox="0 0 280 170">
+        <path
+          d="M24 38 95 24 180 40 256 22V139L180 154 95 139 24 154Z"
+          fill="#edf4f3"
+          stroke="#cbdddd"
+        />
+
+        <path d="M95 24V139M180 40V154" stroke="#cbdddd" />
+
+        <path
+          d="M25 96C65 37 104 112 143 61S206 103 256 65M24 127C71 81 96 148 156 111S217 135 256 102"
+          stroke="#d5e4dd"
+          stroke-width="10"
+        />
+
+        <circle cx="158" cy="84" r="35" stroke="#7da9aa" stroke-dasharray="4 5" />
+
+        <path
+          d="m66 114 48-11 44-19 57-33"
+          stroke="#176b70"
+          stroke-dasharray="5 5"
+          stroke-width="2"
+        />
+
+        <circle cx="66" cy="114" fill="#fff" r="5" stroke="#176b70" stroke-width="2" />
+
+        <path
+          d="M158 61a14 14 0 0 1 14 14c0 11-14 24-14 24s-14-13-14-24a14 14 0 0 1 14-14Z"
+          fill="#176b70"
+        />
+
+        <circle cx="158" cy="75" fill="white" r="5" />
+        <path d="m212 38 6 13-6 13-6-13Z" fill="#be892f" />
+      </svg>
+
+      <button class="empty-guide" type="button" @click="uiStore.setShowTutorial(true)">
+        {{ $t('workspace.discover') }}<v-icon icon="mdi-arrow-right" size="17" />
+      </button>
     </div>
 
     <!-- No results state -->
@@ -42,12 +99,19 @@
       <!-- Circles -->
       <div v-if="filteredCircles.length > 0">
         <div class="layers-section-header">
-          <span class="layers-section-title" @click="circlesExpanded = !circlesExpanded">{{
-            $t('layers.circlesSection', {
-              count: filteredCircles.length,
-              total: searchQuery ? layersStore.circleCount : null,
-            })
-          }}</span>
+          <button
+            :aria-expanded="circlesExpanded"
+            class="layers-section-title"
+            type="button"
+            @click="circlesExpanded = !circlesExpanded"
+          >
+            {{
+              $t('layers.circlesSection', {
+                count: filteredCircles.length,
+                total: searchQuery ? layersStore.circleCount : null,
+              })
+            }}
+          </button>
 
           <div class="layers-section-actions">
             <v-btn
@@ -59,9 +123,7 @@
               @click.stop="toggleAllElementsOfType('circle')"
             />
 
-            <span class="collapse-icon" @click="circlesExpanded = !circlesExpanded">{{
-              circlesExpanded ? '▼' : '▶'
-            }}</span>
+            <span aria-hidden="true" class="collapse-icon">{{ circlesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -83,7 +145,14 @@
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
-            <div class="layer-item-info" @click="handleGoTo('circle', circle)">
+            <div
+              class="layer-item-info"
+              role="button"
+              tabindex="0"
+              @click="handleGoTo('circle', circle)"
+              @keydown.enter="handleGoTo('circle', circle)"
+              @keydown.space.prevent="handleGoTo('circle', circle)"
+            >
               <div class="layer-item-name">{{ circle.name }}</div>
               <div class="layer-item-type">{{ circle.radius }}km radius</div>
             </div>
@@ -104,10 +173,15 @@
       <!-- Line segments -->
       <div v-if="filteredLines.length > 0">
         <div class="layers-section-header">
-          <span class="layers-section-title" @click="linesExpanded = !linesExpanded"
-            >{{ $t('layers.lines') }} ({{ filteredLines.length
-            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.lineSegmentCount}` : '' }})</span
+          <button
+            :aria-expanded="linesExpanded"
+            class="layers-section-title"
+            type="button"
+            @click="linesExpanded = !linesExpanded"
           >
+            {{ $t('layers.lines') }} ({{ filteredLines.length
+            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.lineSegmentCount}` : '' }})
+          </button>
 
           <div class="layers-section-actions">
             <v-btn
@@ -119,9 +193,7 @@
               @click.stop="toggleAllElementsOfType('lineSegment')"
             />
 
-            <span class="collapse-icon" @click="linesExpanded = !linesExpanded">{{
-              linesExpanded ? '▼' : '▶'
-            }}</span>
+            <span aria-hidden="true" class="collapse-icon">{{ linesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -143,7 +215,14 @@
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
-            <div class="layer-item-info" @click="handleGoTo('lineSegment', line)">
+            <div
+              class="layer-item-info"
+              role="button"
+              tabindex="0"
+              @click="handleGoTo('lineSegment', line)"
+              @keydown.enter="handleGoTo('lineSegment', line)"
+              @keydown.space.prevent="handleGoTo('lineSegment', line)"
+            >
               <div class="layer-item-name">{{ line.name }}</div>
 
               <div class="layer-item-type">
@@ -166,10 +245,15 @@
 
       <div v-if="filteredRoutes.length > 0">
         <div class="layers-section-header">
-          <span class="layers-section-title" @click="routesExpanded = !routesExpanded"
-            >{{ $t('route.plural') }} ({{ filteredRoutes.length
-            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.routeCount}` : '' }})</span
+          <button
+            :aria-expanded="routesExpanded"
+            class="layers-section-title"
+            type="button"
+            @click="routesExpanded = !routesExpanded"
           >
+            {{ $t('route.plural') }} ({{ filteredRoutes.length
+            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.routeCount}` : '' }})
+          </button>
 
           <div class="layers-section-actions">
             <v-btn
@@ -181,9 +265,7 @@
               @click.stop="toggleAllElementsOfType('route')"
             />
 
-            <span class="collapse-icon" @click="routesExpanded = !routesExpanded">{{
-              routesExpanded ? '▼' : '▶'
-            }}</span>
+            <span aria-hidden="true" class="collapse-icon">{{ routesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -205,7 +287,14 @@
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
-            <div class="layer-item-info" @click="handleGoTo('route', route)">
+            <div
+              class="layer-item-info"
+              role="button"
+              tabindex="0"
+              @click="handleGoTo('route', route)"
+              @keydown.enter="handleGoTo('route', route)"
+              @keydown.space.prevent="handleGoTo('route', route)"
+            >
               <div class="layer-item-name">{{ route.name }}</div>
 
               <div class="layer-item-type">{{ $t('route.title') }} • {{ getRouteInfo(route) }}</div>
@@ -227,10 +316,15 @@
       <!-- Points -->
       <div v-if="filteredPoints.length > 0">
         <div class="layers-section-header">
-          <span class="layers-section-title" @click="pointsExpanded = !pointsExpanded"
-            >{{ $t('layers.points') }} ({{ filteredPoints.length
-            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.pointCount}` : '' }})</span
+          <button
+            :aria-expanded="pointsExpanded"
+            class="layers-section-title"
+            type="button"
+            @click="pointsExpanded = !pointsExpanded"
           >
+            {{ $t('layers.points') }} ({{ filteredPoints.length
+            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.pointCount}` : '' }})
+          </button>
 
           <div class="layers-section-actions">
             <v-btn
@@ -242,9 +336,7 @@
               @click.stop="toggleAllElementsOfType('point')"
             />
 
-            <span class="collapse-icon" @click="pointsExpanded = !pointsExpanded">{{
-              pointsExpanded ? '▼' : '▶'
-            }}</span>
+            <span aria-hidden="true" class="collapse-icon">{{ pointsExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -267,7 +359,13 @@
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
-            <div class="layer-item-info">
+            <div
+              class="layer-item-info"
+              role="button"
+              tabindex="0"
+              @keydown.enter="handlePointClick(point)"
+              @keydown.space.prevent="handlePointClick(point)"
+            >
               <div class="layer-item-name">{{ point.name }}</div>
               <div class="layer-item-type">{{ $t('layers.pointType') }}</div>
             </div>
@@ -288,10 +386,15 @@
       <!-- Polygons -->
       <div v-if="filteredPolygons.length > 0">
         <div class="layers-section-header">
-          <span class="layers-section-title" @click="polygonsExpanded = !polygonsExpanded"
-            >{{ $t('layers.polygons') }} ({{ filteredPolygons.length
-            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.polygonCount}` : '' }})</span
+          <button
+            :aria-expanded="polygonsExpanded"
+            class="layers-section-title"
+            type="button"
+            @click="polygonsExpanded = !polygonsExpanded"
           >
+            {{ $t('layers.polygons') }} ({{ filteredPolygons.length
+            }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.polygonCount}` : '' }})
+          </button>
 
           <div class="layers-section-actions">
             <v-btn
@@ -303,9 +406,7 @@
               @click.stop="toggleAllElementsOfType('polygon')"
             />
 
-            <span class="collapse-icon" @click="polygonsExpanded = !polygonsExpanded">{{
-              polygonsExpanded ? '▼' : '▶'
-            }}</span>
+            <span aria-hidden="true" class="collapse-icon">{{ polygonsExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -328,7 +429,13 @@
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
-            <div class="layer-item-info">
+            <div
+              class="layer-item-info"
+              role="button"
+              tabindex="0"
+              @keydown.enter="handlePolygonClick(polygon)"
+              @keydown.space.prevent="handlePolygonClick(polygon)"
+            >
               <div class="layer-item-name">{{ polygon.name }}</div>
 
               <div class="layer-item-type">
@@ -353,14 +460,19 @@
 
       <!-- Notes -->
       <div v-if="filteredNotes.length > 0">
-        <div class="layers-section-header" @click="notesExpanded = !notesExpanded">
+        <button
+          :aria-expanded="notesExpanded"
+          class="layers-section-header notes-section-toggle"
+          type="button"
+          @click="notesExpanded = !notesExpanded"
+        >
           <span class="layers-section-title"
             >{{ $t('layers.notes') }} ({{ filteredNotes.length
             }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.noteCount}` : '' }})</span
           >
 
           <span class="collapse-icon">{{ notesExpanded ? '▼' : '▶' }}</span>
-        </div>
+        </button>
 
         <div v-show="notesExpanded" class="layer-items">
           <div
@@ -466,6 +578,7 @@ import { useDrawingContext, useMapContext } from '@/composables/mapContext';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { routeBounds } from '@/services/routing';
 import { useLayersStore } from '@/stores/layers';
+import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
 
 const { t } = useI18n();
@@ -473,6 +586,16 @@ const { getDistance, calculateBearing, polygonArea } = useProjectGeometry();
 
 const layersStore = useLayersStore();
 const uiStore = useUIStore();
+const projectsStore = useProjectsStore();
+const elementCount = computed(
+  () =>
+    layersStore.circles.length +
+    layersStore.routes.length +
+    layersStore.lineSegments.length +
+    layersStore.points.length +
+    layersStore.polygons.length +
+    layersStore.notes.length
+);
 const drawing = useDrawingContext();
 const mapContainer = useMapContext();
 
@@ -1232,9 +1355,9 @@ onBeforeUnmount(cancelElementDrag);
 
 <style scoped>
 .layers-panel {
-  background: rgb(var(--v-theme-surface-bright));
+  background: rgb(var(--v-theme-surface));
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1242,28 +1365,78 @@ onBeforeUnmount(cancelElementDrag);
   overflow: hidden;
 }
 
-.layers-panel-title {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin: 0;
-  padding: 16px 16px 8px 16px;
-  font-weight: 600;
+.project-heading {
   flex-shrink: 0;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--gc-border);
 }
-
-.layers-empty {
-  padding: 30px 20px;
-  text-align: center;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+.project-heading h1 {
+  font-size: 23px;
+  line-height: 1.3;
+  letter-spacing: -0.6px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.project-heading p {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: var(--gc-muted);
+  line-height: 1.6;
+}
+.layers-heading {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 15px 18px 12px 22px;
+  gap: 8px;
+}
+.layers-panel-title {
   font-size: 14px;
+  font-weight: 600;
+  margin: 0;
 }
-
+.element-count {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--gc-subtle);
+  color: var(--gc-muted);
+}
+.layers-empty {
+  padding: 12px 24px 32px;
+  text-align: left;
+  color: var(--gc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-y: auto;
+}
+.empty-map {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+  margin: 8px auto 22px;
+}
+.layers-empty p {
+  margin-bottom: 22px;
+}
+.empty-guide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 8px;
+  color: var(--accent);
+  font-weight: 500;
+}
 .mb-3 {
   padding: 0 16px 8px 16px;
   flex-shrink: 0;
-  background: rgb(var(--v-theme-surface-bright));
+  background: rgb(var(--v-theme-surface));
   z-index: 1;
 }
 
@@ -1281,11 +1454,17 @@ onBeforeUnmount(cancelElementDrag);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 4px 4px 4px;
+  padding: 8px 10px;
+  background: var(--gc-subtle);
   user-select: none;
   transition: background 0.2s ease;
   border-radius: 4px;
   margin-bottom: 4px;
+}
+
+.notes-section-toggle {
+  width: 100%;
+  text-align: left;
 }
 
 .layers-section-header:hover {
@@ -1293,6 +1472,8 @@ onBeforeUnmount(cancelElementDrag);
 }
 
 .layers-section-title {
+  text-align: left;
+  min-height: 32px;
   font-size: 13px;
   font-weight: 500;
   color: rgba(var(--v-theme-on-surface), 0.9);
@@ -1325,7 +1506,7 @@ onBeforeUnmount(cancelElementDrag);
   position: relative;
   cursor: grab;
   user-select: none;
-  padding: 12px 0;
+  padding: 14px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1359,8 +1540,6 @@ onBeforeUnmount(cancelElementDrag);
 .layer-item:hover {
   background: rgba(var(--v-theme-on-surface), 0.05);
   border-radius: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
 }
 
 .layer-item-info {
@@ -1446,7 +1625,7 @@ onBeforeUnmount(cancelElementDrag);
   box-sizing: border-box;
   padding: 12px 8px;
   border-radius: 6px;
-  background: rgb(var(--v-theme-surface-bright));
+  background: rgb(var(--v-theme-surface));
   box-shadow:
     0 8px 24px rgb(0 0 0 / 25%),
     0 0 0 1px rgba(var(--v-theme-primary), 0.5);
@@ -1459,7 +1638,5 @@ onBeforeUnmount(cancelElementDrag);
   background: rgba(var(--v-theme-primary), 0.15) !important;
   box-shadow: inset 0 0 0 2px rgb(var(--v-theme-primary));
   border-radius: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
 }
 </style>

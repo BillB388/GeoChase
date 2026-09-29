@@ -988,5 +988,37 @@
     "tank": "Tank",
     "controls": "Game mode • Arrows / WASD / ZQSD: move • Space: shoot • Esc: exit",
     "exit": "Exit game"
+  },
+  "workspace": {
+    "construct": "Construct",
+    "advancedTools": "Advanced constructions",
+    "noProject": "Your next discovery",
+    "projectHint": "Create a project to keep your research.",
+    "discover": "Explore the tools",
+    "newProjectDescription": "A space for your markers, drawings and clues. Your progress is automatically saved on this device.",
+    "projectPlaceholder": "E.g. The secrets of Brocéliande",
+    "createProject": "Create project",
+    "closeSidebar": "Hide notebook",
+    "openSidebar": "Open notebook",
+    "pdf": "PDF",
+    "mapNavigation": "Map navigation",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "themes": "Themes",
+    "themeHint": "Choose the look of your workspace.",
+    "paletteNames": {
+      "classic": "Light",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "iris": "Iris",
+      "lagoon": "Lagoon",
+      "terracotta": "Terracotta",
+      "rose": "Rose",
+      "amber": "Amber",
+      "mint": "Mint",
+      "indigo": "Indigo",
+      "plum": "Plum",
+      "classicDark": "Dark"
+    }
   }
 }

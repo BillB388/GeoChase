@@ -4,6 +4,7 @@ import fr from '../locales/fr.json';
 
 // Get saved language from localStorage or default to null (will prompt user)
 const savedLocale = localStorage.getItem('gpxCircle_language');
+document.documentElement.lang = savedLocale || 'en';
 
 export const i18n = createI18n({
   legacy: false, // Use Composition API mode
@@ -24,6 +25,7 @@ export function isLanguageSet(): boolean {
 // Helper to set language
 export function setLanguage(locale: string): void {
   localStorage.setItem('gpxCircle_language', locale);
+  document.documentElement.lang = locale;
   i18n.global.locale.value = locale as 'en' | 'fr';
 }
 

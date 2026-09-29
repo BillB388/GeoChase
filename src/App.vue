@@ -6,9 +6,18 @@
 
 <script lang="ts" setup>
 import { onMounted, watch } from 'vue';
+import { useTheme } from 'vuetify';
 import { isLanguageSet } from '@/plugins/i18n';
+import { applyWorkspaceTheme } from '@/services/themes';
 import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
+
+const theme = useTheme();
+watch(
+  () => theme.name.value,
+  (name) => applyWorkspaceTheme(name),
+  { immediate: true }
+);
 
 const uiStore = useUIStore();
 const projectsStore = useProjectsStore();

@@ -1,0 +1,240 @@
+/* GeoChase cartographic workspace: a calm frame around the map. */
+:root {
+  color-scheme: light;
+  --gc-toolbar: #f8fafb;
+  --gc-hover: #e5f1f0;
+  --gc-subtle: #edf3f4;
+  --gc-scrollbar: #b2c4cc;
+  --gc-on-accent: #ffffff;
+  --gc-ink: #203745;
+  --gc-muted: #5c7180;
+  --gc-border: #dce5e8;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-border: #dce5e8;
+  --text: #203745;
+  --muted: #5c7180;
+  --accent: #176b70;
+  --accent-600: #105257;
+  --accent-700: #0d4448;
+  --success: #247052;
+  --danger: #b53843;
+  --shadow: 0 12px 40px #20374520;
+  font-synthesis: none;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --gc-ink: #e2edf2;
+  --gc-muted: #a5bbc7;
+  --gc-border: #3a515e;
+  --gc-toolbar: #1d2e38;
+  --gc-hover: #29484d;
+  --gc-subtle: #253a45;
+  --gc-scrollbar: #526d7b;
+  --gc-on-accent: #102e31;
+  --bg: #192832;
+  --panel: #192832;
+  --panel-border: #3a515e;
+  --text: #e2edf2;
+  --muted: #a5bbc7;
+  --accent: #80ccc8;
+  --accent-600: #59b4b0;
+  --accent-700: #59b4b0;
+  --success: #83d4ab;
+  --danger: #ff919b;
+  --shadow: 0 12px 40px #00000050;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  color: var(--gc-ink);
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gc-scrollbar) transparent;
+}
+button,
+a,
+input,
+[tabindex] {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+/* Form fields already expose focus through their rounded Vuetify border.
+   Keep the global keyboard outline for buttons and other controls only. */
+.v-field input:focus-visible,
+.v-field textarea:focus-visible {
+  outline: none;
+}
+.v-field {
+  border-radius: 10px;
+}
+.v-field--variant-outlined .v-field__outline {
+  --v-field-border-opacity: 0.24;
+}
+.v-field--focused .v-field__outline {
+  --v-field-border-opacity: 1;
+}
+/* Vuetify hides placeholders until a floating label leaves the input area.
+   Keep this override scoped to active or unlabelled fields: an unlayered
+   opacity rule otherwise overrides Vuetify's layered visibility rules. */
+.v-field--active input::placeholder,
+.v-field--no-label input::placeholder,
+.v-field--active textarea::placeholder,
+.v-field--no-label textarea::placeholder {
+  opacity: 1;
+  color: var(--gc-muted);
+}
+.v-menu > .v-overlay__content {
+  border-radius: 12px !important;
+  border: 1px solid var(--gc-border);
+  box-shadow: var(--shadow) !important;
+}
+.v-menu .v-list {
+  padding: 6px;
+}
+.v-menu .v-list-item {
+  border-radius: 7px;
+  min-height: 44px;
+}
+.v-menu .v-list-item-title {
+  font-size: 14px;
+}
+.v-menu .v-list-item__prepend > .v-icon {
+  margin-inline-end: 12px;
+}
+.floating-dialog > .v-overlay__content > .v-card {
+  border: 1px solid var(--gc-border);
+  border-radius: 18px;
+  box-shadow:
+    0 20px 80px #183a4538,
+    0 2px 8px #183a4512;
+}
+.floating-dialog .v-card-title {
+  padding: 22px 24px 18px;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  white-space: normal;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--gc-border);
+}
+.floating-dialog .v-card-text {
+  padding: 24px;
+}
+.floating-dialog .v-card-actions {
+  padding: 14px 24px;
+  border-top: 1px solid var(--gc-border);
+  gap: 8px;
+  background: var(--gc-toolbar);
+}
+.floating-dialog .v-card-actions .v-btn {
+  min-height: 40px;
+  padding-inline: 18px;
+}
+.floating-dialog .v-card-actions .v-btn.text-primary {
+  background: var(--accent);
+  color: var(--gc-on-accent) !important;
+}
+.floating-dialog .v-card-actions .v-btn.text-primary:disabled {
+  background: var(--gc-subtle);
+  color: var(--gc-muted) !important;
+}
+.v-navigation-drawer__content {
+  overscroll-behavior: contain;
+}
+[data-testid='layers-sidebar'] {
+  border-right: 1px solid var(--gc-border);
+}
+[data-testid='layers-sidebar'] .v-navigation-drawer__content {
+  display: flex;
+  flex-direction: column;
+}
+.ol-control {
+  background: var(--bg);
+  border: 1px solid var(--gc-border);
+  border-radius: 10px;
+  padding: 3px;
+  box-shadow: 0 3px 14px #20374518;
+}
+.ol-control button {
+  background: var(--bg);
+  color: var(--gc-ink);
+  border-radius: 7px;
+  min-width: 36px;
+  min-height: 36px;
+}
+.ol-control button:hover {
+  background: var(--gc-hover);
+  color: var(--accent);
+}
+.ol-attribution {
+  font-size: 10px;
+  max-width: calc(100% - 72px);
+}
+.ol-scale-line {
+  background: var(--bg);
+  border-radius: 5px;
+}
+.ol-scale-line-inner {
+  border-color: var(--gc-ink);
+  color: var(--gc-ink);
+}
+@media (max-width: 599px) {
+  .floating-dialog .v-card-title {
+    padding: 18px;
+    font-size: 19px;
+  }
+  .floating-dialog .v-card-text {
+    padding: 18px;
+  }
+  .floating-dialog .v-card-actions {
+    padding: 12px 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .header-actions .v-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .layer-item-actions .v-btn,
+  .layers-section-actions .v-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.empty-guide,
+button.layers-section-title,
+.notes-section-toggle {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.empty-guide,
+button.layers-section-title {
+  background: transparent;
+}
+.topbar .v-navigation-drawer__content {
+  overflow: hidden;
+}

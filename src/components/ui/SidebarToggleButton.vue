@@ -1,6 +1,6 @@
 <template>
   <v-btn
-    :aria-label="modelValue ? 'Close sidebar' : 'Open sidebar'"
+    :aria-label="modelValue ? $t('workspace.closeSidebar') : $t('workspace.openSidebar')"
     :aria-pressed="modelValue"
     class="sidebar-toggle"
     color="surface-bright"
