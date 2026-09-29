@@ -28,7 +28,7 @@ async function mapPointIds(page: Page): Promise<string[]> {
   });
 }
 
-test('JSON import replaces both saved layers and rendered map features', async ({
+test('JSON import opens a separate project and preserves the previous project', async ({
   page,
   blankProject,
 }) => {
@@ -40,15 +40,53 @@ test('JSON import replaces both saved layers and rendered map features', async (
   await expect.poll(() => mapPointIds(page)).toEqual(['imported']);
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        JSON.parse(localStorage.getItem('geochase_projects')!)[0].data.points.map(
-          (point: { id: string }) => point.id
-        )
-      )
+      page.evaluate(() => {
+        const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
+        const active = projects.find(
+          (project: { id: string }) =>
+            project.id === localStorage.getItem('geochase_activeProjectId')
+        );
+        return active.data.points.map((point: { id: string }) => point.id);
+      })
     )
     .toEqual(['imported']);
+  const importedId = await page.evaluate(() => localStorage.getItem('geochase_activeProjectId'));
+  expect(importedId).not.toBe(blankProject.id);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('geochase_projects')!));
+  expect(saved).toHaveLength(2);
+  expect(
+    saved.find((project: { id: string }) => project.id === blankProject.id).data.points
+  ).toEqual(blankProject.data.points);
+  expect(saved.find((project: { id: string }) => project.id === importedId).name).toBe('project');
   await page.reload();
   await expect.poll(() => mapPointIds(page)).toEqual(['imported']);
+  await page.getByTestId('save-menu-btn').click();
+  await page.getByTestId('load-project-btn').click();
+  await page.getByTestId(`load-project-${blankProject.id}`).click();
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+  // Reimporting an export with the current ID must still create a separate project.
+  await importJSON(page, {
+    ...blankProject,
+    name: 'Imported hunt',
+    projection: 'geodesic',
+    data: { points: [{ id: 'named', name: 'Named point', coordinates: { lat: 48, lon: 2 } }] },
+  });
+  await expect.poll(() => mapPointIds(page)).toEqual(['named']);
+  const projects = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('geochase_projects')!)
+  );
+  expect(projects).toHaveLength(3);
+  const activeId = await page.evaluate(() => localStorage.getItem('geochase_activeProjectId'));
+  expect(activeId).not.toBe(blankProject.id);
+  expect(projects.find((project: { id: string }) => project.id === activeId)).toMatchObject({
+    name: 'Imported hunt',
+    projection: 'geodesic',
+  });
+  expect(
+    projects.find((project: { id: string }) => project.id === blankProject.id).data.points
+  ).toEqual(blankProject.data.points);
 });
 
 for (const { name, data } of [
@@ -99,7 +137,7 @@ for (const { name, data } of [
     await page.waitForTimeout(650);
     expect(
       await page.evaluate(() => JSON.parse(localStorage.getItem('geochase_projects')!)[0].data)
-    ).toEqual(original);
+    ).toEqual({ routes: [], ...original });
     await expect.poll(() => mapPointIds(page)).toEqual(ids);
     await page.reload();
     await expect.poll(() => mapPointIds(page)).toEqual(ids);
@@ -108,3 +146,64 @@ for (const { name, data } of [
     );
   });
 }
+
+test('requires a name for orphaned work and preserves it after reloading', async ({
+  page,
+  blankProject,
+}) => {
+  await expect.poll(() => mapPointIds(page)).toHaveLength(blankProject.data.points.length);
+  // Recreate an existing session from before projects became mandatory, using
+  // the actual application's stores and its already-rendered drawings.
+  await page.evaluate(() => {
+    const app = (document.querySelector('#app') as any).__vue_app__;
+    app.config.globalProperties.$pinia._s.get('projects').setActiveProject(null);
+  });
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText('Save your work');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+  // The pending recovery itself must survive a refresh before it is named.
+  await page.reload();
+  await expect(dialog).toContainText('Save your work');
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+  await page.getByTestId('project-name-input').locator('input').fill('Recovered exploration');
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'geochase_projects') {
+        Storage.prototype.setItem = original;
+        throw new DOMException('Storage full', 'QuotaExceededError');
+      }
+      return original.call(localStorage, key, value);
+    };
+  });
+  await page.getByTestId('create-project-btn').click();
+  await expect(dialog).toBeVisible();
+  await expect(page.getByText('Failed to save project', { exact: true })).toBeVisible();
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+  await page.getByTestId('create-project-btn').click();
+  await expect(dialog).not.toBeVisible();
+  const saved = await page.evaluate(() => {
+    const id = localStorage.getItem('geochase_activeProjectId');
+    return JSON.parse(localStorage.getItem('geochase_projects')!).find(
+      (project: { id: string }) => project.id === id
+    );
+  });
+  expect(saved.name).toBe('Recovered exploration');
+  expect(saved.data.points).toEqual(blankProject.data.points);
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+  await page.reload();
+  await expect(dialog).not.toBeVisible();
+  await expect
+    .poll(() => mapPointIds(page))
+    .toEqual(blankProject.data.points.map((point) => point.id));
+});

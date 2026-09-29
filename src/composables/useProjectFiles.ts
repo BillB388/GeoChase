@@ -67,11 +67,18 @@ export function useProjectFiles() {
         if (!file) return;
         const projectId = projects.activeProjectId;
         try {
-          const { data, projection } = parseProjectJSON(await file.text());
+          const json = await file.text();
+          const { data, projection } = parseProjectJSON(json);
+          const imported = JSON.parse(json);
+          const name =
+            typeof imported.name === 'string' && imported.name.trim()
+              ? imported.name.trim()
+              : file.name.replace(/\.json$/i, '');
           if (projectId !== projects.activeProjectId)
             throw new Error('The active project changed during import');
+          projects.autoSaveActiveProject(layers.exportLayers());
+          projects.createAndSwitchProject(name, projection, data);
           noteTooltips.value?.clearAllTooltips();
-          projects.autoSaveActiveProject(data, projection);
           layers.loadLayers(data);
           drawing.redrawAllElements();
           noteTooltips.value?.updateNoteTooltips();

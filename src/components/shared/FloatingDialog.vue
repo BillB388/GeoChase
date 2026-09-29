@@ -2,7 +2,7 @@
   <v-dialog
     v-bind="$attrs"
     ref="dialog"
-    aria-modal="false"
+    :aria-modal="blocking ? 'true' : 'false'"
     class="floating-dialog"
     :content-props="{
       style: { translate: `${offset.x}px ${offset.y}px` },
@@ -11,8 +11,8 @@
     :model-value="modelValue"
     no-click-animation
     persistent
-    :retain-focus="false"
-    :scrim="false"
+    :retain-focus="blocking"
+    :scrim="blocking"
     scroll-strategy="none"
     :transition="false"
     @after-enter="observeContent"
@@ -27,7 +27,7 @@ import type { VDialog } from 'vuetify/components';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
-const props = defineProps<{ modelValue: boolean; persistent?: boolean }>();
+const props = defineProps<{ modelValue: boolean; persistent?: boolean; blocking?: boolean }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 const dialog = ref<InstanceType<typeof VDialog>>();
 const offset = ref({ x: 0, y: 0 });

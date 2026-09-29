@@ -57,7 +57,7 @@ for (const mode of ['light', 'dark']) {
     await name.fill('');
     await name.press('Tab');
     await expectNoOverlappingPlaceholder(page);
-    await page.getByTestId('cancel-project-btn').click();
+    await page.keyboard.press('Escape');
     for (const tool of ['draw-circle-btn', 'draw-point-btn', 'draw-line-btn']) {
       await page.getByTestId(tool).click();
       await expectNoOverlappingPlaceholder(page);

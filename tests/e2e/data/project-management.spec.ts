@@ -61,26 +61,14 @@ test.describe('Project Management', () => {
       await expect(page.locator('[data-testid="project-name-input"]')).toBeVisible();
     });
 
-    test('should have cancel and create buttons', async ({ page, blankProject }) => {
+    test('should have only a create button', async ({ page, blankProject }) => {
       await page.locator('[data-testid="save-menu-btn"]').click();
       await page.waitForTimeout(300);
       await page.locator('[data-testid="new-project-btn"]').click();
       await page.waitForTimeout(300);
 
-      await expect(page.locator('[data-testid="cancel-project-btn"]')).toBeVisible();
+      await expect(page.locator('[data-testid="cancel-project-btn"]')).toHaveCount(0);
       await expect(page.locator('[data-testid="create-project-btn"]')).toBeVisible();
-    });
-
-    test('should close modal with cancel button', async ({ page, blankProject }) => {
-      await page.locator('[data-testid="save-menu-btn"]').click();
-      await page.waitForTimeout(300);
-      await page.locator('[data-testid="new-project-btn"]').click();
-      await page.waitForTimeout(300);
-
-      await page.locator('[data-testid="cancel-project-btn"]').click();
-      await page.waitForTimeout(300);
-
-      await expect(page.locator('.v-dialog')).not.toBeVisible();
     });
 
     test('should close modal with escape key', async ({ page, blankProject }) => {

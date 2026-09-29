@@ -1019,6 +1019,10 @@
       "indigo": "Indigo",
       "plum": "Plum",
       "classicDark": "Dark"
-    }
+    },
+    "regularizeProjectTitle": "Save your work",
+    "regularizeProjectDescription": "Your elements do not belong to a project. Name your project to keep them and continue.",
+    "recoverySelection": "Work to recover",
+    "recoverySource": "Saved work {number}"
   }
 }

@@ -86,6 +86,16 @@ test('changes the whole project, exports the setting and follows the arc in GPX'
   blankProject,
 }) => {
   await importProject(page, { name: 'Legacy', data });
+  await expect.poll(async () => (await savedProject(page)).name).toBe('Legacy');
+  expect((await savedProject(page)).id).not.toBe(blankProject.id);
+  const previous = await page.evaluate(
+    (id) =>
+      JSON.parse(localStorage.getItem('geochase_projects')!).find(
+        (project: ProjectData) => project.id === id
+      ),
+    blankProject.id
+  );
+  expect(previous.data.points).toEqual(blankProject.data.points);
   await expect.poll(async () => (await savedProject(page)).data.lineSegments.length).toBe(1);
   await openSettings(page);
   await selectProjection(page, 'geodesic');
@@ -142,4 +152,129 @@ test('explains the project-wide setting in the tutorial', async ({ page, blankPr
   await page.getByRole('tab', { name: 'Projects', exact: true }).click();
   await expect(page.getByTestId('projection-tutorial')).toContainText('Project Settings');
   await expect(page.getByTestId('projection-tutorial')).toContainText('JSON');
+});
+
+test('requires a project before using the workspace', async ({ page, cleanState }) => {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+  await expect(page.getByTestId('cancel-project-btn')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  // A real click outside the dialog must not reach the drawing toolbar.
+  const point = await page.getByTestId('draw-point-btn').boundingBox();
+  await page.mouse.click(point!.x + point!.width / 2, point!.y + point!.height / 2);
+  await expect(page.getByTestId('project-name-input')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await expect(page.getByTestId('create-project-btn')).toBeDisabled();
+  await page.getByTestId('project-name-input').locator('input').fill('Required project');
+  await page.getByTestId('create-project-btn').click();
+  await expect(dialog).not.toBeVisible();
+  expect((await savedProject(page)).name).toBe('Required project');
+  await page.getByTestId('draw-point-btn').click();
+  await expect(dialog).toBeVisible();
+  await expect(page.getByTestId('project-name-input')).not.toBeVisible();
+});
+
+test('first visit requires language selection and then a project', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+  await page.locator('.language-card').first().click();
+  await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+  await expect(page.getByTestId('project-name-input')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('project-name-input')).toBeVisible();
+});
+
+for (const storageKey of ['geochase_projects', 'geosketch_projects']) {
+  test(`recovers ${storageKey} when the active project is missing`, async ({ page }) => {
+    const source = JSON.stringify([{ name: 'Old exploration', projection: 'geodesic', data }]);
+    await page.addInitScript(
+      ({ storageKey, source }) => {
+        if (sessionStorage.getItem('recovery-fixture')) return;
+        sessionStorage.setItem('recovery-fixture', '1');
+        localStorage.setItem('gpxCircle_language', 'en');
+        localStorage.setItem(storageKey, source);
+        localStorage.setItem('geochase_activeProjectId', 'missing-project');
+      },
+      { storageKey, source }
+    );
+    await page.goto('/');
+    await expect(page.getByRole('dialog')).toContainText('Save your work');
+    await expect(page.getByTestId('project-name-input').locator('input')).toHaveValue(
+      'Old exploration'
+    );
+    await page.getByTestId('project-name-input').locator('input').fill('Recovered project');
+    await page.getByTestId('create-project-btn').click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect((await savedProject(page)).name).toBe('Recovered project');
+    expect((await savedProject(page)).projection).toBe('geodesic');
+    expect((await savedProject(page)).data.points.map((point) => point.id)).toEqual([
+      'west',
+      'east',
+    ]);
+    const retained = await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key)!),
+      storageKey
+    );
+    expect(retained[0]).toEqual(JSON.parse(source)[0]);
+    await page.reload();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect((await savedProject(page)).data.points.map((point) => point.id)).toEqual([
+      'west',
+      'east',
+    ]);
+  });
+}
+
+test('asks which saved work to recover when several projects have no active link', async ({
+  page,
+}) => {
+  await page.addInitScript((data) => {
+    localStorage.setItem('gpxCircle_language', 'en');
+    localStorage.setItem(
+      'geochase_projects',
+      JSON.stringify([
+        { name: 'First exploration', data },
+        { name: 'Second exploration', data: { ...data, points: [] } },
+      ])
+    );
+  }, data);
+  await page.goto('/');
+  await expect(page.getByTestId('create-project-btn')).toBeDisabled();
+  await page.getByTestId('recovery-source-select').locator('.v-select__menu-icon').click();
+  await page.getByRole('option', { name: 'First exploration', exact: true }).click();
+  await page.getByTestId('project-name-input').locator('input').fill('Regularized exploration');
+  await page.getByTestId('create-project-btn').click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect((await savedProject(page)).data.points).toHaveLength(2);
+  const projects = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('geochase_projects')!)
+  );
+  expect(projects).toHaveLength(3);
+  expect(projects[0].name).toBe('First exploration');
+  expect(projects[1].name).toBe('Second exploration');
+});
+
+test('recovers historical standalone coordinates as project points', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('gpxCircle_language', 'en');
+    localStorage.setItem(
+      'geosketch_savedCoordinates',
+      JSON.stringify([{ id: 'old-coordinate', name: 'Old clue', lat: 48, lon: 2 }])
+    );
+  });
+  await page.goto('/');
+  await expect(page.getByRole('dialog')).toContainText('Save your work');
+  await page.getByTestId('project-name-input').locator('input').fill('Recovered coordinates');
+  await page.getByTestId('create-project-btn').click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect((await savedProject(page)).data.points[0]).toMatchObject({
+    name: 'Old clue',
+    coordinates: { lat: 48, lon: 2 },
+  });
+  expect(
+    await page.evaluate(() => localStorage.getItem('geosketch_savedCoordinates'))
+  ).not.toBeNull();
 });

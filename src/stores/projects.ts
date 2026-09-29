@@ -75,11 +75,15 @@ export const useProjectsStore = defineStore('projects', () => {
     localStorage.setItem('geochase_activeProjectId', projectId || '');
   }
 
-  function createAndSwitchProject(name: string, projection: ProjectProjection = 'mercator'): void {
-    // Create new project with empty state and get the returned project
+  function createAndSwitchProject(
+    name: string,
+    projection: ProjectProjection = 'mercator',
+    data?: ProjectLayerData
+  ): void {
+    // Always generate a fresh identity, including when importing an existing export.
     const newProject = storage.saveProject(
       name,
-      {
+      data ?? {
         circles: [],
         lineSegments: [],
         points: [],

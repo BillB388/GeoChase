@@ -11,7 +11,7 @@
   <AngleLineModal v-if="uiStore.isModalOpen('angleLineModal')" />
   <PolygonModal v-if="uiStore.isModalOpen('polygonModal')" />
   <AddPointOnSegmentModal v-if="uiStore.isModalOpen('addPointOnSegmentModal')" />
-  <NewProjectModal v-if="uiStore.isModalOpen('newProjectModal')" />
+  <NewProjectModal />
   <ProjectSettingsModal v-if="uiStore.isModalOpen('projectSettingsModal')" />
   <LoadProjectModal v-if="uiStore.isModalOpen('loadProjectModal')" />
   <BearingsModal v-if="uiStore.bearingsPanel.isOpen" />

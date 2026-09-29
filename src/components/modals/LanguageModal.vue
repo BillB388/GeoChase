@@ -1,6 +1,7 @@
 <template>
   <FloatingDialog
     v-model="isOpen"
+    :blocking="!isLanguageSet"
     max-width="500px"
     :persistent="!isLanguageSet"
     @keydown.esc="isLanguageSet ? closeModal() : undefined"
