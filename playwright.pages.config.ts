@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 import config from './playwright.config';
 
 // Exercise the exact production artifact uploaded to GitHub Pages.
-export default defineConfig(config, {
+export default defineConfig({
+  ...config,
   testMatch: [
     '**/deployment.spec.ts',
     '**/data/project-projection.spec.ts',
@@ -15,6 +16,7 @@ export default defineConfig(config, {
   testIgnore: [],
   workers: 2,
   use: {
+    ...config.use,
     baseURL: 'http://127.0.0.1:4173/GeoChase/',
   },
   webServer: {

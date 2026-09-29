@@ -90,3 +90,25 @@ test('keyboard users can open advanced tools and toggle element groups', async (
   await page.keyboard.press('Space');
   await expect(points).toHaveAttribute('aria-expanded', 'true');
 });
+
+test('group arrows collapse and expand without changing visibility', async ({
+  page,
+  blankProject,
+}) => {
+  const group = page.locator('.layers-section-header').filter({ hasText: 'Points' });
+  const toggle = group.locator('.layers-section-title');
+  const arrow = group.locator('.collapse-icon');
+  const visibility = group.locator('.layers-section-actions button');
+  const items = page.locator('.layer-item').filter({ hasText: 'Paris' });
+  const initialVisibility = await visibility.getAttribute('title');
+  await arrow.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(items).not.toBeVisible();
+  await expect(visibility).toHaveAttribute('title', initialVisibility!);
+  await arrow.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(items).toBeVisible();
+  await visibility.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(visibility).not.toHaveAttribute('title', initialVisibility!);
+});

@@ -111,6 +111,8 @@
                 total: searchQuery ? layersStore.circleCount : null,
               })
             }}
+
+            <span aria-hidden="true" class="collapse-icon">{{ circlesExpanded ? '▼' : '▶' }}</span>
           </button>
 
           <div class="layers-section-actions">
@@ -122,8 +124,6 @@
               variant="text"
               @click.stop="toggleAllElementsOfType('circle')"
             />
-
-            <span aria-hidden="true" class="collapse-icon">{{ circlesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -181,6 +181,8 @@
           >
             {{ $t('layers.lines') }} ({{ filteredLines.length
             }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.lineSegmentCount}` : '' }})
+
+            <span aria-hidden="true" class="collapse-icon">{{ linesExpanded ? '▼' : '▶' }}</span>
           </button>
 
           <div class="layers-section-actions">
@@ -192,8 +194,6 @@
               variant="text"
               @click.stop="toggleAllElementsOfType('lineSegment')"
             />
-
-            <span aria-hidden="true" class="collapse-icon">{{ linesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -253,6 +253,8 @@
           >
             {{ $t('route.plural') }} ({{ filteredRoutes.length
             }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.routeCount}` : '' }})
+
+            <span aria-hidden="true" class="collapse-icon">{{ routesExpanded ? '▼' : '▶' }}</span>
           </button>
 
           <div class="layers-section-actions">
@@ -264,8 +266,6 @@
               variant="text"
               @click.stop="toggleAllElementsOfType('route')"
             />
-
-            <span aria-hidden="true" class="collapse-icon">{{ routesExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -324,6 +324,8 @@
           >
             {{ $t('layers.points') }} ({{ filteredPoints.length
             }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.pointCount}` : '' }})
+
+            <span aria-hidden="true" class="collapse-icon">{{ pointsExpanded ? '▼' : '▶' }}</span>
           </button>
 
           <div class="layers-section-actions">
@@ -335,8 +337,6 @@
               variant="text"
               @click.stop="toggleAllElementsOfType('point')"
             />
-
-            <span aria-hidden="true" class="collapse-icon">{{ pointsExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -394,6 +394,8 @@
           >
             {{ $t('layers.polygons') }} ({{ filteredPolygons.length
             }}{{ searchQuery ? ` ${$t('common.of')} ${layersStore.polygonCount}` : '' }})
+
+            <span aria-hidden="true" class="collapse-icon">{{ polygonsExpanded ? '▼' : '▶' }}</span>
           </button>
 
           <div class="layers-section-actions">
@@ -405,8 +407,6 @@
               variant="text"
               @click.stop="toggleAllElementsOfType('polygon')"
             />
-
-            <span aria-hidden="true" class="collapse-icon">{{ polygonsExpanded ? '▼' : '▶' }}</span>
           </div>
         </div>
 
@@ -1472,6 +1472,12 @@ onBeforeUnmount(cancelElementDrag);
 }
 
 .layers-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: 0;
   text-align: left;
   min-height: 32px;
   font-size: 13px;

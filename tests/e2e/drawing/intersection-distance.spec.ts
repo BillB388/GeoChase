@@ -24,7 +24,8 @@ test.beforeEach(async ({ page, blankProject }) => {
 });
 
 async function openLineForm(page: Page, distance: string) {
-  await page.getByRole('button', { name: 'Intersection', exact: true }).click();
+  await page.getByTestId('advanced-tools-btn').click();
+  await page.getByText('Intersection', { exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill(lineName);
   await dialog.locator('.v-select').first().locator('.v-select__menu-icon').click();

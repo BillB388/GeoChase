@@ -108,8 +108,9 @@ test('changes the whole project, exports the setting and follows the arc in GPX'
     data.points.map((point) => point.coordinates)
   );
 
+  await page.getByTestId('save-menu-btn').click();
   const gpxDownload = page.waitForEvent('download');
-  await page.getByRole('button', { name: /Export Project GPX/i }).click();
+  await page.getByTestId('export-gpx-btn').click();
   const gpx = await readFile((await (await gpxDownload).path())!, 'utf8');
   const latitudes = [...gpx.matchAll(/trkpt lat="([\d.-]+)"/g)].map((match) => Number(match[1]));
   expect(Math.max(...latitudes)).toBeGreaterThan(73);

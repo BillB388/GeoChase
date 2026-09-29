@@ -152,7 +152,8 @@ for (const projection of ['mercator', 'geodesic'] as const) {
     const crossing = (await savedPoints(page)).find((point) => point.name === pointName)!;
     await page.reload();
 
-    await page.getByRole('button', { name: 'Line at Angle', exact: true }).click();
+    await page.getByTestId('advanced-tools-btn').click();
+    await page.getByText('Line at Angle', { exact: true }).click();
     await dialog.locator('.v-select').first().locator('.v-select__menu-icon').click();
     const pointOptions = page.getByRole('listbox', { name: 'Start Point', exact: true });
     await expect(pointOptions.getByRole('option')).toHaveCount(4);
@@ -194,7 +195,8 @@ for (const projection of ['mercator', 'geodesic'] as const) {
     expect((await savedLine())?.angleFrom).toEqual({ lineId: 'target', degrees: 90 });
 
     // Creating another line at this point must not hide either original reference.
-    await page.getByRole('button', { name: 'Line at Angle', exact: true }).click();
+    await page.getByTestId('advanced-tools-btn').click();
+    await page.getByText('Line at Angle', { exact: true }).click();
     await dialog.locator('.v-select').first().locator('.v-select__menu-icon').click();
     await pointOptions.getByRole('option', { name: pointName, exact: true }).click();
     await dialog.locator('.v-select').last().locator('.v-select__menu-icon').click();
@@ -265,10 +267,14 @@ test('does not interfere with the ruler or use hidden lines', async ({ page, bla
   await expect(page.locator('.ruler-measurement')).toHaveCount(1);
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open sidebar', exact: true }).click();
-  await page.locator('.layer-item').filter({ hasText: 'West–East' }).getByRole('button').click();
+  await page.getByRole('button', { name: 'Open notebook', exact: true }).click();
+  await page
+    .locator('.layer-item')
+    .filter({ hasText: 'West–East' })
+    .locator('.layer-item-actions button')
+    .click();
   await page.getByText('Hide', { exact: true }).click();
-  await page.getByRole('button', { name: 'Close sidebar', exact: true }).click();
+  await page.getByRole('button', { name: 'Hide notebook', exact: true }).click();
   await expect
     .poll(async () => {
       const box = await page.getByTestId('layers-sidebar').boundingBox();

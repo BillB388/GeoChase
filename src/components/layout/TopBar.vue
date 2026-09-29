@@ -66,6 +66,7 @@
                 <v-divider />
 
                 <v-list-item
+                  data-testid="export-gpx-btn"
                   prepend-icon="mdi-download"
                   :title="`${$t('project.exportProject')} GPX`"
                   @click="handleExportGPX"
