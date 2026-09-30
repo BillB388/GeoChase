@@ -14,19 +14,45 @@ import {
 import * as legacy from './geometry';
 
 /** Shared geometry policy for drawing, measurements, navigation, search and export. */
-export function createProjectGeometry(getProjection: () => ProjectProjection) {
-  const isGeodesic = () => getProjection() === 'geodesic';
+export function createProjectGeometry(
+  getProjection: () => ProjectProjection,
+  getImageMetersPerUnit: () => number | null = () => null
+) {
+  const isImage = () => getImageMetersPerUnit() !== null;
+  const isGeodesic = () => !isImage() && getProjection() === 'geodesic';
   function getDistance(from: number[], to: number[]): number {
+    const scale = getImageMetersPerUnit();
+    if (scale !== null) {
+      const a = fromLonLat(from);
+      const b = fromLonLat(to);
+      return Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!) * scale;
+    }
     return isGeodesic()
       ? geodesicInverse({ lon: from[0]!, lat: from[1]! }, { lon: to[0]!, lat: to[1]! }).distance
       : sphericalDistance(from, to);
   }
   function destinationPoint(lat: number, lon: number, distanceKm: number, bearing: number): LatLon {
+    const scale = getImageMetersPerUnit();
+    if (scale !== null) {
+      const center = fromLonLat([lon, lat]);
+      const angle = (bearing * Math.PI) / 180;
+      const length = (distanceKm * 1000) / scale;
+      const end = toLonLat([
+        center[0]! + Math.sin(angle) * length,
+        center[1]! + Math.cos(angle) * length,
+      ]);
+      return { lon: end[0]!, lat: end[1]! };
+    }
     return isGeodesic()
       ? geodesicDestination({ lat, lon }, bearing, distanceKm * 1000)
       : cartesGouvDestination({ lat, lon }, distanceKm, bearing);
   }
   function calculateBearing(lat: number, lon: number, endLat: number, endLon: number): number {
+    if (isImage()) {
+      const a = fromLonLat([lon, lat]);
+      const b = fromLonLat([endLon, endLat]);
+      return ((Math.atan2(b[0]! - a[0]!, b[1]! - a[1]!) * 180) / Math.PI + 360) % 360;
+    }
     return isGeodesic()
       ? geodesicInverse({ lat, lon }, { lat: endLat, lon: endLon }).initialBearing
       : cartesGouvBearing({ lat, lon }, { lat: endLat, lon: endLon });
@@ -38,6 +64,16 @@ export function createProjectGeometry(getProjection: () => ProjectProjection) {
     throughLon: number,
     extensionKm: number
   ): LatLon {
+    if (isImage()) {
+      if (!Number.isFinite(extensionKm) || extensionKm < 0)
+        throw new RangeError('Invalid extension');
+      return destinationPoint(
+        throughLat,
+        throughLon,
+        extensionKm,
+        calculateBearing(lat, lon, throughLat, throughLon)
+      );
+    }
     if (!isGeodesic())
       return legacy.endpointFromIntersection(lat, lon, throughLat, throughLon, extensionKm);
     if (!Number.isFinite(extensionKm) || extensionKm < 0) throw new RangeError('Invalid extension');
@@ -54,6 +90,10 @@ export function createProjectGeometry(getProjection: () => ProjectProjection) {
     endLon: number,
     segments = 120
   ): LatLon[] {
+    if (isImage())
+      return Array.from({ length: segments + 1 }, (_, i) =>
+        interpolateLine({ lat, lon }, { lat: endLat, lon: endLon }, i / segments)
+      );
     return isGeodesic()
       ? densifyGeodesic({ lat, lon }, { lat: endLat, lon: endLon }, segments + 1)
       : legacy.generateLinePointsLinear(lat, lon, endLat, endLon, segments);
@@ -166,6 +206,7 @@ export function createProjectGeometry(getProjection: () => ProjectProjection) {
   // A circle radius is a ground distance, independent of the azimuth convention
   // used to construct straight Mercator lines.
   function circlePoint(lat: number, lon: number, radiusKm: number, bearing: number): LatLon {
+    if (isImage()) return destinationPoint(lat, lon, radiusKm, bearing);
     if (isGeodesic()) return geodesicDestination({ lat, lon }, bearing, radiusKm * 1000);
     const coordinates = offset([lon, lat], radiusKm * 1000, (bearing * Math.PI) / 180);
     return { lon: coordinates[0]!, lat: coordinates[1]! };
@@ -180,6 +221,11 @@ export function createProjectGeometry(getProjection: () => ProjectProjection) {
   /** Ground area in square meters, using the project's measurement model. */
   function polygonArea(points: LatLon[]): number {
     if (points.length < 3) return 0;
+    const scale = getImageMetersPerUnit();
+    if (scale !== null) {
+      const ring = [...points, points[0]!].map((p) => fromLonLat([p.lon, p.lat]));
+      return new Polygon([ring]).getArea() * scale * scale;
+    }
     if (isGeodesic()) return geodesicPolygonArea(points);
     const ring = [...points, points[0]!].map((point) => [point.lon, point.lat]);
     return sphericalArea(new Polygon([ring]), { projection: 'EPSG:4326' });
@@ -196,6 +242,7 @@ export function createProjectGeometry(getProjection: () => ProjectProjection) {
     return ring.map((p) => fromLonLat([p.lon, p.lat]));
   }
   return {
+    isImage,
     isGeodesic,
     getDistance,
     destinationPoint,

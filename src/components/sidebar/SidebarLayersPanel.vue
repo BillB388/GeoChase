@@ -154,7 +154,10 @@
               @keydown.space.prevent="handleGoTo('circle', circle)"
             >
               <div class="layer-item-name">{{ circle.name }}</div>
-              <div class="layer-item-type">{{ circle.radius }}km radius</div>
+
+              <div class="layer-item-type">
+                {{ $t('common.radius') }} : {{ formatDistance(circle.radius) }}
+              </div>
             </div>
 
             <div class="layer-item-actions">
@@ -575,12 +578,14 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import LayerContextMenu from '@/components/layers/LayerContextMenu.vue';
 import { useDrawingContext, useMapContext } from '@/composables/mapContext';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { routeBounds } from '@/services/routing';
 import { useLayersStore } from '@/stores/layers';
 import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
 
+const { formatDistance } = useDistanceDisplay();
 const { t } = useI18n();
 const { getDistance, calculateBearing, polygonArea } = useProjectGeometry();
 
@@ -647,7 +652,7 @@ const allRoutesVisible = computed(() =>
   layersStore.routes.every((route) => uiStore.isElementVisible('route', route.id))
 );
 function getRouteInfo(route: RouteElement) {
-  return `${t(route.profile === 'car' ? 'route.car' : 'route.pedestrian')} • ${(route.distance / 1000).toFixed(2)} km • ${Math.ceil(route.duration / 60)} min • IGN`;
+  return `${t(route.profile === 'car' ? 'route.car' : 'route.pedestrian')} • ${formatDistance(route.distance / 1000, 2)} • ${Math.ceil(route.duration / 60)} min • IGN`;
 }
 function handleEditRoute(route: RouteElement) {
   uiStore.startEditing('route', route.id);
@@ -731,12 +736,6 @@ function formatPolygonArea(polygon: PolygonElement): string {
 }
 
 // Format distance for display
-function formatDistance(km: number): string {
-  if (km >= 1) {
-    return `${km.toFixed(2)} km`;
-  }
-  return `${(km * 1000).toFixed(0)} m`;
-}
 
 // Collapse states for each section
 const circlesExpanded = ref(true);
@@ -843,7 +842,7 @@ function getLineInfo(line: LineSegmentElement) {
         ? 'azimuth'
         : 'intersection';
 
-  return `${modeLabel} • ${azimuth.toFixed(2)}° / ${inverseAzimuth.toFixed(2)}° • ${segmentLength.toFixed(2)} km`;
+  return `${modeLabel} • ${azimuth.toFixed(2)}° / ${inverseAzimuth.toFixed(2)}° • ${formatDistance(segmentLength, 2)}`;
 }
 
 function handleEditCircle(circle: CircleElement) {
@@ -1236,7 +1235,7 @@ function createLineBetweenPoints(startPoint: PointElement, targetPoint: PointEle
   );
 
   uiStore.addToast(
-    `Line created: ${lineName} (${distance.toFixed(2)}km • ${azimuth.toFixed(1)}°/${inverseAzimuth.toFixed(1)}°)`,
+    `Line created: ${lineName} (${formatDistance(distance, 2)} • ${azimuth.toFixed(1)}°/${inverseAzimuth.toFixed(1)}°)`,
     'success'
   );
 }

@@ -9,6 +9,7 @@ import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorSource from 'ol/source/Vector';
 import { Stroke, Style } from 'ol/style';
 import { watch } from 'vue';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { useUIStore } from '@/stores/ui';
 
@@ -36,7 +37,7 @@ const RULER_STYLES = [
   }),
 ];
 
-function buildMeasurementElement(distanceKm: number, bearing: number, inverse: number) {
+function buildMeasurementElement(distance: string, bearing: number, inverse: number) {
   const el = document.createElement('div');
   el.className = 'ruler-measurement';
   el.style.cssText = `
@@ -53,7 +54,7 @@ function buildMeasurementElement(distanceKm: number, bearing: number, inverse: n
     line-height: 1.4;
   `;
   el.innerHTML = `
-    <div><strong>${distanceKm.toFixed(3)} km</strong></div>
+    <div><strong>${distance}</strong></div>
     <div>${bearing.toFixed(2)}° / ${inverse.toFixed(2)}°</div>
   `;
   return el;
@@ -63,6 +64,7 @@ export function useRuler(
   mapContainer: ReturnType<typeof useMap>,
   cursorTooltip: Ref<CursorTooltipData>
 ) {
+  const { formatDistance, cmPerKm } = useDistanceDisplay();
   const { getDistance, calculateBearing, lineCoordinates } = useProjectGeometry();
   const uiStore = useUIStore();
 
@@ -118,7 +120,7 @@ export function useRuler(
     const inverse = calculateBearing(endLat, endLon, firstPoint.lat, firstPoint.lon);
     cursorTooltip.value.x = screenX + 20;
     cursorTooltip.value.y = screenY + 20;
-    cursorTooltip.value.distance = `${distanceKm.toFixed(3)} km`;
+    cursorTooltip.value.distance = formatDistance(distanceKm);
     cursorTooltip.value.azimuth = `${bearing.toFixed(2)}° / ${inverse.toFixed(2)}°`;
     cursorTooltip.value.visible = true;
   };
@@ -150,7 +152,7 @@ export function useRuler(
     const bearing = calculateBearing(firstPoint.lat, firstPoint.lon, endLat, endLon);
     const inverse = calculateBearing(endLat, endLon, firstPoint.lat, firstPoint.lon);
 
-    const element = buildMeasurementElement(distanceKm, bearing, inverse);
+    const element = buildMeasurementElement(formatDistance(distanceKm), bearing, inverse);
     // Anchor the overlay to the endpoint in map coordinates so OL keeps it
     // glued to the line as the user pans and zooms.
     const overlay = new Overlay({
@@ -228,6 +230,7 @@ export function useRuler(
   };
 
   let stopToolWatch: WatchStopHandle | undefined;
+  let stopUnitsWatch: WatchStopHandle | undefined;
 
   const setup = () => {
     const map = mapContainer.map?.value;
@@ -238,6 +241,8 @@ export function useRuler(
 
     // Clean up whenever the ruler tool is deactivated (via stopTool, toolbar,
     // Escape, or switching to another tool).
+    stopUnitsWatch?.();
+    stopUnitsWatch = watch(cmPerKm, resetState);
     stopToolWatch?.();
     stopToolWatch = watch(
       () => uiStore.tools.activeTool,
@@ -250,6 +255,8 @@ export function useRuler(
   };
 
   const cleanup = () => {
+    stopUnitsWatch?.();
+    stopUnitsWatch = undefined;
     stopToolWatch?.();
     stopToolWatch = undefined;
     const map = mapContainer.map?.value;

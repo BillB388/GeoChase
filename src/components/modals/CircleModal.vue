@@ -40,8 +40,8 @@
             </template>
           </v-select>
 
-          <v-text-field
-            v-model.number="form.radius"
+          <DistanceField
+            v-model="form.radius"
             class="mb-4"
             density="compact"
             :label="$t('circle.radius')"
@@ -68,6 +68,7 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import DistanceField from '@/components/shared/DistanceField.vue';
 import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { useDrawingContext } from '@/composables/mapContext';
 import { getReverseGeocodeAddress } from '@/services/address';

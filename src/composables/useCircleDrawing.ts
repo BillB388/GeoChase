@@ -16,9 +16,9 @@ import { useProjectGeometry } from './useProjectGeometry';
 const DEFAULT_COLOR = '#000000';
 
 export function useCircleDrawing(mapRef: MapContainer) {
-  const { isGeodesic, generateCircle } = useProjectGeometry();
+  const { isGeodesic, isImage, generateCircle } = useProjectGeometry();
   function circleCoordinates(lat: number, lon: number, radiusKm: number) {
-    if (isGeodesic()) {
+    if (isGeodesic() || isImage()) {
       let previousLon = lon;
       return generateCircle(lat, lon, radiusKm, 128).map((point) => {
         const unwrappedLon = point.lon + Math.round((previousLon - point.lon) / 360) * 360;

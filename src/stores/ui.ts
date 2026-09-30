@@ -115,7 +115,7 @@ export const useUIStore = defineStore('ui', () => {
     activeTool: null,
   });
   const mapProvider = ref<
-    'geoportail' | 'osm' | 'google-plan' | 'google-satellite' | 'google-relief'
+    'geoportail' | 'osm' | 'google-plan' | 'google-satellite' | 'google-relief' | 'image'
   >('geoportail');
   const pdfPanelOpen = ref(false);
   const pdfPanelWidth = ref(500); // Default width
@@ -388,7 +388,7 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function setMapProvider(
-    provider: 'geoportail' | 'osm' | 'google-plan' | 'google-satellite' | 'google-relief'
+    provider: 'geoportail' | 'osm' | 'google-plan' | 'google-satellite' | 'google-relief' | 'image'
   ): void {
     mapProvider.value = provider;
   }

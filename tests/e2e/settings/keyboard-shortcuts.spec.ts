@@ -149,10 +149,7 @@ test.describe('Keyboard Shortcuts', () => {
       await page.waitForTimeout(500);
 
       // Get circle layer item
-      const circleItem = page
-        .locator('.layer-item')
-        .filter({ has: page.locator('.layer-item-type', { hasText: /km radius/ }) })
-        .first();
+      const circleItem = page.locator('.layer-item[data-layer-type="circle"]').first();
 
       // Open context menu
       await circleItem.locator('.mdi-dots-vertical').click();
@@ -181,10 +178,7 @@ test.describe('Keyboard Shortcuts', () => {
       await page.waitForTimeout(500);
 
       // Get circle layer item
-      const circleItem = page
-        .locator('.layer-item')
-        .filter({ has: page.locator('.layer-item-type', { hasText: /km radius/ }) })
-        .first();
+      const circleItem = page.locator('.layer-item[data-layer-type="circle"]').first();
 
       // Open context menu
       await circleItem.locator('.mdi-dots-vertical').click();
@@ -218,10 +212,7 @@ test.describe('Keyboard Shortcuts', () => {
       await page.waitForTimeout(500);
 
       // Get circle layer item
-      const circleItem = page
-        .locator('.layer-item')
-        .filter({ has: page.locator('.layer-item-type', { hasText: /km radius/ }) })
-        .first();
+      const circleItem = page.locator('.layer-item[data-layer-type="circle"]').first();
 
       // Open context menu and start navigation
       await circleItem.locator('.mdi-dots-vertical').click();

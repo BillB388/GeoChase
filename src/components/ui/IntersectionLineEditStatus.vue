@@ -9,7 +9,9 @@
 
     <div>
       {{
-        $t('intersectionEdit.distance', { distance: ui.intersectionLineEdit.distanceKm.toFixed(3) })
+        $t('intersectionEdit.distance', {
+          distance: formatDistance(ui.intersectionLineEdit.distanceKm),
+        })
       }}
     </div>
 
@@ -35,7 +37,9 @@
 </template>
 
 <script setup lang="ts">
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useUIStore } from '@/stores/ui';
+const { formatDistance } = useDistanceDisplay();
 const ui = useUIStore();
 </script>
 

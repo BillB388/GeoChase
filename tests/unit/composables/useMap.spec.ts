@@ -1,3 +1,4 @@
+import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, reactive, ref } from 'vue';
 import { useMap } from '@/composables/useMap';
@@ -9,6 +10,7 @@ describe('useMap', () => {
   let mockUiStore: any;
 
   beforeEach(() => {
+    setActivePinia(createPinia());
     // Create mock element
     mockElement = document.createElement('div');
     mockElement.id = 'map-container';

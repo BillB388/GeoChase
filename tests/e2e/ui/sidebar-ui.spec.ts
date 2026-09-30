@@ -218,7 +218,9 @@ test.describe('Sidebar UI', () => {
       await page.waitForTimeout(500);
 
       // Circle radius should be visible in sidebar
-      await expect(page.locator('.layer-item-type').filter({ hasText: '5km' })).toBeVisible();
+      await expect(page.locator('[data-layer-type="circle"] .layer-item-type')).toHaveText(
+        'Radius : 5.000 km'
+      );
     });
   });
 

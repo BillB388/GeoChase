@@ -13,6 +13,7 @@ import Interaction from 'ol/interaction/Interaction';
 import { toLonLat } from 'ol/proj';
 import { Stroke, Style } from 'ol/style';
 import { watch } from 'vue';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useMapCursor } from '@/composables/useMapCursor';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { i18n } from '@/plugins/i18n';
@@ -26,6 +27,7 @@ export function useFreeHandDrawing(
   drawing: ReturnType<typeof useDrawing>,
   cursorTooltip: Ref<CursorTooltipData>
 ) {
+  const { formatDistance } = useDistanceDisplay();
   const { getDistance, calculateBearing, destinationPoint, lineCoordinates } = useProjectGeometry();
   const uiStore = useUIStore();
   let previewFeature: Feature<LineString> | null = null;
@@ -201,7 +203,7 @@ export function useFreeHandDrawing(
     isCtrlPressed: boolean,
     inverseBearing: number
   ): void => {
-    cursorTooltip.value.distance = `${distance.toFixed(3)} km${isCtrlPressed && azimuth === undefined ? ' (locked)' : ''}`;
+    cursorTooltip.value.distance = `${formatDistance(distance)}${isCtrlPressed && azimuth === undefined ? ' (locked)' : ''}`;
 
     if (azimuth !== undefined) {
       const inverseAzimuth = inverseBearing;
@@ -452,7 +454,7 @@ export function useFreeHandDrawing(
       const dist = getDistance([startLon, startLat], [endLon, endLat]) / 1000;
       const finalBearing = calculateBearing(startLat, startLon, endLat, endLon);
       const inverseBearing = calculateBearing(endLat, endLon, startLat, startLon);
-      lineName = `Line ${dist.toFixed(1)}km • ${finalBearing.toFixed(1)}°/${inverseBearing.toFixed(1)}°`;
+      lineName = `Line ${formatDistance(dist, 1)} • ${finalBearing.toFixed(1)}°/${inverseBearing.toFixed(1)}°`;
     }
 
     const through = intersectionLock?.point.coordinates;

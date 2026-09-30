@@ -97,6 +97,7 @@ vi.mock('ol/Map', () => {
               return [200_000, 6_000_000];
             }),
             setZoom: vi.fn(),
+            setMaxZoom: vi.fn(),
             setCenter: vi.fn(),
             fit: vi.fn(),
             animate: vi.fn(),
@@ -157,6 +158,7 @@ vi.mock('ol/View', () => {
           return [0, 0];
         }),
         setZoom: vi.fn(),
+        setMaxZoom: vi.fn(),
         setCenter: vi.fn(),
         animate: vi.fn(),
         fit: vi.fn(),

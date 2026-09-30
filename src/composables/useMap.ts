@@ -9,15 +9,20 @@ import type { Ref, WatchStopHandle } from 'vue';
 import { shiftKeyOnly } from 'ol/events/condition';
 import { defaults as defaultInteractions } from 'ol/interaction/defaults';
 import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
+import ImageLayer from 'ol/layer/Image';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import Map from 'ol/Map';
 import { fromLonLat, toLonLat } from 'ol/proj';
+import ImageStatic from 'ol/source/ImageStatic';
 import VectorSource from 'ol/source/Vector';
 import XYZ from 'ol/source/XYZ';
 import View from 'ol/View';
 import { nextTick, ref, shallowRef, watch } from 'vue';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, getMapTilesUrl } from '@/services/geoportail';
+import { imageMapExtent } from '@/services/imageMap';
+import { useImageMapStore } from '@/stores/imageMap';
+import { useProjectsStore } from '@/stores/projects';
 
 export type MapContainer = ReturnType<typeof useMap>;
 
@@ -31,6 +36,8 @@ export function useMap(
   uiStore?: ReturnType<typeof useUIStore>,
   panelSizes?: MapPanelSizes
 ) {
+  const imageMaps = useImageMapStore();
+  const projects = useProjectsStore();
   const map = shallowRef<Map | null>(null);
   const isMapInitialized = ref(false);
   const mapLayers = shallowRef<BaseLayer[]>([]);
@@ -125,7 +132,7 @@ export function useMap(
       // Create tile source for map tiles
       const initialProvider = uiStore?.mapProvider || 'geoportail';
       tileSource.value = new XYZ({
-        url: getMapTilesUrl(initialProvider),
+        url: getMapTilesUrl(initialProvider === 'image' ? 'geoportail' : initialProvider),
         crossOrigin: 'anonymous',
         maxZoom: 18,
         transition: 250,
@@ -141,6 +148,8 @@ export function useMap(
         source: tileSource.value,
       });
 
+      const imageLayer = new ImageLayer({ className: 'image-map-layer', visible: false });
+
       // Create map centered on saved location (if available) or default location
       map.value = new Map({
         target: containerId,
@@ -151,6 +160,7 @@ export function useMap(
         ]),
         layers: [
           baseLayer,
+          imageLayer,
           circlesLayer.value,
           linesLayer.value,
           routesLayer.value,
@@ -187,18 +197,41 @@ export function useMap(
       // Watch for map provider changes and update tile source
       if (uiStore) {
         stopProviderWatch = watch(
-          () => uiStore.mapProvider,
-          (newProvider) => {
+          () => [uiStore.mapProvider, imageMaps.image, projects.activeProjection] as const,
+          ([newProvider, image], previous) => {
+            const useImage = newProvider === 'image' && image !== null;
+            baseLayer.setVisible(newProvider !== 'image');
+            imageLayer.setVisible(useImage);
+            const view = map.value!.getView();
+            view.setMaxZoom(useImage ? 40 : 28);
+            if (useImage) {
+              const extent = imageMapExtent(image, projects.activeProjection);
+              imageLayer.setSource(
+                new ImageStatic({ url: image.url, imageExtent: extent, projection: 'EPSG:3857' })
+              );
+              // Keep the saved viewport on initial project loading.
+              if (previous?.[0] !== 'image' || previous?.[1] !== image) {
+                view.fit(extent, {
+                  padding: [
+                    160,
+                    60,
+                    60,
+                    uiStore.sidebarOpen ? (panelSizes?.sidebarWidth.value ?? 360) + 30 : 60,
+                  ],
+                  maxZoom: 38,
+                });
+              }
+              return;
+            }
+            imageLayer.setSource(null);
             baseLayer.setPreload(newProvider === 'geoportail' ? Infinity : 3);
-            // tileSource is always set at this point (created before watcher registration)
-            tileSource.value!.setUrl(getMapTilesUrl(newProvider));
-            // Source.clear() only clears reprojected tiles. The renderer keeps
-            // previous URL keys as fallback, including tiles at other zooms.
-            // Discard that renderer on provider changes, but retain native
-            // caching and fading for zooms within the same provider.
+            tileSource.value!.setUrl(
+              getMapTilesUrl(newProvider === 'image' ? 'geoportail' : newProvider)
+            );
             tileSource.value!.clear();
             baseLayer.clearRenderer();
-          }
+          },
+          { immediate: true }
         );
       }
 
