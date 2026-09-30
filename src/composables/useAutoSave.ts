@@ -17,8 +17,14 @@ export function useAutoSave() {
     }
   }, 500);
 
+  const flushAutoSave = () => debouncedAutoSave.flush();
+  window.addEventListener('pagehide', flushAutoSave);
+
   if (getCurrentScope()) {
-    onScopeDispose(debouncedAutoSave.cancel);
+    onScopeDispose(() => {
+      window.removeEventListener('pagehide', flushAutoSave);
+      debouncedAutoSave.flush();
+    });
   }
 
   // Auto-save on layers change

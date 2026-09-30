@@ -159,7 +159,10 @@ function validateElementGroup(group: unknown): group is ElementGroup {
     typeof group.id === 'string' &&
     group.id.length > 0 &&
     typeof group.name === 'string' &&
-    group.name.trim().length > 0
+    group.name.trim().length > 0 &&
+    (group.memberOrder === undefined ||
+      (Array.isArray(group.memberOrder) &&
+        group.memberOrder.every((key) => typeof key === 'string')))
   );
 }
 
@@ -306,7 +309,6 @@ export function normalizeLayers(data: LayerImportData): ProjectLayerData {
   for (const element of groupableElements) {
     if (element.groupId && !validGroupIds.has(element.groupId)) delete element.groupId;
   }
-  const usedGroupIds = new Set(groupableElements.map((element) => element.groupId).filter(Boolean));
 
   // Assign timestamps to elements that don't have them (for old projects)
   // Use a sequential counter to maintain original order
@@ -329,9 +331,8 @@ export function normalizeLayers(data: LayerImportData): ProjectLayerData {
     }
   }
 
-  const usedElementGroups = validElementGroups.filter((group) => usedGroupIds.has(group.id));
   return {
-    ...(usedElementGroups.length > 0 ? { elementGroups: usedElementGroups } : {}),
+    ...(validElementGroups.length > 0 ? { elementGroups: validElementGroups } : {}),
     routes: validRoutes,
     circles: validCircles,
     lineSegments: validLineSegments,

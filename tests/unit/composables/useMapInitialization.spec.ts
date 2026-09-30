@@ -123,6 +123,7 @@ describe('useMapInitialization', () => {
 
       // Create project with data
       const projectData = {
+        elementGroups: [{ id: 'g1', name: 'Points de départ' }],
         circles: [
           {
             id: 'c1',
@@ -178,6 +179,7 @@ describe('useMapInitialization', () => {
       await useMapInitialization(mockMapContainer, mockDrawing, noteTooltipsRef);
 
       expect(loadLayersSpy).toHaveBeenCalledWith({
+        elementGroups: projectData.elementGroups,
         routes: [],
         circles: projectData.circles,
         lineSegments: projectData.lineSegments,
@@ -239,6 +241,7 @@ describe('useMapInitialization', () => {
       await useMapInitialization(mockMapContainer, mockDrawing, noteTooltipsRef);
 
       expect(loadLayersSpy).toHaveBeenCalledWith({
+        elementGroups: [],
         routes: [],
         circles: [],
         lineSegments: [],
@@ -273,6 +276,7 @@ describe('useMapInitialization', () => {
 
       // Should pass savedCoordinates for migration
       expect(loadLayersSpy).toHaveBeenCalledWith({
+        elementGroups: [],
         routes: [],
         circles: [],
         lineSegments: [],

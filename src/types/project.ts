@@ -42,6 +42,8 @@ export interface ProjectLayerData {
 export interface ElementGroup {
   id: string;
   name: string;
+  /** Stable ordering for mixed element types inside the group. */
+  memberOrder?: string[];
 }
 
 export interface CircleElement {

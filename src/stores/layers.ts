@@ -69,7 +69,6 @@ export const useLayersStore = defineStore('layers', () => {
   }
   function deleteRoute(id: string) {
     routes.value = routes.value.filter((route) => route.id !== id);
-    pruneEmptyElementGroups();
   }
 
   const circleCount = computed(() => circles.value.length);
@@ -191,7 +190,6 @@ export const useLayersStore = defineStore('layers', () => {
     const index = circles.value.findIndex((c) => c.id === id);
     if (index !== -1 && circles.value[index]) {
       circles.value.splice(index, 1);
-      pruneEmptyElementGroups();
     }
   }
 
@@ -236,7 +234,6 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       lineSegments.value.splice(index, 1);
-      pruneEmptyElementGroups();
     }
   }
 
@@ -296,7 +293,6 @@ export const useLayersStore = defineStore('layers', () => {
 
       // Delete the point
       points.value.splice(index, 1);
-      pruneEmptyElementGroups();
     }
   }
 
@@ -342,7 +338,6 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       polygons.value.splice(index, 1);
-      pruneEmptyElementGroups();
     }
   }
 
@@ -454,7 +449,6 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       notes.value.splice(index, 1);
-      pruneEmptyElementGroups();
     }
   }
 
@@ -466,22 +460,6 @@ export const useLayersStore = defineStore('layers', () => {
     polygons.value = [];
     notes.value = [];
     elementGroups.value = [];
-  }
-
-  function pruneEmptyElementGroups(): void {
-    const used = new Set(
-      [
-        ...routes.value,
-        ...circles.value,
-        ...lineSegments.value,
-        ...points.value,
-        ...polygons.value,
-        ...notes.value,
-      ]
-        .map((element) => element.groupId)
-        .filter(Boolean)
-    );
-    elementGroups.value = elementGroups.value.filter((group) => used.has(group.id));
   }
 
   function createElementGroup(name: string): ElementGroup {
@@ -525,8 +503,82 @@ export const useLayersStore = defineStore('layers', () => {
     }[type];
     const element = items.find((item) => item.id === id);
     if (!element) return;
+    if (element.groupId === groupId) return;
+    const memberKey = `${type}:${id}`;
+    const previousGroup = element.groupId
+      ? elementGroups.value.find((group) => group.id === element.groupId)
+      : undefined;
+    if (previousGroup && previousGroup.id !== groupId) {
+      previousGroup.memberOrder = previousGroup.memberOrder?.filter((key) => key !== memberKey);
+    }
     if (groupId) element.groupId = groupId;
     else delete element.groupId;
+    if (groupId) {
+      const group = elementGroups.value.find((item) => item.id === groupId);
+      if (group) {
+        const currentMembers = [
+          ...routes.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `route:${item.id}`),
+          ...circles.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `circle:${item.id}`),
+          ...lineSegments.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `lineSegment:${item.id}`),
+          ...points.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `point:${item.id}`),
+          ...polygons.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `polygon:${item.id}`),
+          ...notes.value
+            .filter((item) => item.groupId === groupId)
+            .map((item) => `note:${item.id}`),
+        ];
+        const existingOrder = group.memberOrder ?? currentMembers;
+        group.memberOrder = [...existingOrder.filter((key) => key !== memberKey), memberKey];
+      }
+    }
+  }
+
+  function reorderElementGroupMember(
+    groupId: string,
+    sourceType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon' | 'note',
+    sourceId: string,
+    targetType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon' | 'note',
+    targetId: string,
+    position: 'before' | 'after'
+  ): void {
+    if (sourceId === targetId && sourceType === targetType) return;
+    const group = elementGroups.value.find((item) => item.id === groupId);
+    if (!group) return;
+    const members = [
+      ...routes.value.filter((item) => item.groupId === groupId).map((item) => `route:${item.id}`),
+      ...circles.value
+        .filter((item) => item.groupId === groupId)
+        .map((item) => `circle:${item.id}`),
+      ...lineSegments.value
+        .filter((item) => item.groupId === groupId)
+        .map((item) => `lineSegment:${item.id}`),
+      ...points.value.filter((item) => item.groupId === groupId).map((item) => `point:${item.id}`),
+      ...polygons.value
+        .filter((item) => item.groupId === groupId)
+        .map((item) => `polygon:${item.id}`),
+      ...notes.value.filter((item) => item.groupId === groupId).map((item) => `note:${item.id}`),
+    ];
+    const order = [
+      ...(group.memberOrder ?? []).filter((key) => members.includes(key)),
+      ...members.filter((key) => !group.memberOrder?.includes(key)),
+    ];
+    const sourceKey = `${sourceType}:${sourceId}`;
+    const targetKey = `${targetType}:${targetId}`;
+    const sourceIndex = order.indexOf(sourceKey);
+    if (sourceIndex === -1 || !order.includes(targetKey)) return;
+    order.splice(sourceIndex, 1);
+    const targetIndex = order.indexOf(targetKey);
+    order.splice(targetIndex + (position === 'after' ? 1 : 0), 0, sourceKey);
+    group.memberOrder = order;
   }
 
   function loadLayers(data: LayerImportData): void {
@@ -775,7 +827,7 @@ export const useLayersStore = defineStore('layers', () => {
     updateElementGroup,
     deleteElementGroup,
     setElementGroup,
-    pruneEmptyElementGroups,
+    reorderElementGroupMember,
     clearLayers,
     loadLayers,
     exportLayers,

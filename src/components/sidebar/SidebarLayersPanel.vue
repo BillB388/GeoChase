@@ -25,7 +25,6 @@
       <v-btn
         class="ml-auto"
         color="primary"
-        :disabled="groupableItems.length === 0"
         icon="mdi-folder-plus-outline"
         size="small"
         :title="$t('layers.createGroup')"
@@ -35,7 +34,7 @@
     </div>
 
     <!-- Search bar (only show when there are elements) -->
-    <div v-if="!layersStore.isEmpty" class="mb-3">
+    <div v-if="!layersStore.isEmpty || layersStore.elementGroups.length > 0" class="mb-3">
       <v-text-field
         v-model="searchQuery"
         class="layers-search"
@@ -49,7 +48,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="layersStore.isEmpty" class="layers-empty">
+    <div v-if="layersStore.isEmpty && layersStore.elementGroups.length === 0" class="layers-empty">
       <svg aria-hidden="true" class="empty-map" fill="none" viewBox="0 0 280 170">
         <path
           d="M24 38 95 24 180 40 256 22V139L180 154 95 139 24 154Z"
@@ -166,6 +165,7 @@
             :class="{
               'layer-item-hidden': !uiStore.isElementVisible(member.type, member.element.id),
             }"
+            :data-group-id="group.id"
             :data-layer-id="member.element.id"
             :data-layer-type="member.type"
             role="button"
@@ -745,7 +745,7 @@
 
         <v-btn
           color="primary"
-          :disabled="!elementGroupName.trim() || selectedGroupMemberKeys.length === 0"
+          :disabled="!elementGroupName.trim()"
           variant="flat"
           @click="saveElementGroup"
           >{{ $t('layers.groupSave') }}</v-btn
@@ -821,7 +821,7 @@ const draggedElement = ref<{ type: ListElementType; id: string } | null>(null);
 const dropTarget = ref<{
   type: ListElementType;
   id: string;
-  position: 'before' | 'after' | 'link';
+  position: 'before' | 'after' | 'link' | 'ungroup';
 } | null>(null);
 const dropGroupTargetId = ref<string | null>(null);
 const isDragging = ref(false);
@@ -972,7 +972,7 @@ const filteredElementGroups = computed(() => {
 });
 
 function groupMembers(groupId: string): GroupMember[] {
-  return [
+  const members: GroupMember[] = [
     ...layersStore.sortedRoutes
       .filter((item) => item.groupId === groupId)
       .map((element) => ({ type: 'route' as const, element })),
@@ -992,6 +992,19 @@ function groupMembers(groupId: string): GroupMember[] {
       .filter((item) => item.groupId === groupId)
       .map((element) => ({ type: 'note' as const, element })),
   ];
+  const order = new Map(
+    (layersStore.elementGroups.find((group) => group.id === groupId)?.memberOrder ?? []).map(
+      (key, index) => [key, index]
+    )
+  );
+  return members.toSorted((a, b) => {
+    const aOrder = order.get(`${a.type}:${a.element.id}`);
+    const bOrder = order.get(`${b.type}:${b.element.id}`);
+    if (aOrder === undefined && bOrder === undefined) return 0;
+    if (aOrder === undefined) return 1;
+    if (bOrder === undefined) return -1;
+    return aOrder - bOrder;
+  });
 }
 
 function groupMemberName(member: GroupMember): string {
@@ -1074,7 +1087,7 @@ function getGroupableElement(type: GroupableType, id: string) {
 
 function saveElementGroup() {
   const name = elementGroupName.value.trim();
-  if (!name || selectedGroupMemberKeys.value.length === 0) return;
+  if (!name) return;
   const group = editingElementGroupId.value
     ? layersStore.elementGroups.find((item) => item.id === editingElementGroupId.value)
     : layersStore.createElementGroup(name);
@@ -1083,10 +1096,12 @@ function saveElementGroup() {
   const selected = new Set(selectedGroupMemberKeys.value);
   for (const item of groupableItems.value) {
     const element = getGroupableElement(item.type, item.id);
-    if (selected.has(item.key)) layersStore.setElementGroup(item.type, item.id, group.id);
-    else if (element?.groupId === group.id) layersStore.setElementGroup(item.type, item.id);
+    if (selected.has(item.key)) {
+      if (element?.groupId !== group.id) layersStore.setElementGroup(item.type, item.id, group.id);
+    } else if (element?.groupId === group.id) {
+      layersStore.setElementGroup(item.type, item.id);
+    }
   }
-  layersStore.pruneEmptyElementGroups();
   expandedElementGroups.value[group.id] = true;
   groupDialogOpen.value = false;
 }
@@ -1102,7 +1117,6 @@ function removeElementGroup(groupId: string) {
 function ungroupElement(type: string, id: string) {
   if (['route', 'circle', 'lineSegment', 'point', 'polygon', 'note'].includes(type)) {
     layersStore.setElementGroup(type as GroupableType, id);
-    layersStore.pruneEmptyElementGroups();
   }
 }
 
@@ -1539,6 +1553,8 @@ function updateDropTarget(event: PointerEvent) {
   stopAutoScroll();
   const source = draggedElement.value;
   if (!source || !pendingDrag) return;
+  const sourceElement = getGroupableElement(source.type, source.id);
+  const sourceGroupId = sourceElement?.groupId;
   const panel = pendingDrag.handle.closest('.v-navigation-drawer');
   const bounds = panel?.getBoundingClientRect();
   if (
@@ -1549,6 +1565,49 @@ function updateDropTarget(event: PointerEvent) {
     event.clientY > bounds.bottom
   )
     return;
+  const hitRow = document
+    .elementFromPoint(event.clientX, event.clientY)
+    ?.closest<HTMLElement>('.layer-item');
+  const row = hitRow && panel?.contains(hitRow) ? hitRow : null;
+  const type = row?.dataset.layerType as ListElementType | undefined;
+  const id = row?.dataset.layerId;
+  const targetGroupId = row?.dataset.groupId;
+  if (row && type && id) {
+    handleAutoScroll(event, row);
+    if (source.id === id) return;
+    const rect = row.getBoundingClientRect();
+    const offset = event.clientY - rect.top;
+    // Give reordering broad edges while retaining a central point-link target.
+    // Cap the edges so wrapped point names remain available for linking.
+    const edgeSize = Math.min(20, rect.height / 3);
+    const isPointLink =
+      source.type === 'point' &&
+      type === 'point' &&
+      offset >= edgeSize &&
+      offset <= rect.height - edgeSize;
+    const position = isPointLink ? 'link' : offset < rect.height / 2 ? 'before' : 'after';
+    if (isPointLink) {
+      dropTarget.value = { type, id, position: 'link' };
+      return;
+    }
+    if (sourceGroupId && targetGroupId === sourceGroupId) {
+      dropTarget.value = { type, id, position };
+      return;
+    }
+    if (sourceGroupId && !targetGroupId) {
+      dropTarget.value = { type, id, position: 'ungroup' };
+      return;
+    }
+    if (targetGroupId) {
+      dropGroupTargetId.value = targetGroupId;
+      return;
+    }
+    if (type === source.type) {
+      dropTarget.value = { type, id, position };
+    }
+    return;
+  }
+
   const groupTarget = document
     .elementFromPoint(event.clientX, event.clientY)
     ?.closest<HTMLElement>('[data-element-group-id]');
@@ -1557,70 +1616,67 @@ function updateDropTarget(event: PointerEvent) {
     handleAutoScroll(event, groupTarget);
     return;
   }
-  const items = Array.from(
-    pendingDrag.handle.parentElement?.querySelectorAll<HTMLElement>('.layer-item') ?? []
-  );
-  const hitRow = document
-    .elementFromPoint(event.clientX, event.clientY)
-    ?.closest<HTMLElement>('.layer-item');
-  // Include the sidebar padding so users need not aim inside the row's border.
-  const row =
-    hitRow ??
-    items.find((item) => {
-      const rect = item.getBoundingClientRect();
-      return event.clientY >= rect.top && event.clientY < rect.bottom;
-    });
-  const type = row?.dataset.layerType as ListElementType | undefined;
-  const id = row?.dataset.layerId;
-  if (row && type === source.type && id) {
-    handleAutoScroll(event, row);
-    if (source.id === id) return;
-    const rect = row.getBoundingClientRect();
-    const offset = event.clientY - rect.top;
-    // Give reordering broad edges while retaining a central point-link target.
-    // Cap the edges so wrapped point names remain available for linking.
-    const edgeSize = Math.min(20, rect.height / 3);
-    const position =
-      type === 'point' && hitRow && offset >= edgeSize && offset <= rect.height - edgeSize
-        ? 'link'
-        : offset < rect.height / 2
-          ? 'before'
-          : 'after';
-    dropTarget.value = { type, id, position };
+
+  // Dropping anywhere in the main notebook area removes a grouped item from its group.
+  if (
+    sourceGroupId &&
+    document.elementFromPoint(event.clientX, event.clientY)?.closest('.layers-list')
+  ) {
+    dropTarget.value = { type: source.type, id: source.id, position: 'ungroup' };
+    handleAutoScroll(event, pendingDrag.handle);
     return;
   }
 
-  // Extend the category's insertion targets into the sidebar's empty space
-  // and headers, while keeping drops on the map cancelled.
-  const first = items?.[0];
-  const last = items?.at(-1);
-  if (!first || !last) return;
-  handleAutoScroll(event, pendingDrag.handle);
-  const edge =
-    event.clientY < first.getBoundingClientRect().top
-      ? { row: first, position: 'before' as const }
-      : event.clientY >= last.getBoundingClientRect().bottom
-        ? { row: last, position: 'after' as const }
-        : null;
-  const targetId = edge?.row.dataset.layerId;
-  if (edge && targetId && targetId !== source.id) {
-    dropTarget.value = { type: source.type, id: targetId, position: edge.position };
+  // Keep the existing category reordering affordance for ungrouped rows.
+  const items = Array.from(
+    pendingDrag.handle.parentElement?.querySelectorAll<HTMLElement>('.layer-item') ?? []
+  );
+  if (items.length > 0 && !sourceGroupId) {
+    handleAutoScroll(event, pendingDrag.handle);
+    const first = items[0];
+    const last = items.at(-1);
+    if (!first || !last) return;
+    const edge =
+      event.clientY < first.getBoundingClientRect().top
+        ? { row: first, position: 'before' as const }
+        : event.clientY >= last.getBoundingClientRect().bottom
+          ? { row: last, position: 'after' as const }
+          : null;
+    const targetId = edge?.row.dataset.layerId;
+    if (edge && targetId && targetId !== source.id) {
+      dropTarget.value = { type: source.type, id: targetId, position: edge.position };
+    }
   }
 }
 
 function applyElementDrop() {
   const source = draggedElement.value;
   const target = dropTarget.value;
-  if (source && dropGroupTargetId.value) {
+  const sourceElement = source && getGroupableElement(source.type, source.id);
+  if (source && target?.position === 'ungroup') {
+    layersStore.setElementGroup(source.type, source.id);
+  } else if (source && target?.position === 'link') {
+    const start = layersStore.points.find((point) => point.id === source.id);
+    const end = layersStore.points.find((point) => point.id === target.id);
+    if (start && end) createLineBetweenPoints(start, end);
+  } else if (
+    source &&
+    sourceElement?.groupId &&
+    target &&
+    (target.position === 'before' || target.position === 'after')
+  ) {
+    layersStore.reorderElementGroupMember(
+      sourceElement.groupId,
+      source.type,
+      source.id,
+      target.type,
+      target.id,
+      target.position
+    );
+  } else if (source && dropGroupTargetId.value) {
     layersStore.setElementGroup(source.type, source.id, dropGroupTargetId.value);
-  } else if (source && target) {
-    if (target.position === 'link') {
-      const start = layersStore.points.find((point) => point.id === source.id);
-      const end = layersStore.points.find((point) => point.id === target.id);
-      if (start && end) createLineBetweenPoints(start, end);
-    } else {
-      layersStore.reorderElement(target.type, source.id, target.id, target.position);
-    }
+  } else if (source && target && (target.position === 'before' || target.position === 'after')) {
+    layersStore.reorderElement(target.type, source.id, target.id, target.position);
   }
 }
 
@@ -1661,6 +1717,7 @@ function handleAutoScroll(event: PointerEvent, target: HTMLElement) {
 }
 
 function createLineBetweenPoints(startPoint: PointElement, targetPoint: PointElement) {
+  const existingLineIds = new Set(layersStore.lineSegments.map((line) => line.id));
   // getDistance returns meters, convert to km
   const distance =
     getDistance(
@@ -1694,6 +1751,11 @@ function createLineBetweenPoints(startPoint: PointElement, targetPoint: PointEle
     undefined,
     undefined
   );
+
+  if (startPoint.groupId && startPoint.groupId === targetPoint.groupId) {
+    const createdLine = layersStore.lineSegments.find((line) => !existingLineIds.has(line.id));
+    if (createdLine) layersStore.setElementGroup('lineSegment', createdLine.id, startPoint.groupId);
+  }
 
   uiStore.addToast(
     `Line created: ${lineName} (${distance.toFixed(2)}km • ${azimuth.toFixed(1)}°/${inverseAzimuth.toFixed(1)}°)`,

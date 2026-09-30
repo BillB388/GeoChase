@@ -469,11 +469,11 @@
         "groups": {
           "title": "Créer et gérer des groupes",
           "content": "Rassemblez des éléments de types différents dans un groupe pour alléger le carnet.",
-          "item1": "Cliquez sur le bouton dossier + près du titre Éléments, nommez le groupe et sélectionnez les éléments à y placer.",
+          "item1": "Cliquez sur le bouton dossier + près du titre Éléments et nommez le groupe. Vous pouvez le créer vide, puis lui ajouter des éléments plus tard.",
           "item2": "Un groupe peut contenir des cercles, lignes, itinéraires, points, polygones et notes.",
-          "item3": "Faites glisser un élément sur l’en-tête d’un groupe pour le ranger dedans.",
+          "item3": "Faites glisser un élément sur l’en-tête d’un groupe pour l’y ranger, ou déplacez-le dans le groupe pour réorganiser ses éléments.",
           "item4": "Le crayon permet de modifier le nom et la sélection ; l’œil affiche ou masque tous les éléments du groupe.",
-          "item5": "Dans le menu ⋮ d’un élément, choisissez Sortir du groupe pour le remettre dans sa catégorie. Le bouton dossier − dissout le groupe sans supprimer ses éléments."
+          "item5": "Faites glisser un élément hors du groupe pour le rendre à sa catégorie, ou choisissez Sortir du groupe dans son menu ⋮. Le bouton dossier − dissout le groupe sans supprimer ses éléments."
         },
         "actions": {
           "item1": "Afficher ou masquer : bascule la visibilité de l’élément sur la carte.",
@@ -887,7 +887,7 @@
     "selectGroupItems": "Choisissez les éléments à regrouper",
     "groupSearch": "Rechercher parmi les éléments...",
     "groupNoMatches": "Aucun élément correspondant",
-    "groupEmpty": "Sélectionnez au moins un élément",
+    "groupEmpty": "Vous pouvez enregistrer un groupe vide et y ajouter des éléments plus tard.",
     "groupShow": "Afficher tous les éléments du groupe",
     "groupHide": "Masquer tous les éléments du groupe",
     "groupDelete": "Dissoudre le groupe",

@@ -469,11 +469,11 @@
         "groups": {
           "title": "Create and manage groups",
           "content": "Collect different types of items in a group to keep the notebook easier to scan.",
-          "item1": "Click the folder + button next to the Elements heading, name the group and select the items to include.",
+          "item1": "Click the folder + button next to Elements and name the group. You can create it empty and add items later.",
           "item2": "A group can contain circles, lines, routes, points, polygons and notes.",
-          "item3": "Drag an item onto a group heading to move it into the group.",
+          "item3": "Drag an item onto a group heading to add it, or drag it within the group to reorder its items.",
           "item4": "Use the pencil to rename the group or change its items; the eye shows or hides all its items.",
-          "item5": "Choose Remove from group in an item’s ⋮ menu to return it to its category. The folder − button dissolves the group without deleting its items."
+          "item5": "Drag an item out of the group to return it to its category, or choose Remove from group in its ⋮ menu. The folder − button dissolves the group without deleting its items."
         },
         "actions": {
           "item1": "Show or hide: Toggle this item on the map.",
@@ -887,7 +887,7 @@
     "selectGroupItems": "Choose items for this group",
     "groupSearch": "Search items...",
     "groupNoMatches": "No matching items",
-    "groupEmpty": "Select at least one item",
+    "groupEmpty": "You can save an empty group and add items later.",
     "groupShow": "Show all items in group",
     "groupHide": "Hide all items in group",
     "groupDelete": "Dissolve group",
