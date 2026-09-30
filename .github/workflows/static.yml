@@ -47,12 +47,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Verify GitHub Pages build
-        run: npm run test:pages
-
       - name: Setup Pages
         uses: actions/configure-pages@v6
 

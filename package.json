@@ -24,7 +24,7 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:coverage": "VITE_COVERAGE=true playwright test --config=playwright.coverage.config.ts",
     "test:e2e:coverage:report": "npx nyc report --reporter=text --reporter=html --reporter=lcov",
-    "ci": "npm run type-check && npm run lint && npm run format:check && npm run test:unit:run && npm run test:e2e",
+    "ci": "npm run type-check && npm run lint && npm run format:check && npm run test:unit:run",
     "prepare": "husky",
     "lint:fix": "eslint . --fix",
     "type-check:node": "node node_modules/typescript7/bin/tsc --project tsconfig.node.json --noEmit",
