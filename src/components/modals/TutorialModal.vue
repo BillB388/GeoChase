@@ -997,6 +997,15 @@ watch(isOpen, (newValue) => {
   min-height: 0;
 }
 
+.sidebar-header .v-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .tutorial-tabs :deep(.v-tab) {
   justify-content: flex-start;
   min-height: 44px;
