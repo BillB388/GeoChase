@@ -6,6 +6,11 @@ import { defineStore } from 'pinia';
 import { v4 as uuidv4 } from 'uuid';
 import { computed, ref } from 'vue';
 
+export interface MapElementRequest {
+  elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
+  elementId: string;
+}
+
 export type DrawingMode = 'circle' | 'line' | 'point' | 'intersection' | 'none';
 
 export interface Toast {
@@ -80,10 +85,9 @@ export const useUIStore = defineStore('ui', () => {
   const selectedProjectIndex = ref<number | null>(null);
   const topBarOpen = ref(true);
   const sidebarOpen = ref(true);
-  const sidebarElementRequest = ref<{
-    elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
-    elementId: string;
-  } | null>(null);
+  const sidebarElementRequest = ref<MapElementRequest | null>(null);
+  const mapElementHighlightRequest = ref<MapElementRequest | null>(null);
+  const sidebarHoverRequest = ref<MapElementRequest | null>(null);
   const leftSidebarOpen = ref(false);
   const elementVisibility = ref<Record<string, boolean>>({});
   const editingElement = ref<EditingElement | null>(null);
@@ -432,6 +436,8 @@ export const useUIStore = defineStore('ui', () => {
     topBarOpen,
     sidebarOpen,
     sidebarElementRequest,
+    mapElementHighlightRequest,
+    sidebarHoverRequest,
     leftSidebarOpen,
     elementVisibility,
     editingElement,

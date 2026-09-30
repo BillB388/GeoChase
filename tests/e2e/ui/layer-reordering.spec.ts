@@ -128,7 +128,7 @@ test('dropping outside after hovering a point does not create a line', async ({ 
 
 test('creates a line when dropped on the first line of a wrapped point name', async ({ page }) => {
   const longName = 'Bravo ' + 'long point name '.repeat(14);
-  await page.evaluate((name) => {
+  await page.addInitScript((name) => {
     const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
     projects[0].data.points[1].name = name;
     localStorage.setItem('geochase_projects', JSON.stringify(projects));
@@ -200,8 +200,8 @@ test('the grabbed element follows the cursor and disappears on release', async (
 });
 
 test('drops in empty space below or above the category move to its ends', async ({ page }) => {
-  // Leave enough empty space below the actual integrated point list.
-  await page.evaluate(() => {
+  // Seed the next load after pagehide has flushed the current application state.
+  await page.addInitScript(() => {
     const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
     const data = projects[0].data;
     data.circles = [];
@@ -254,6 +254,86 @@ for (const side of ['left', 'right']) {
       'Charlie',
       'Bravo',
     ]);
+    await expect(page.locator('.layer-item-name').filter({ hasText: '→' })).toHaveCount(0);
+  });
+}
+
+for (const position of ['before', 'after'] as const) {
+  test(`ungroups a point ${position} the chosen row and persists its position`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    const sourceId = position === 'before' ? 'Charlie' : 'Alpha';
+    await page.getByTitle('Create group', { exact: true }).click();
+    await page.getByLabel('Group name', { exact: true }).fill('To sort');
+    await page.getByRole('checkbox', { name: sourceId, exact: true }).check();
+    await page.getByRole('button', { name: 'Save group', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    const source = page.locator(`[data-layer-id="${sourceId}"]`);
+    const target = page.locator('[data-layer-id="Bravo"]');
+    const sourceBox = (await source.boundingBox())!;
+    const targetBox = (await target.boundingBox())!;
+    await page.mouse.move(sourceBox.x + 30, sourceBox.y + 20);
+    await page.mouse.down();
+    // Exercise both the margin and the row edge without triggering a point link.
+    await page.mouse.move(
+      position === 'before' ? targetBox.x - 8 : targetBox.x + 30,
+      targetBox.y + (position === 'before' ? 3 : targetBox.height - 3),
+      { steps: 8 }
+    );
+    await expect(target).toHaveClass(new RegExp(`drop-${position}`));
+    await page.mouse.up();
+    const names = page.locator('[data-layer-type="point"]:not([data-group-id]) .layer-item-name');
+    const expected =
+      position === 'before' ? ['Alpha', 'Charlie', 'Bravo'] : ['Bravo', 'Alpha', 'Charlie'];
+    await expect(names).toHaveText(expected);
+    await expect(page.locator('.element-group .layer-item')).toHaveCount(0);
+    await expect(page.locator('.layer-item-name').filter({ hasText: '→' })).toHaveCount(0);
+    await page.reload();
+    await expect(names).toHaveText(expected);
+  });
+}
+
+for (const position of ['before', 'after'] as const) {
+  test(`moves between groups ${position} a point without creating a line`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1200 });
+    for (const [name, members] of [
+      ['Source', ['Alpha']],
+      ['Destination', ['Bravo', 'Charlie']],
+    ] as const) {
+      await page.getByTitle('Create group', { exact: true }).click();
+      await page.getByLabel('Group name', { exact: true }).fill(name);
+      for (const member of members) {
+        await page.getByRole('checkbox', { name: member, exact: true }).check();
+      }
+      await page.getByRole('button', { name: 'Save group', exact: true }).click();
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+    }
+    const source = page.locator('[data-layer-id="Alpha"]');
+    const target = page.locator('[data-layer-id="Bravo"]');
+    const sourceBox = (await source.boundingBox())!;
+    const targetBox = (await target.boundingBox())!;
+    await page.mouse.move(sourceBox.x + 30, sourceBox.y + 20);
+    await page.mouse.down();
+    // Both targets are in the central zone that previously created a line.
+    await page.mouse.move(
+      targetBox.x + 30,
+      targetBox.y + targetBox.height / 2 + (position === 'before' ? -2 : 2),
+      { steps: 8 }
+    );
+    await expect(target).toHaveClass(new RegExp(`drop-${position}`));
+    await expect(target).not.toHaveClass(/drag-over/);
+    await page.mouse.up();
+    const destination = page.locator('.element-group').filter({ hasText: 'Destination' });
+    const expected =
+      position === 'before' ? ['Alpha', 'Bravo', 'Charlie'] : ['Bravo', 'Alpha', 'Charlie'];
+    await expect(destination.locator('.layer-item-name')).toHaveText(expected);
+    await expect(
+      page.locator('.element-group').filter({ hasText: 'Source' }).locator('.layer-item')
+    ).toHaveCount(0);
+    await expect(page.locator('.layer-item-name').filter({ hasText: '→' })).toHaveCount(0);
+    await page.reload();
+    await expect(destination.locator('.layer-item-name')).toHaveText(expected);
     await expect(page.locator('.layer-item-name').filter({ hasText: '→' })).toHaveCount(0);
   });
 }

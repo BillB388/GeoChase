@@ -70,20 +70,21 @@ input,
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
-:root[data-palette='rose'] :is(
-  h1,
-  h2,
-  h3,
-  h4,
-  .text-h1,
-  .text-h2,
-  .text-h3,
-  .text-h4,
-  .v-card-title,
-  .v-toolbar-title,
-  .layers-section-title,
-  .group-title-text
-) {
+:root[data-palette='rose']
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    .text-h1,
+    .text-h2,
+    .text-h3,
+    .text-h4,
+    .v-card-title,
+    .v-toolbar-title,
+    .layers-section-title,
+    .group-title-text
+  ) {
   color: #8e681b !important;
 }
 /* Form fields already expose focus through their rounded Vuetify border.

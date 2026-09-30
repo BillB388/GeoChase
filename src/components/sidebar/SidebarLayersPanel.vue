@@ -179,6 +179,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, member.type, member.element.id)"
+            @pointerenter="hoverSidebarElement(member.type, member.element.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -274,6 +276,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'circle', circle.id)"
+            @pointerenter="hoverSidebarElement('circle', circle.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -347,6 +351,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'lineSegment', line.id)"
+            @pointerenter="hoverSidebarElement('lineSegment', line.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -419,6 +425,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'route', route.id)"
+            @pointerenter="hoverSidebarElement('route', route.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -491,6 +499,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'point', point.id)"
+            @pointerenter="hoverSidebarElement('point', point.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -561,6 +571,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'polygon', polygon.id)"
+            @pointerenter="hoverSidebarElement('polygon', polygon.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -622,6 +634,8 @@
             @lostpointercapture="cancelElementDrag"
             @pointercancel="cancelElementDrag"
             @pointerdown="startElementDrag($event, 'note', note.id)"
+            @pointerenter="hoverSidebarElement('note', note.id)"
+            @pointerleave="clearSidebarHover"
             @pointermove="moveElementDrag"
             @pointerup="finishElementDrag"
           >
@@ -781,7 +795,7 @@ import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { routeBounds } from '@/services/routing';
 import { useLayersStore } from '@/stores/layers';
 import { useProjectsStore } from '@/stores/projects';
-import { useUIStore } from '@/stores/ui';
+import { type MapElementRequest, useUIStore } from '@/stores/ui';
 
 const { formatDistance } = useDistanceDisplay();
 const { t } = useI18n();
@@ -830,6 +844,8 @@ const dropTarget = ref<{
   type: ListElementType;
   id: string;
   position: 'before' | 'after' | 'link' | 'ungroup';
+  ungroup?: boolean;
+  groupId?: string;
 } | null>(null);
 const dropGroupTargetId = ref<string | null>(null);
 const isDragging = ref(false);
@@ -975,7 +991,7 @@ const filteredElementGroups = computed(() => {
     (group) =>
       !query ||
       group.name.toLowerCase().includes(query) ||
-      groupMembers(group.id).some((member) => groupMemberName(member).toLowerCase().includes(query))
+      groupMembers(group.id).some((member) => groupMemberMatches(member, query))
   );
 });
 
@@ -1019,12 +1035,19 @@ function groupMemberName(member: GroupMember): string {
   return member.type === 'note' ? member.element.title : member.element.name;
 }
 
+function groupMemberMatches(member: GroupMember, query: string): boolean {
+  return (
+    groupMemberName(member).toLowerCase().includes(query) ||
+    (member.type === 'note' && member.element.content.toLowerCase().includes(query))
+  );
+}
+
 function displayedGroupMembers(group: ElementGroup): GroupMember[] {
   const query = searchQuery.value.trim().toLowerCase();
   const members = groupMembers(group.id);
   return !query || group.name.toLowerCase().includes(query)
     ? members
-    : members.filter((member) => groupMemberName(member).toLowerCase().includes(query));
+    : members.filter((member) => groupMemberMatches(member, query));
 }
 
 function groupMemberDetail(member: GroupMember): string {
@@ -1232,6 +1255,8 @@ watch(
       searchQuery.value = '';
     }
     section.expanded.value = true;
+    const groupId = getGroupableElement(request.elementType, request.elementId)?.groupId;
+    if (groupId) expandedElementGroups.value[groupId] = true;
     await nextTick();
     if (cancelled) return;
     const row = Array.from(
@@ -1357,8 +1382,9 @@ function handleDeleteElement(elementType: string, elementId: string) {
   drawing.deleteElement(elementType, elementId);
 }
 
-function handleGoTo(elementType: string, element: DrawingElement) {
+function handleGoTo(elementType: MapElementRequest['elementType'], element: DrawingElement) {
   if (isDragging.value || Date.now() < suppressClickUntil) return;
+  uiStore.mapElementHighlightRequest = { elementType, elementId: element.id };
   let lat: number;
   let lon: number;
   let zoom: number;
@@ -1447,6 +1473,29 @@ function handleGoTo(elementType: string, element: DrawingElement) {
   mapContainer.setCenter(lat, lon, zoom);
 }
 
+function clearSidebarHover() {
+  uiStore.sidebarHoverRequest = null;
+}
+
+function hoverSidebarElement(type: ListElementType, id: string) {
+  if (isDragging.value) return;
+  if (type === 'note') {
+    const note = layersStore.notes.find((item) => item.id === id);
+    uiStore.sidebarHoverRequest =
+      note?.linkedElementType && note.linkedElementId
+        ? { elementType: note.linkedElementType, elementId: note.linkedElementId }
+        : null;
+  } else {
+    uiStore.sidebarHoverRequest = { elementType: type, elementId: id };
+  }
+}
+
+watch(
+  () => [uiStore.sidebarOpen, projectsStore.activeProjectId, searchQuery.value],
+  clearSidebarHover
+);
+onBeforeUnmount(clearSidebarHover);
+
 function startElementDrag(event: PointerEvent, type: ListElementType, id: string) {
   if (
     event.button !== 0 ||
@@ -1473,6 +1522,7 @@ function moveElementDrag(event: PointerEvent) {
   if (!isDragging.value) {
     if (Math.hypot(event.clientX - pendingDrag.x, event.clientY - pendingDrag.y) < 5) return;
     isDragging.value = true;
+    clearSidebarHover();
     draggedElement.value = { type: pendingDrag.type, id: pendingDrag.id };
     pendingDrag.handle.setPointerCapture(event.pointerId);
     const { handle, bounds } = pendingDrag;
@@ -1570,7 +1620,21 @@ function updateDropTarget(event: PointerEvent) {
   const hitRow = document
     .elementFromPoint(event.clientX, event.clientY)
     ?.closest<HTMLElement>('.layer-item');
-  const row = hitRow && panel?.contains(hitRow) ? hitRow : null;
+  const items = Array.from(
+    (sourceGroupId
+      ? panel?.querySelectorAll<HTMLElement>(
+          `.layer-item[data-layer-type="${CSS.escape(source.type)}"]:not([data-group-id])`
+        )
+      : pendingDrag.handle.parentElement?.querySelectorAll<HTMLElement>('.layer-item')) ?? []
+  );
+  // Include category margins without treating them as point-link targets.
+  const row =
+    hitRow && panel?.contains(hitRow)
+      ? hitRow
+      : items.find((item) => {
+          const rect = item.getBoundingClientRect();
+          return event.clientY >= rect.top && event.clientY < rect.bottom;
+        });
   const type = row?.dataset.layerType as ListElementType | undefined;
   const id = row?.dataset.layerId;
   const targetGroupId = row?.dataset.groupId;
@@ -1583,8 +1647,10 @@ function updateDropTarget(event: PointerEvent) {
     // Cap the edges so wrapped point names remain available for linking.
     const edgeSize = Math.min(20, rect.height / 3);
     const isPointLink =
+      !!hitRow &&
       source.type === 'point' &&
       type === 'point' &&
+      sourceGroupId === targetGroupId &&
       offset >= edgeSize &&
       offset <= rect.height - edgeSize;
     const position = isPointLink ? 'link' : offset < rect.height / 2 ? 'before' : 'after';
@@ -1597,11 +1663,14 @@ function updateDropTarget(event: PointerEvent) {
       return;
     }
     if (sourceGroupId && !targetGroupId) {
-      dropTarget.value = { type, id, position: 'ungroup' };
+      dropTarget.value =
+        type === source.type
+          ? { type, id, position, ungroup: true }
+          : { type, id, position: 'ungroup' };
       return;
     }
     if (targetGroupId) {
-      dropGroupTargetId.value = targetGroupId;
+      dropTarget.value = { type, id, position, groupId: targetGroupId };
       return;
     }
     if (type === source.type) {
@@ -1619,21 +1688,8 @@ function updateDropTarget(event: PointerEvent) {
     return;
   }
 
-  // Dropping anywhere in the main notebook area removes a grouped item from its group.
-  if (
-    sourceGroupId &&
-    document.elementFromPoint(event.clientX, event.clientY)?.closest('.layers-list')
-  ) {
-    dropTarget.value = { type: source.type, id: source.id, position: 'ungroup' };
-    handleAutoScroll(event, pendingDrag.handle);
-    return;
-  }
-
   // Keep the existing category reordering affordance for ungrouped rows.
-  const items = Array.from(
-    pendingDrag.handle.parentElement?.querySelectorAll<HTMLElement>('.layer-item') ?? []
-  );
-  if (items.length > 0 && !sourceGroupId) {
+  if (items.length > 0) {
     handleAutoScroll(event, pendingDrag.handle);
     const first = items[0];
     const last = items.at(-1);
@@ -1646,8 +1702,23 @@ function updateDropTarget(event: PointerEvent) {
           : null;
     const targetId = edge?.row.dataset.layerId;
     if (edge && targetId && targetId !== source.id) {
-      dropTarget.value = { type: source.type, id: targetId, position: edge.position };
+      dropTarget.value = {
+        type: source.type,
+        id: targetId,
+        position: edge.position,
+        ungroup: !!sourceGroupId,
+      };
+      return;
     }
+  }
+  // Dropping anywhere in the main notebook area removes a grouped item from its group.
+  if (
+    sourceGroupId &&
+    document.elementFromPoint(event.clientX, event.clientY)?.closest('.layers-list')
+  ) {
+    dropTarget.value = { type: source.type, id: source.id, position: 'ungroup' };
+    handleAutoScroll(event, pendingDrag.handle);
+    return;
   }
 }
 
@@ -1655,12 +1726,29 @@ function applyElementDrop() {
   const source = draggedElement.value;
   const target = dropTarget.value;
   const sourceElement = source && getGroupableElement(source.type, source.id);
-  if (source && target?.position === 'ungroup') {
+  if (source && (target?.ungroup || target?.position === 'ungroup')) {
     layersStore.setElementGroup(source.type, source.id);
+    if (target.position === 'before' || target.position === 'after') {
+      layersStore.reorderElement(source.type, source.id, target.id, target.position);
+    }
   } else if (source && target?.position === 'link') {
     const start = layersStore.points.find((point) => point.id === source.id);
     const end = layersStore.points.find((point) => point.id === target.id);
     if (start && end) createLineBetweenPoints(start, end);
+  } else if (
+    source &&
+    target?.groupId &&
+    (target.position === 'before' || target.position === 'after')
+  ) {
+    layersStore.setElementGroup(source.type, source.id, target.groupId);
+    layersStore.reorderElementGroupMember(
+      target.groupId,
+      source.type,
+      source.id,
+      target.type,
+      target.id,
+      target.position
+    );
   } else if (
     source &&
     sourceElement?.groupId &&

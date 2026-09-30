@@ -1,11 +1,13 @@
 import type { useMap } from '@/composables/useMap';
 import { Feature } from 'ol';
+import { asArray } from 'ol/color';
 import { LineString, Point, Polygon } from 'ol/geom';
 import Interaction from 'ol/interaction/Interaction';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, Stroke, Style } from 'ol/style';
 import { ref, watch } from 'vue';
+import { themes } from '@/services/themes';
 import { useUIStore } from '@/stores/ui';
 import { useMapCursor } from './useMapCursor';
 
@@ -13,6 +15,46 @@ export interface MapElementSelection {
   elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
   elementId: string;
   position: [number, number];
+}
+
+function createHoverStyles(color: string) {
+  const pin = `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 3.53 1.442 6.715 3.77 9.015L12.5 41l8.73-19.485C23.058 19.215 25 15.03 25 12.5 25 5.596 19.404 0 12.5 0zm0 19a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z" fill="${color}"/></svg>`;
+  return {
+    point: new Style({
+      image: new Icon({
+        src: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pin)}`,
+        anchor: [0.5, 1],
+      }),
+    }),
+    line: new Style({ stroke: new Stroke({ color, width: 6 }) }),
+    polygon: new Style({
+      fill: new Fill({ color: [...asArray(color).slice(0, 3), 0.32] }),
+      stroke: new Stroke({ color, width: 5 }),
+    }),
+  };
+}
+
+function createHighlight(feature: Feature, styles: ReturnType<typeof createHoverStyles>) {
+  const geometry = feature.getGeometry()?.clone();
+  const style =
+    geometry instanceof Point
+      ? styles.point
+      : geometry instanceof Polygon
+        ? styles.polygon
+        : geometry instanceof LineString
+          ? styles.line
+          : undefined;
+  if (!geometry || !style) return;
+  const highlight = new Feature(geometry);
+  highlight.setStyle(style);
+  return highlight;
+}
+
+function highlightColor() {
+  return (
+    document.documentElement.style.getPropertyValue('--accent').trim() ||
+    themes.cartography!.colors.primary!
+  );
 }
 
 export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
@@ -33,23 +75,18 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
     ] as const;
     const hoverSource = new VectorSource<Feature>();
     const hoverLayer = new VectorLayer({ source: hoverSource, zIndex: 1900 });
-    const velvetRose = '#a31332';
-    const velvetPin = `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 3.53 1.442 6.715 3.77 9.015L12.5 41l8.73-19.485C23.058 19.215 25 15.03 25 12.5 25 5.596 19.404 0 12.5 0zm0 19a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z" fill="${velvetRose}"/></svg>`;
-    const hoverStyles = {
-      point: new Style({
-        image: new Icon({
-          src: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(velvetPin)}`,
-          anchor: [0.5, 1],
-        }),
-      }),
-      line: new Style({ stroke: new Stroke({ color: velvetRose, width: 6 }) }),
-      polygon: new Style({
-        fill: new Fill({ color: 'rgba(163, 19, 50, 0.32)' }),
-        stroke: new Stroke({ color: velvetRose, width: 5 }),
-      }),
-    };
+    const clickedSource = new VectorSource<Feature>();
+    const clickedLayer = new VectorLayer({ source: clickedSource, zIndex: 1901 });
+    const sidebarHoverSource = new VectorSource<Feature>();
+    const sidebarHoverLayer = new VectorLayer({ source: sidebarHoverSource, zIndex: 1902 });
+    let hoverColor = '';
+    let hoverStyles: ReturnType<typeof createHoverStyles>;
     const canShowHoverLayer = typeof map!.addLayer === 'function';
-    if (canShowHoverLayer) map!.addLayer(hoverLayer);
+    if (canShowHoverLayer) {
+      map!.addLayer(hoverLayer);
+      map!.addLayer(clickedLayer);
+      map!.addLayer(sidebarHoverLayer);
+    }
     let hoveredFeatureId: string | number | undefined;
     function elementAt(pixel: number[]) {
       if (!available() || typeof map!.forEachFeatureAtPixel !== 'function') return;
@@ -80,33 +117,61 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
       const element = event.buttons === 0 ? elementAt(map!.getEventPixel(event)) : undefined;
       setCursor(element ? 'pointer' : null);
 
-      const isVelvetTheme = document.documentElement.dataset.palette === 'goldVelvet';
-      const feature = element
-        ? sources.map(([, source]) => source.value?.getFeatureById(element.elementId)).find(Boolean)
-        : undefined;
-      const featureId = feature?.getId();
-      if (!isVelvetTheme || !feature || featureId === undefined) {
+      const color = highlightColor();
+      const source = sources.find(([type]) => type === element?.elementType)?.[1];
+      const feature = element ? source?.value?.getFeatureById(element.elementId) : undefined;
+      const featureId = element && `${element.elementType}:${element.elementId}`;
+      if (!feature || featureId === undefined) {
         hoveredFeatureId = undefined;
         hoverSource.clear();
-      } else if (hoveredFeatureId !== featureId) {
-        hoveredFeatureId = featureId;
-        const geometry = feature.getGeometry()?.clone();
-        hoverSource.clear();
-        if (geometry instanceof Point) {
-          const highlight = new Feature(geometry);
-          highlight.setStyle(hoverStyles.point);
-          hoverSource.addFeature(highlight);
-        } else if (geometry instanceof Polygon) {
-          const highlight = new Feature(geometry);
-          highlight.setStyle(hoverStyles.polygon);
-          hoverSource.addFeature(highlight);
-        } else if (geometry instanceof LineString) {
-          const highlight = new Feature(geometry);
-          highlight.setStyle(hoverStyles.line);
-          hoverSource.addFeature(highlight);
+      } else if (hoveredFeatureId !== featureId || hoverColor !== color) {
+        if (hoverColor !== color) {
+          hoverColor = color;
+          hoverStyles = createHoverStyles(color);
         }
+        hoveredFeatureId = featureId;
+        hoverSource.clear();
+        const highlight = createHighlight(feature, hoverStyles);
+        if (highlight) hoverSource.addFeature(highlight);
       }
     };
+    const stopSidebarHover = watch(
+      [() => uiStore.sidebarHoverRequest, () => uiStore.elementVisibility, available],
+      () => {
+        sidebarHoverSource.clear();
+        const request = uiStore.sidebarHoverRequest;
+        if (
+          !available() ||
+          !request ||
+          !uiStore.isElementVisible(request.elementType, request.elementId)
+        )
+          return;
+        const source = sources.find(([type]) => type === request.elementType)?.[1];
+        const feature = source?.value?.getFeatureById(request.elementId);
+        if (!feature) return;
+        const highlight = createHighlight(feature, createHoverStyles(highlightColor()));
+        if (highlight) sidebarHoverSource.addFeature(highlight);
+      },
+      { deep: true }
+    );
+    const stopClickHighlight = watch(
+      () => uiStore.mapElementHighlightRequest,
+      (request, _previous, onCleanup) => {
+        clickedSource.clear();
+        if (!request || !uiStore.isElementVisible(request.elementType, request.elementId)) return;
+        const source = sources.find(([type]) => type === request.elementType)?.[1];
+        const feature = source?.value?.getFeatureById(request.elementId);
+        if (!feature) return;
+        const highlight = createHighlight(feature, createHoverStyles(highlightColor()));
+        if (!highlight) return;
+        clickedSource.addFeature(highlight);
+        const timer = setTimeout(() => clickedSource.clear(), 3000);
+        onCleanup(() => {
+          clearTimeout(timer);
+          clickedSource.clear();
+        });
+      }
+    );
     const interaction = new Interaction({
       handleEvent(event) {
         if (
@@ -138,6 +203,7 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
       () => [available(), uiStore.elementVisibility],
       () => {
         clearHover();
+        clickedSource.clear();
         if (!available()) contextMenu.value = null;
       },
       {
@@ -152,9 +218,16 @@ export function useMapEventHandlers(mapContainer: ReturnType<typeof useMap>) {
     return () => {
       unsubscribeRightClick();
       stopWatch();
+      stopClickHighlight();
+      stopSidebarHover();
+      sidebarHoverSource.clear();
       clearHover();
       map.removeInteraction(interaction);
-      if (canShowHoverLayer && typeof map.removeLayer === 'function') map.removeLayer(hoverLayer);
+      if (canShowHoverLayer && typeof map.removeLayer === 'function') {
+        map.removeLayer(hoverLayer);
+        map.removeLayer(clickedLayer);
+        map.removeLayer(sidebarHoverLayer);
+      }
       map.getViewport().removeEventListener('pointermove', handlePointerMove);
       map.getViewport().removeEventListener('pointerleave', clearHover);
       map.un('movestart', clearHover);
