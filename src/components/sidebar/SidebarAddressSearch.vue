@@ -69,6 +69,7 @@ const addressSearchLoading = ref(false);
 const addressSearchInput = ref<string>('');
 const showResults = ref(false);
 let addressSearchTimeout: ReturnType<typeof setTimeout> | null = null;
+let searchVersion = 0;
 
 let searchMarkerLayer: VectorLayer<VectorSource> | null = null;
 let searchMarkerSource: VectorSource | null = null;
@@ -114,13 +115,15 @@ function clearSearchMarker() {
 }
 
 async function onAddressSearch(query: string) {
+  const version = ++searchVersion;
   if (addressSearchTimeout) {
     clearTimeout(addressSearchTimeout);
   }
 
+  addressSearchResults.value = [];
+  showResults.value = false;
   if (!query || !query.trim()) {
-    addressSearchResults.value = [];
-    showResults.value = false;
+    addressSearchLoading.value = false;
     return;
   }
 
@@ -128,13 +131,15 @@ async function onAddressSearch(query: string) {
   addressSearchTimeout = setTimeout(async () => {
     try {
       const results = await searchAddress(query);
+      if (version !== searchVersion) return;
       addressSearchResults.value = results;
       showResults.value = results.length > 0;
     } catch {
+      if (version !== searchVersion) return;
       uiStore.addToast('Error searching addresses', 'error');
       showResults.value = false;
     } finally {
-      addressSearchLoading.value = false;
+      if (version === searchVersion) addressSearchLoading.value = false;
     }
   }, 300);
 }
@@ -162,6 +167,8 @@ watch(showResults, (isShown) => {
 });
 
 onUnmounted(() => {
+  searchVersion++;
+  if (addressSearchTimeout) clearTimeout(addressSearchTimeout);
   clearSearchMarker();
 });
 </script>

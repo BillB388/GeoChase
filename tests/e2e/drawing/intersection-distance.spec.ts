@@ -111,7 +111,7 @@ test('rejects a negative extension with a relevant message', async ({ page }) =>
   const dialog = await openLineForm(page, '-1');
   await dialog.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(
-    page.getByText('Enter a distance of 0 km or more beyond the intersection point', {
+    page.getByText('Enter a non-negative distance beyond the intersection', {
       exact: true,
     })
   ).toBeVisible();

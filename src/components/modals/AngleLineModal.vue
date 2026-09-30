@@ -65,8 +65,8 @@
         variant="outlined"
       />
 
-      <v-text-field
-        v-model.number="form.distance"
+      <DistanceField
+        v-model="form.distance"
         class="mb-4"
         density="compact"
         :label="$t('modals.angleLine.distance')"
@@ -100,11 +100,14 @@
 import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseModal from '@/components/shared/BaseModal.vue';
+import DistanceField from '@/components/shared/DistanceField.vue';
 import { useDrawingContext } from '@/composables/mapContext';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { useLayersStore } from '@/stores/layers';
 import { useUIStore } from '@/stores/ui';
 
+const { formatDistance } = useDistanceDisplay();
 const { destinationPoint, bearingAtPoint, isPointOnLine } = useProjectGeometry();
 
 const { t } = useI18n();
@@ -205,7 +208,7 @@ function submitForm() {
     t('modals.angleLine.generatedName', {
       angle: form.angle,
       pointName: point.name,
-      distance: form.distance.toFixed(1),
+      distance: formatDistance(form.distance, 1),
     });
 
   const referenceLineId = referenceLine.id;

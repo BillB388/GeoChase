@@ -36,7 +36,7 @@
 
               <th class="text-right cursor-pointer select-none" @click="sortBy('distance')">
                 <div class="flex items-center justify-end gap-1">
-                  {{ $t('modals.bearings.distance') }}
+                  {{ distanceLabel($t('modals.bearings.distance')) }}
                   <v-icon v-if="sortField === 'distance'" size="small">{{
                     sortDirection === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
                   }}</v-icon>
@@ -79,7 +79,7 @@
                 </div>
               </td>
 
-              <td class="text-right font-mono">{{ pointData.distance.toFixed(3) }}</td>
+              <td class="text-right font-mono">{{ formatDistance(pointData.distance) }}</td>
               <td class="text-right font-mono">{{ pointData.azimuth.toFixed(2) }}</td>
               <td class="text-right font-mono">{{ pointData.inverseAzimuth.toFixed(2) }}</td>
             </tr>
@@ -100,10 +100,12 @@ import type { PointElement } from '@/types/project';
 import { computed, ref } from 'vue';
 import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { useMapContext } from '@/composables/mapContext';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { useLayersStore } from '@/stores/layers';
 import { useUIStore } from '@/stores/ui';
 
+const { formatDistance, distanceLabel } = useDistanceDisplay();
 const { getDistance, calculateBearing, calculateInverseBearing } = useProjectGeometry();
 
 const uiStore = useUIStore();

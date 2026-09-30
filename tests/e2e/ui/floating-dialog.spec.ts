@@ -52,14 +52,17 @@ for (const entry of [
   { name: 'parallel', advanced: 'Parallel Line' },
   { name: 'freehand', advanced: 'Free Hand' },
   { name: 'angle', advanced: 'Line at Angle' },
-  { name: 'project creation', project: 'new-project-btn' },
+  { name: 'project creation', project: 'new-project-btn', blocking: true },
   { name: 'project settings', project: 'project-settings-btn' },
   { name: 'project management', project: 'load-project-btn' },
   { name: 'language', moreLabel: 'Language' },
   { name: 'bearings', contextLabel: 'Bearings' },
   { name: 'themes', more: 'theme-picker-btn' },
 ]) {
-  test(`${entry.name} uses a draggable nonblocking window`, async ({ page, blankProject }) => {
+  test(`${entry.name} uses a ${'blocking' in entry ? 'blocking' : 'draggable nonblocking'} window`, async ({
+    page,
+    blankProject,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 1100 });
     if ('label' in entry)
       await page.getByRole('button', { name: entry.label!, exact: true }).click();
@@ -85,6 +88,16 @@ for (const entry of [
       await page.getByTestId(entry.more!).click();
     }
     const dialog = page.getByRole('dialog');
+    if ('blocking' in entry) {
+      await expect(dialog).toHaveAttribute('aria-modal', 'true');
+      await expect(page.locator('.v-overlay__scrim')).toBeVisible();
+      await dialog.getByText('Imported image', { exact: true }).click();
+      await expect(dialog.getByRole('radio', { name: /^Imported image/ })).toBeChecked();
+      await expect(dialog.getByRole('button', { name: 'Choose an image' })).toBeVisible();
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(dialog).not.toBeVisible();
+      return;
+    }
     await expect(dialog).toHaveAttribute('aria-modal', 'false');
     await expect(page.locator('.v-overlay__scrim')).toHaveCount(0);
     const content = dialog.locator('.v-overlay__content');

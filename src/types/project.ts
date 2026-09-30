@@ -21,6 +21,7 @@ export interface ProjectData {
   data: ProjectLayerData;
   projection?: ProjectProjection;
   viewData?: ViewData;
+  imageMapEnabled?: boolean;
   pdfData?: string; // Base64 encoded PDF data
   pdfName?: string; // Original PDF filename
   pdfPassword?: string; // Password for encrypted PDFs

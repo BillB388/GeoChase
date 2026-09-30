@@ -78,25 +78,31 @@ test.describe('Search Functionality', () => {
     });
 
     test('should close results when input is cleared', async ({ page, blankProject }) => {
-      // Find search input
-      const searchInput = page.locator('.v-text-field input').first();
-      await searchInput.click();
-      await page.waitForTimeout(300);
+      const searchInput = page.getByRole('textbox', { name: 'Enter address or place name' });
+      const endpoint = '**/geocodage/completion?**';
+      let releaseResponse!: () => void;
+      const responseGate = new Promise<void>((resolve) => {
+        releaseResponse = resolve;
+      });
+      await page.route(endpoint, async (route) => {
+        await responseGate;
+        await route.fulfill({
+          json: { results: [{ fulltext: 'Paris', x: 2.3522, y: 48.8566, kind: 'municipality' }] },
+        });
+      });
 
-      // Type and wait for results
+      // Clear the field while the request is in flight, then deliver its late response.
+      const request = page.waitForRequest(endpoint);
       await searchInput.fill('Paris');
-      await page.waitForTimeout(1500);
-
-      // Clear the input
+      await request;
       await searchInput.clear();
+      await expect(searchInput).toHaveValue('');
+      const response = page.waitForResponse(endpoint);
+      releaseResponse();
+      await (await response).finished();
+      // Allow the fetch continuation and menu transition to finish before the negative check.
       await page.waitForTimeout(500);
-
-      // Results should be hidden
-      const resultsMenu = page.locator('.v-menu .v-list');
-      const menuCount = await resultsMenu.count();
-      if (menuCount > 0) {
-        await expect(resultsMenu).not.toBeVisible();
-      }
+      await expect(page.locator('.v-menu .v-list')).not.toBeVisible();
     });
   });
 

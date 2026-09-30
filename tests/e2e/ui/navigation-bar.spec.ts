@@ -18,10 +18,7 @@ async function createCircleAndNavigate(page: any) {
   await page.waitForTimeout(500);
 
   // Open context menu and click Navigate
-  const circleItem = page
-    .locator('.layer-item')
-    .filter({ has: page.locator('.layer-item-type', { hasText: /km radius/ }) })
-    .first();
+  const circleItem = page.locator('.layer-item[data-layer-type="circle"]').first();
   await circleItem.locator('.mdi-dots-vertical').click();
   await page.waitForTimeout(300);
   await page

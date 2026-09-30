@@ -300,7 +300,16 @@
       "hint": "S’applique à tous les tracés et mesures de ce projet.",
       "changeHint": "Changer de projection recalcule les lignes à partir des distances et azimuts enregistrés, et déplace les points générés. Les points saisis directement par coordonnées restent fixes.",
       "changeError": "Impossible de changer la projection. Vérifiez les constructions dépendantes et les distances le long des lignes."
-    }
+    },
+    "startWith": "Commencer avec",
+    "geographicStart": "Carte géographique",
+    "geographicStartHint": "Fonds de carte en ligne, recherche d’adresses et coordonnées GPS.",
+    "imageStart": "Image importée",
+    "imageStartHint": "Votre carte scannée ou votre plan, avec une échelle à calibrer.",
+    "imageNext": "Vous choisirez votre image puis son échelle. Le projet sera créé après le calibrage.",
+    "chooseImage": "Choisir une image",
+    "imageCreationTitle": "Créer un projet à partir d’une image",
+    "backToProject": "Retour au projet"
   },
   "search": {
     "title": "Rechercher un lieu",
@@ -347,7 +356,7 @@
     "drawingTools": "Outils de dessin",
     "gettingStarted": "Commencer",
     "interface": "Interface et thèmes",
-    "projectionHelp": "Choisissez une projection à la création du projet, ou ouvrez Paramètres du projet dans le menu Projets pour la modifier ensuite. Mercator garde droites les lignes tracées sur la carte ; Géodésique (WGS84) suit les plus courts chemins sur la Terre courbe, les lignes peuvent donc paraître courbées. Le fond de carte se choisit séparément dans le bandeau supérieur. La projection s’applique à tout le projet et figure dans le projet ainsi que dans les exports JSON.",
+    "projectionHelp": "Choisissez une projection à la création du projet, ou ouvrez Paramètres du projet dans le menu Projets pour la modifier ensuite. Mercator garde droites les lignes tracées sur la carte ; Géodésique (WGS84) suit les plus courts chemins sur la Terre courbe, les lignes peuvent donc paraître courbées. Le fond de carte se choisit séparément dans le bandeau supérieur. La projection s’applique à tout le projet et figure dans le projet ainsi que dans les exports JSON. En mode image, les mesures utilisent le plan de l’image et son échelle calibrée.",
     "guideContent": {
       "intros": {
         "interface": "Retrouvez les commandes principales, les réglages et le panneau de la carte.",
@@ -378,7 +387,7 @@
       },
       "search": {
         "address": {
-          "item1": "Saisissez un lieu ou une adresse dans la recherche.",
+          "item1": "Saisissez un lieu ou une adresse dans la recherche. Cette recherche est masquée en mode image.",
           "item2": "Choisissez un résultat pour centrer la carte sur ce lieu.",
           "item3": "Utilisez les actions du résultat pour créer un point ou un cercle à cet emplacement."
         },
@@ -522,14 +531,14 @@
         "description": "Dessinez un cercle sur la carte en spécifiant :",
         "name": "Nom : Donnez un nom à votre cercle (optionnel, généré automatiquement si vide)",
         "center": "Centre : Sélectionnez parmi vos points enregistrés ou entrez les coordonnées manuellement",
-        "radius": "Rayon : Taille en kilomètres"
+        "radius": "Rayon : choisissez km ou cm si l’équivalence papier du fond image est renseignée. La conversion reste visible sous le champ."
       },
       "line": {
         "title": "➖ Ligne",
         "description": "Dessinez une ligne avec plusieurs modes :",
         "twoPoints": "Deux points : Connectez deux points enregistrés",
         "azimuth": "Mode azimut : Créez une ligne avec un angle spécifique (azimut) et une distance",
-        "angle": "Ligne avec angle : Sélectionnez un point de départ, puis une ligne de référence passant par ce point. Les points de croisement et les extrémités sont pris en charge ; choisissez la référence lorsque plusieurs lignes s'y rejoignent. Saisissez l'angle par rapport au sens de la ligne, du départ vers l'arrivée, et la distance en km. Si aucune ligne ne passe par votre point, créez-en une ou utilisez Ligne azimut pour choisir un cap.",
+        "angle": "Ligne avec angle : Sélectionnez un point de départ, puis une ligne de référence passant par ce point. Les points de croisement et les extrémités sont pris en charge ; choisissez la référence lorsque plusieurs lignes s'y rejoignent. Saisissez l'angle par rapport au sens de la ligne, du départ vers l'arrivée, et la distance dans l’unité affichée. Si aucune ligne ne passe par votre point, créez-en une ou utilisez Ligne azimut pour choisir un cap.",
         "intersection": "Mode intersection : Tracez une ligne passant par un point et prolongez-la de la distance indiquée après ce point",
         "parallel": "Mode parallèle : Tracez une ligne parallèle (latitude) sur toute la carte",
         "freeHand": "Mode main levée : Dessinez des lignes de manière interactive en cliquant sur la carte avec verrouillage d'azimut optionnel",
@@ -552,7 +561,7 @@
         "start": "Survolez l’extrémité finale d’une ligne d’intersection. Le curseur devient une main et une poignée bleue apparaît. Cliquez une fois pour commencer la modification.",
         "move": "Déplacez la souris pour raccourcir ou prolonger la ligne. Le départ et l’intersection imposée restent fixes ; l’extrémité suit leur direction et ne peut pas revenir avant l’intersection. Cela fonctionne en Mercator comme en Géodésique.",
         "snap": "À proximité d’une autre ligne visible, l’extrémité s’accroche à son croisement avec la direction imposée. Les points de départ et de fin des lignes proches sont prioritaires : vous pouvez ainsi joindre deux extrémités, y compris une que vous venez d’accrocher. La direction imposée reste fixe. Tous les types de lignes, les contours de cercles et les côtés de polygones sont utilisables. La poignée devient verte et le nom de la forme apparaît.",
-        "save": "Le panneau de modification affiche la distance en kilomètres après l’intersection. Cliquez à nouveau pour la confirmer et l’enregistrer. Les extrémités générées liées et les tracés dépendants sont également mis à jour.",
+        "save": "Le panneau de modification affiche la distance dans l’unité active après l’intersection. Cliquez à nouveau pour la confirmer et l’enregistrer. Les extrémités générées liées et les tracés dépendants sont également mis à jour.",
         "cancel": "Appuyez sur Échap ou cliquez sur Annuler pour rétablir la ligne initiale. Le déplacement est un aperçu ; il n’est pas enregistré."
       },
       "crossingPoint": {
@@ -729,7 +738,7 @@
       },
       "projectActions": {
         "title": "Actions de projet",
-        "newProject": "Nouveau projet : Créez un nouveau projet vide",
+        "newProject": "Nouveau projet : choisissez une carte géographique ou une image importée, puis donnez un nom au projet.",
         "loadProject": "Charger un projet : Basculez vers un autre projet enregistré depuis la modale",
         "exportJSON": "Exporter JSON : Enregistrez votre projet sous forme de fichier JSON pour sauvegarde",
         "importJSON": "Importer JSON : Chargez un projet depuis un fichier JSON",
@@ -745,7 +754,7 @@
       "projection": {
         "title": "Choisir la projection du projet",
         "choice": "Choisissez Mercator pour des lignes droites sur la carte et des azimuts calculés comme dans cartes.gouv.fr, ou Géodésique (WGS84) pour les plus courts chemins sur la Terre courbe. Les chemins géodésiques peuvent apparaître courbés sur la carte. Le fond de carte reste identique.",
-        "settings": "Choisissez la projection à la création du projet. Modifiez-la ensuite dans le menu Projet → Paramètres du projet. Elle s’applique à tous les tracés, distances et azimuts ; les parallèles restent des lignes de latitude constante.",
+        "settings": "Choisissez la projection à la création du projet. Modifiez-la ensuite dans le menu Projet → Paramètres du projet. Elle s’applique à tous les tracés, distances et azimuts ; les parallèles restent des lignes de latitude constante. Le mode image utilise sa propre échelle plane.",
         "export": "La projection est enregistrée avec le projet et incluse dans les exports JSON. Les exports GPX et les recherches le long des lignes suivent la géométrie sélectionnée. Les anciens projets sans ce paramètre utilisent Mercator."
       }
     },
@@ -846,6 +855,38 @@
         "descriptiveNames": "Utilisez des noms de projet descriptifs pour une identification facile",
         "exportGPX": "Exportez en GPX pour partager avec d'autres ou utiliser dans d'autres applications",
         "importGPX": "Importez des fichiers GPX d'autres sources pour étendre votre travail"
+      }
+    },
+    "imageMapSection": {
+      "title": "Fond de carte image",
+      "intro": "Créez un projet à partir d’une carte scannée ou d’un plan. L’image devient le fond de ce projet et les distances suivent son échelle.",
+      "import": {
+        "title": "Importer une image",
+        "item1": "Ouvrez Projets → Nouveau projet, donnez un nom au projet et choisissez Image importée. Cliquez sur Choisir une image pour continuer en plein écran.",
+        "item2": "Importez un fichier PNG, JPEG, WebP, GIF ou BMP de 25 Mo maximum. L’étape de calibrage s’ouvre après le chargement.",
+        "item3": "Utilisez la molette ou les boutons + et − pour zoomer. Le zoom avant n’a pas de plafond fixé ; cliquez-glissez pour vous déplacer dans l’image."
+      },
+      "points": {
+        "title": "Calibrer avec deux points",
+        "item1": "Choisissez Deux points. Cliquez une fois sur chaque extrémité d’une distance connue, par exemple la barre d’échelle : deux croix numérotées apparaissent.",
+        "item2": "Saisissez la distance réelle entre ces deux points en kilomètres. Pour une barre de 60 km, entrez 60.",
+        "item3": "Pour affiner leur position, cliquez sur une croix puis utilisez les flèches : 0,1 pixel par appui, ou 1 pixel avec Maj + flèches. La croix sélectionnée devient blanche.",
+        "item4": "Replacer les deux points efface les deux croix pour recommencer. Une fois les deux points placés, un clic ailleurs ne les déplace pas.",
+        "item5": "Facultativement, indiquez la longueur du même segment sur la carte papier en centimètres. Par exemple, 60 km pour 6 cm signifie que 1 cm représente 10 km."
+      },
+      "ratio": {
+        "title": "Calibrer avec un ratio connu",
+        "item1": "Choisissez Ratio connu pour saisir directement le nombre de mètres représentés par un pixel. Aucun placement de points n’est nécessaire.",
+        "item2": "Utilisez le ratio correspondant exactement à votre fichier, par exemple 169,5 m/pixel si cette valeur a été vérifiée pour ce scan. Redimensionner une image modifie son ratio ; le nom du fichier ne suffit pas à le garantir.",
+        "item3": "Pour activer les centimètres, renseignez facultativement Km pour 1 cm : entrez 10 pour une carte au 1:1 000 000. Le résumé affiche le ratio et l’équivalence obtenus."
+      },
+      "usage": {
+        "title": "Utiliser et modifier le fond image",
+        "item1": "Après le calibrage, cliquez sur Créer le projet. Pour ajuster l’échelle plus tard, utilisez Recalibrer dans le bandeau puis Enregistrer. Le bouton Retour au projet permet de revenir au choix initial avant la création.",
+        "item2": "Si l’équivalence papier est renseignée, les distances sont affichées en kilomètres avec leur équivalent en centimètres sur la carte. Dans les champs de rayon et de distance, choisissez km ou cm : la valeur est convertie sans modifier la distance, et l’autre unité reste visible sous le champ. Sans équivalence papier, la saisie reste en kilomètres.",
+        "item3": "Les mesures suivent l’échelle de l’image, comme une règle sur la carte papier. Le mode image ne géoréférence pas le scan et masque la recherche d’adresse ; il ne propose pas de calibrage par ville.",
+        "item4": "L’image et son calibrage sont conservés localement dans ce navigateur, pour ce projet. Le fichier image et son calibrage ne sont pas inclus dans les exports JSON : conservez le fichier original et vos valeurs de calibrage.",
+        "item5": "Le type de fond est choisi à la création : un projet image ne propose pas de sélecteur de fonds de carte. Pour travailler sur une carte géographique, créez ou ouvrez un projet de ce type. Recalibrer apparaît uniquement dans les projets image."
       }
     }
   },
@@ -970,7 +1011,7 @@
       "success": "Point ajouté avec succès",
       "startOfLine": "Début de {line}",
       "endOfLine": "Fin de {line}",
-      "pointAtDistance": "{line} à {distance} km"
+      "pointAtDistance": "{line} à {distance}"
     },
     "angleLine": {
       "title": "Ligne à un angle",
@@ -1034,7 +1075,7 @@
       "intersectionPoint": "Point d'intersection",
       "selectPoint": "Sélectionner un point",
       "startPoint": "Point de départ",
-      "distanceError": "Indiquez une distance de 0 km ou plus après le point d'intersection",
+      "distanceError": "Indiquez une distance positive ou nulle après le point d’intersection",
       "distinctPoints": "Choisissez deux points différents pour définir la direction de la ligne",
       "unreachableDistance": "Cette distance ne peut pas être atteinte dans la direction choisie",
       "selectBothPoints": "Veuillez sélectionner les points de départ et d'intersection"
@@ -1087,7 +1128,7 @@
   },
   "intersectionEdit": {
     "title": "Modification de {name}",
-    "distance": "{distance} km après l’intersection",
+    "distance": "{distance} après l’intersection",
     "snapped": "Accroché à {name}",
     "instructions": "Déplacez pour ajuster · Cliquez pour enregistrer · Échap pour annuler",
     "saved": "Distance de la ligne d’intersection mise à jour",
@@ -1139,7 +1180,7 @@
     "noProject": "Votre prochaine découverte",
     "projectHint": "Créez un projet pour conserver vos recherches.",
     "discover": "Découvrir les outils",
-    "newProjectDescription": "Un espace pour vos repères, vos tracés et vos indices. Votre progression est enregistrée automatiquement sur cet appareil.",
+    "newProjectDescription": "Donnez un nom à votre projet et choisissez votre support de travail.",
     "projectPlaceholder": "Ex. Les secrets de Brocéliande",
     "createProject": "Créer le projet",
     "closeSidebar": "Masquer le carnet",
@@ -1168,5 +1209,63 @@
     "regularizeProjectDescription": "Vos éléments ne sont associés à aucun projet. Donnez un nom à votre projet pour les conserver et continuer.",
     "recoverySelection": "Travail à récupérer",
     "recoverySource": "Sauvegarde {number}"
+  },
+  "imageMap": {
+    "apply": "Utiliser ce fond de carte",
+    "calibrateStep": "2 · Calibrer",
+    "changeFile": "Changer d’image",
+    "clickScale": "Placez les points 1 et 2 dans l’image.",
+    "customFactor": "Mètres par unité personnalisée",
+    "distance": "Distance entre les points",
+    "extentError": "Cette échelle dépasse les limites de la carte. Vérifiez la distance en kilomètres.",
+    "fileError": "Image illisible ou non prise en charge. Choisissez une image de moins de 25 Mo et 100 mégapixels.",
+    "fileHint": "PNG, JPEG, WebP, GIF ou BMP · 25 Mo maximum. Le fichier reste dans ce navigateur.",
+    "importStep": "1 · Importer",
+    "importTitle": "Importer une image",
+    "option": "Image personnalisée…",
+    "pointCount": "{count} / 2 points placés",
+    "preview": "Image à calibrer",
+    "resetPoints": "Replacer les deux points",
+    "saveError": "Impossible d’enregistrer l’image dans ce navigateur. Vérifiez l’espace de stockage disponible et réessayez.",
+    "scale": "Échelle",
+    "scaleHint": "Cliquez sur deux points distincts de l’image, puis indiquez leur distance réelle. Utilisez la molette pour zoomer et le cliquer-glisser pour vous déplacer.",
+    "title": "Image comme fond de carte",
+    "unit": "Unité de distance",
+    "units": {
+      "chain": "Chaîne (chain)",
+      "cm": "Centimètre (cm)",
+      "custom": "Autre unité / unité historique…",
+      "dam": "Décamètre (dam)",
+      "dm": "Décimètre (dm)",
+      "fathom": "Brasse (fathom)",
+      "ft": "Pied international (ft)",
+      "furlong": "Furlong",
+      "hm": "Hectomètre (hm)",
+      "in": "Pouce (in)",
+      "km": "Kilomètre (km)",
+      "link": "Maillon (link)",
+      "m": "Mètre (m)",
+      "mi": "Mile terrestre (mi)",
+      "mm": "Millimètre (mm)",
+      "nm": "Nanomètre (nm)",
+      "nmi": "Mille marin (NM)",
+      "rod": "Perche (rod)",
+      "yd": "Yard (yd)",
+      "µm": "Micromètre (µm)"
+    },
+    "distanceKm": "Distance réelle entre les points (km)",
+    "paperDistanceCm": "Distance sur la carte (cm, facultatif)",
+    "paperDistanceHint": "Longueur du même segment sur la carte papier. Active la saisie et l’affichage en centimètres.",
+    "byPoints": "Deux points",
+    "byRatio": "Ratio connu",
+    "ratioHint": "Saisissez le ratio propre à ce fichier si vous le connaissez, par exemple celui utilisé dans MapAnnot. Il dépend de la résolution de l’image.",
+    "ratioLabel": "Mètres par pixel",
+    "paperScaleLabel": "Km pour 1 cm (facultatif)",
+    "paperScaleHint": "Par exemple : 10 pour une carte au 1:1 000 000. Active les distances en centimètres.",
+    "adjustHint": "Cliquez sur un point, puis ajustez-le avec les flèches. Maj + flèches pour un pas plus grand.",
+    "ratioValue": "1 pixel = {value} m",
+    "paperScaleValue": "1 cm sur la carte = {value} km",
+    "ratioPreview": "Molette pour zoomer · Cliquer-glisser pour se déplacer",
+    "recalibrate": "Recalibrer"
   }
 }

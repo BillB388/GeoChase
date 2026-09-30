@@ -9,6 +9,8 @@ import { Feature } from 'ol';
 import { LineString } from 'ol/geom';
 import { fromLonLat } from 'ol/proj';
 import { Stroke, Style } from 'ol/style';
+import { watch } from 'vue';
+import { useImageMapStore } from '@/stores/imageMap';
 import { useLayersStore } from '@/stores/layers';
 import { useCircleDrawing } from './useCircleDrawing';
 import { useLineDrawing } from './useLineDrawing';
@@ -18,6 +20,7 @@ import { useProjectGeometry } from './useProjectGeometry';
 
 export function useDrawing(mapRef: MapContainer) {
   const layersStore = useLayersStore();
+  const imageMaps = useImageMapStore();
   const { isGeodesic, sampleLine } = useProjectGeometry();
 
   // Initialize specialized drawing composables
@@ -537,6 +540,11 @@ export function useDrawing(mapRef: MapContainer) {
       feature?.setStyle(updatedStyle);
     }
   }
+
+  watch(
+    () => [imageMaps.active, imageMaps.image],
+    () => redrawAllElements({ fitBounds: false })
+  );
 
   return {
     redrawRoute,

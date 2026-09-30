@@ -5,6 +5,7 @@
 import type { ProjectData, ProjectLayerData, ProjectProjection, ViewData } from '@/types/project';
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
+import { type ImageMap, writeImageMap } from '@/services/imageMap';
 import * as pdfStorage from '@/services/pdfStorage';
 import * as storage from '@/services/storage';
 
@@ -102,6 +103,22 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  async function createImageProject(name: string, image: ImageMap): Promise<void> {
+    const project = storage.createProject(name, {
+      circles: [],
+      lineSegments: [],
+      points: [],
+      polygons: [],
+      notes: [],
+    });
+    project.imageMapEnabled = true;
+    // Write the image before publishing the project or changing the active workspace.
+    await writeImageMap(project.id!, image);
+    storage.saveProjectsToStorage([...storage.getAllProjects(), project]);
+    projects.value.push(project);
+    setActiveProject(project.id!);
+  }
+
   function autoSaveActiveProject(
     data: ProjectLayerData,
     projection = activeProjection.value
@@ -125,6 +142,17 @@ export const useProjectsStore = defineStore('projects', () => {
         };
       }
     }
+  }
+
+  function setImageMapEnabled(enabled: boolean): void {
+    const current = activeProject.value;
+    if (!current) return;
+    const saved = storage.getAllProjects();
+    const index = saved.findIndex((p) => p.id === current.id);
+    if (index === -1) return;
+    saved[index] = { ...saved[index]!, imageMapEnabled: enabled };
+    storage.saveProjectsToStorage(saved);
+    current.imageMapEnabled = enabled;
   }
 
   function loadActiveProject(): void {
@@ -287,8 +315,10 @@ export const useProjectsStore = defineStore('projects', () => {
     loadProjects,
     setActiveProject,
     createAndSwitchProject,
+    createImageProject,
     autoSaveActiveProject,
     loadActiveProject,
+    setImageMapEnabled,
     updateProject,
     deleteProject,
     updateViewData,

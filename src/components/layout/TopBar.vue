@@ -23,7 +23,10 @@
           :class="{ 'normal-toolbar-hidden': uiStore.toolInstructionsVisible }"
           :inert="uiStore.toolInstructionsVisible"
         >
-          <header class="workspace-header">
+          <header
+            class="workspace-header"
+            :class="{ 'workspace-header-without-search': !imageMaps.canSearch }"
+          >
             <div aria-label="GeoChase" class="brand">
               <span class="brand-symbol"><v-icon icon="mdi-compass-outline" size="27" /></span>
 
@@ -32,7 +35,7 @@
               </div>
             </div>
 
-            <div class="topbar-address"><SidebarAddressSearch /></div>
+            <div v-if="imageMaps.canSearch" class="topbar-address"><SidebarAddressSearch /></div>
 
             <div class="header-actions">
               <v-menu location="bottom end">
@@ -68,6 +71,7 @@
                   </v-list-item>
 
                   <v-list-item
+                    v-if="!imageMaps.isImageProject"
                     data-testid="project-settings-btn"
                     :disabled="!projectsStore.activeProject"
                     @click="uiStore.openModal('projectSettingsModal')"
@@ -207,16 +211,31 @@
               >
             </div>
 
-            <div class="topbar-provider">
+            <div
+              class="topbar-provider"
+              :class="{ 'topbar-provider-image': imageMaps.isImageProject }"
+            >
               <v-select
-                v-model="uiStore.mapProvider"
+                v-if="!imageMaps.isImageProject"
                 :aria-label="$t('map.provider')"
                 density="compact"
                 hide-details
                 :items="mapProviders"
+                :model-value="uiStore.mapProvider"
                 prepend-inner-icon="mdi-map-outline"
                 variant="outlined"
+                @update:model-value="selectMapProvider"
               />
+
+              <v-btn
+                v-else
+                :disabled="imageMaps.loading"
+                prepend-icon="mdi-tune"
+                variant="outlined"
+                @click="openRecalibration"
+              >
+                {{ t('imageMap.recalibrate') }}
+              </v-btn>
             </div>
           </div>
         </div>
@@ -241,15 +260,18 @@
   </div>
 
   <ThemePicker v-model="themePickerOpen" />
+  <ImageMapModal v-if="imageMapOpen" @close="closeImageMap" />
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import NavigationBar from '@/components/layout/NavigationBar.vue';
 import ThemePicker from '@/components/layout/ThemePicker.vue';
+import ImageMapModal from '@/components/modals/ImageMapModal.vue';
 import SidebarAddressSearch from '@/components/sidebar/SidebarAddressSearch.vue';
 import { useProjectFiles } from '@/composables/useProjectFiles';
+import { useImageMapStore } from '@/stores/imageMap';
 import { useProjectsStore } from '@/stores/projects';
 import { useUIStore } from '@/stores/ui';
 
@@ -337,13 +359,27 @@ const advancedTools = [
   { title: 'drawing.freehand', icon: 'mdi-gesture', modal: 'freeHandLineModal' },
   { title: 'drawing.angleFromLine', icon: 'mdi-angle-acute', modal: 'angleLineModal' },
 ] as const;
-const mapProviders = [
+const imageMaps = useImageMapStore();
+const imageMapOpen = ref(false);
+function closeImageMap() {
+  imageMapOpen.value = false;
+  uiStore.closeModal('imageMapModal');
+}
+function openRecalibration() {
+  imageMapOpen.value = true;
+  uiStore.openModal('imageMapModal');
+}
+function selectMapProvider(provider: typeof uiStore.mapProvider) {
+  if (imageMaps.isImageProject || provider === 'image') return;
+  uiStore.mapProvider = provider;
+}
+const mapProviders = computed(() => [
   { title: 'Geoportail (IGN)', value: 'geoportail' },
   { title: 'OpenStreetMap', value: 'osm' },
   { title: 'Google - Plan', value: 'google-plan' },
   { title: 'Google - Satellite', value: 'google-satellite' },
   { title: 'Google - Relief', value: 'google-relief' },
-];
+]);
 
 function handleNewProject() {
   uiStore.openModal('newProjectModal');
@@ -482,6 +518,9 @@ function handlePdfClick() {
   align-items: center;
   gap: 32px;
 }
+.workspace-header-without-search {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
 .brand {
   display: flex;
   align-items: center;
@@ -550,6 +589,8 @@ function handlePdfClick() {
   margin: 0 7px;
 }
 .topbar-provider {
+  display: flex;
+  align-items: center;
   margin-left: auto;
   flex: 0 0 192px;
 }
@@ -589,6 +630,8 @@ function handlePdfClick() {
     padding-inline: 8px;
   }
   .topbar-provider {
+    display: flex;
+    align-items: center;
     flex-basis: 165px;
   }
 }
@@ -613,6 +656,8 @@ function handlePdfClick() {
     flex-wrap: wrap;
   }
   .topbar-provider {
+    display: flex;
+    align-items: center;
     flex: 1;
     max-width: 230px;
     margin-left: 0;
@@ -658,10 +703,17 @@ function handlePdfClick() {
     height: 44px;
   }
   .topbar-provider {
+    display: flex;
+    align-items: center;
     max-width: none;
   }
   .topbar-provider :deep(.v-field) {
     --v-input-control-height: 36px;
   }
+}
+.topbar-provider-image {
+  flex: 0 0 auto;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 </style>

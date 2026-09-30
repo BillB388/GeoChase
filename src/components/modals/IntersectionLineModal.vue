@@ -31,8 +31,8 @@
         :placeholder="$t('modals.intersectionLine.selectPoint')"
       />
 
-      <v-text-field
-        v-model.number="form.distance"
+      <DistanceField
+        v-model="form.distance"
         class="mb-4"
         density="compact"
         :hint="$t('modals.intersectionLine.distanceHint')"
@@ -70,6 +70,7 @@ import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseModal from '@/components/shared/BaseModal.vue';
 import CoordinateSelector from '@/components/shared/CoordinateSelector.vue';
+import DistanceField from '@/components/shared/DistanceField.vue';
 import { useDrawingContext } from '@/composables/mapContext';
 import { useLineNameGeneration } from '@/composables/useLineNameGeneration';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';

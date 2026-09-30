@@ -300,7 +300,16 @@
       "hint": "Applies to all drawings and measurements in this project.",
       "changeHint": "Changing the projection recalculates lines from their saved distances and bearings, and moves generated points. Points entered directly by coordinates stay fixed.",
       "changeError": "Could not change the projection. Check dependent constructions and distances along lines."
-    }
+    },
+    "startWith": "Start with",
+    "geographicStart": "Geographic map",
+    "geographicStartHint": "Online basemaps, address search and GPS coordinates.",
+    "imageStart": "Imported image",
+    "imageStartHint": "Your scanned map or plan, with a scale to calibrate.",
+    "imageNext": "Next, choose your image and calibrate its scale. The project is created after calibration.",
+    "chooseImage": "Choose an image",
+    "imageCreationTitle": "Create a project from an image",
+    "backToProject": "Back to project"
   },
   "search": {
     "title": "Search Location",
@@ -347,7 +356,7 @@
     "drawingTools": "Drawing Tools",
     "gettingStarted": "Getting Started",
     "interface": "Interface & Themes",
-    "projectionHelp": "Choose a projection when creating a project, or open Project Settings from the Projects menu to change it later. Mercator keeps drawn lines straight on the map; Geodesic (WGS84) follows the shortest paths over the curved Earth, so lines can appear curved. The basemap is selected separately in the top toolbar. The projection applies to the whole project and is saved in the project and JSON exports.",
+    "projectionHelp": "Choose a projection when creating a project, or open Project Settings from the Projects menu to change it later. Mercator keeps drawn lines straight on the map; Geodesic (WGS84) follows the shortest paths over the curved Earth, so lines can appear curved. The basemap is selected separately in the top toolbar. The projection applies to the whole project and is saved in the project and JSON exports. In image mode, measurements use the image plane and its calibrated scale.",
     "guideContent": {
       "intros": {
         "interface": "Explore the main controls, workspace settings and map panel.",
@@ -378,7 +387,7 @@
       },
       "search": {
         "address": {
-          "item1": "Enter a place name or address in the search box.",
+          "item1": "Enter a place name or address in the search box. This search is hidden in image mode.",
           "item2": "Choose a result to center the map on that location.",
           "item3": "Use the result actions to create a point or a circle at that location."
         },
@@ -522,14 +531,14 @@
         "description": "Draw a circle on the map by specifying:",
         "name": "Name: Give your circle a name (optional, auto-generated if empty)",
         "center": "Center: Select from your saved points or enter coordinates manually",
-        "radius": "Radius: Size in kilometers"
+        "radius": "Radius: Choose km or cm when the image basemap paper equivalence is set. The conversion stays visible below the field."
       },
       "line": {
         "title": "➖ Line",
         "description": "Draw a line with multiple modes:",
         "twoPoints": "Two Points: Connect two saved points",
         "azimuth": "Azimuth Mode: Create a line at a specific angle (azimuth) and distance",
-        "angle": "Line at Angle: Select a start point, then a reference line passing through it. Crossing points and endpoints are supported; choose the reference when several lines meet there. Enter the angle relative to the line's start-to-end direction and the distance in km. If no line passes through your point, create one first or use Azimuth Line for a compass bearing.",
+        "angle": "Line at Angle: Select a start point, then a reference line passing through it. Crossing points and endpoints are supported; choose the reference when several lines meet there. Enter the angle relative to the line's start-to-end direction and the distance in the displayed unit. If no line passes through your point, create one first or use Azimuth Line for a compass bearing.",
         "intersection": "Intersection Mode: Draw a line through a point and extend it by the specified distance beyond that point",
         "parallel": "Parallel Mode: Draw a parallel line (latitude) across the map",
         "freeHand": "Free Hand Mode: Draw lines interactively by clicking on the map with optional azimuth lock",
@@ -552,7 +561,7 @@
         "start": "Move over the far endpoint of an intersection line. A hand cursor and a blue handle appear. Click once to start editing.",
         "move": "Move the mouse to shorten or extend the line. The start and imposed intersection stay fixed, and the endpoint follows their direction. It cannot move behind the intersection. This works in both Mercator and Geodesic projects.",
         "snap": "Near another visible line, the endpoint snaps where that line crosses the constrained path. Nearby start and end points of lines take priority, so you can join two line ends, including one you have just snapped. The imposed direction stays fixed. All line types, circle outlines and polygon edges can be used. The handle turns green and the snapped shape’s name appears.",
-        "save": "The editing panel shows the distance in kilometers beyond the intersection. Click again to confirm and save it. Linked generated endpoints and dependent drawings update too.",
+        "save": "The editing panel shows the distance in the active unit beyond the intersection. Click again to confirm and save it. Linked generated endpoints and dependent drawings update too.",
         "cancel": "Press Escape or click Cancel to restore the original line. Moving the endpoint previews the change; it does not save it."
       },
       "crossingPoint": {
@@ -729,7 +738,7 @@
       },
       "projectActions": {
         "title": "Project Actions",
-        "newProject": "New Project: Create a new empty project",
+        "newProject": "New project: choose a geographic map or an imported image, and name your project.",
         "loadProject": "Load Project: Switch to another saved project from the modal",
         "exportJSON": "Export JSON: Save your project as a JSON file for backup",
         "importJSON": "Import JSON: Load a project from a JSON file",
@@ -745,7 +754,7 @@
       "projection": {
         "title": "Choose a project projection",
         "choice": "Choose Mercator for straight lines on the map and bearings calculated as in cartes.gouv.fr, or Geodesic (WGS84) for shortest paths over the curved Earth. Geodesic paths can appear curved on the map. The background map stays the same.",
-        "settings": "Choose the projection when creating a project. Change it later in Project menu → Project Settings. It applies to every drawing, distance and bearing; parallels remain lines of constant latitude.",
+        "settings": "Choose the projection when creating a project. Change it later in Project menu → Project Settings. It applies to every drawing, distance and bearing; parallels remain lines of constant latitude. Image mode uses its own planar scale.",
         "export": "Your projection is saved with the project and included in JSON exports. GPX export and searches along lines follow the selected geometry. Older projects without this setting use Mercator."
       }
     },
@@ -846,6 +855,38 @@
         "descriptiveNames": "Use descriptive project names for easy identification",
         "exportGPX": "Export as GPX to share with others or use in other applications",
         "importGPX": "Import GPX files from other sources to extend your work"
+      }
+    },
+    "imageMapSection": {
+      "title": "Image basemap",
+      "intro": "Create a project from a scanned map or plan. The image becomes this project’s basemap and distances follow its scale.",
+      "import": {
+        "title": "Import an image",
+        "item1": "Open Projects → New project, name your project and select Imported image. Click Choose an image to continue in fullscreen.",
+        "item2": "Import a PNG, JPEG, WebP, GIF or BMP file up to 25 MB. Calibration opens once the image has loaded.",
+        "item3": "Use the mouse wheel or + and − buttons to zoom. Zooming in has no fixed cap; click and drag to pan around the image."
+      },
+      "points": {
+        "title": "Calibrate with two points",
+        "item1": "Choose Two points. Click each end of a known distance, such as the printed scale bar: two numbered crosses appear.",
+        "item2": "Enter the real distance between the points in kilometres. For a 60 km scale bar, enter 60.",
+        "item3": "To refine a position, click its cross and use the arrow keys: 0.1 pixel per press, or 1 pixel with Shift + arrows. The selected cross turns white.",
+        "item4": "Replace both points clears both crosses so you can start again. Once both points are placed, clicking elsewhere does not move them.",
+        "item5": "Optionally enter the length of the same segment on the paper map in centimetres. For example, 60 km for 6 cm means that 1 cm represents 10 km."
+      },
+      "ratio": {
+        "title": "Calibrate with a known ratio",
+        "item1": "Choose Known ratio to enter the number of metres represented by one pixel directly. No point placement is required.",
+        "item2": "Use the ratio for your exact file, such as 169.5 m/pixel if verified for that scan. Resizing an image changes its ratio; its filename alone is no guarantee.",
+        "item3": "To enable centimetres, optionally fill in Km per 1 cm: enter 10 for a 1:1,000,000 map. The summary shows the resulting ratio and equivalence."
+      },
+      "usage": {
+        "title": "Use and change the image basemap",
+        "item1": "After calibration, click Create project. To adjust the scale later, use Recalibrate in the toolbar, then Save. Back to project returns to the initial choice before creation.",
+        "item2": "With the paper equivalence set, distances show kilometres alongside their equivalent in centimetres on the map. In radius and distance fields, choose km or cm: switching converts the value without changing the distance, and the other unit stays visible below the field. Without a paper equivalence, inputs use kilometres.",
+        "item3": "Measurements follow the image scale, like a ruler on the paper map. Image mode does not georeference the scan and hides address search; there is no city calibration.",
+        "item4": "The image and its calibration are saved locally in this browser for this project. The image file and calibration are not included in JSON exports: keep the original file and your calibration values.",
+        "item5": "The basemap type is chosen at creation: image projects have no basemap selector. To work on a geographic map, create or open a project of that type. Recalibrate is only shown for image projects."
       }
     }
   },
@@ -970,7 +1011,7 @@
       "success": "Point added successfully",
       "startOfLine": "Start of {line}",
       "endOfLine": "End of {line}",
-      "pointAtDistance": "{line} at {distance} km"
+      "pointAtDistance": "{line} at {distance}"
     },
     "angleLine": {
       "title": "Line at Angle",
@@ -1034,7 +1075,7 @@
       "intersectionPoint": "Intersection Point",
       "selectPoint": "Select a point",
       "startPoint": "Start Point",
-      "distanceError": "Enter a distance of 0 km or more beyond the intersection point",
+      "distanceError": "Enter a non-negative distance beyond the intersection",
       "distinctPoints": "Choose two different points to define the line direction",
       "unreachableDistance": "This distance cannot be reached along the selected line",
       "selectBothPoints": "Please select both start and intersection points"
@@ -1087,7 +1128,7 @@
   },
   "intersectionEdit": {
     "title": "Editing {name}",
-    "distance": "{distance} km beyond the intersection",
+    "distance": "{distance} beyond the intersection",
     "snapped": "Snapped to {name}",
     "instructions": "Move to adjust · Click to save · Esc to cancel",
     "saved": "Intersection line distance updated",
@@ -1139,7 +1180,7 @@
     "noProject": "Your next discovery",
     "projectHint": "Create a project to keep your research.",
     "discover": "Explore the tools",
-    "newProjectDescription": "A space for your markers, drawings and clues. Your progress is automatically saved on this device.",
+    "newProjectDescription": "Name your project and choose what to work on.",
     "projectPlaceholder": "E.g. The secrets of Brocéliande",
     "createProject": "Create project",
     "closeSidebar": "Hide notebook",
@@ -1168,5 +1209,63 @@
     "regularizeProjectDescription": "Your elements do not belong to a project. Name your project to keep them and continue.",
     "recoverySelection": "Work to recover",
     "recoverySource": "Saved work {number}"
+  },
+  "imageMap": {
+    "apply": "Use this basemap",
+    "calibrateStep": "2 · Calibrate",
+    "changeFile": "Change image",
+    "clickScale": "Place points 1 and 2 in the image.",
+    "customFactor": "Meters per custom unit",
+    "distance": "Distance between points",
+    "extentError": "This scale exceeds the map limits. Check the distance in kilometres.",
+    "fileError": "Unreadable or unsupported image. Choose an image below 25 MB and 100 megapixels.",
+    "fileHint": "PNG, JPEG, WebP, GIF or BMP · Up to 25 MB. The file stays in this browser.",
+    "importStep": "1 · Import",
+    "importTitle": "Import an image",
+    "option": "Custom image…",
+    "pointCount": "{count} / 2 points placed",
+    "preview": "Image to calibrate",
+    "resetPoints": "Replace both points",
+    "saveError": "Could not save the image in this browser. Check available storage and try again.",
+    "scale": "Scale",
+    "scaleHint": "Click two distinct points in the image, then enter their real distance. Use the mouse wheel to zoom and click and drag to pan.",
+    "title": "Image basemap",
+    "unit": "Distance unit",
+    "units": {
+      "chain": "Chain",
+      "cm": "Centimeter (cm)",
+      "custom": "Custom / historical unit…",
+      "dam": "Decameter (dam)",
+      "dm": "Decimeter (dm)",
+      "fathom": "Fathom",
+      "ft": "International foot (ft)",
+      "furlong": "Furlong",
+      "hm": "Hectometer (hm)",
+      "in": "Inch (in)",
+      "km": "Kilometer (km)",
+      "link": "Link",
+      "m": "Meter (m)",
+      "mi": "Statute mile (mi)",
+      "mm": "Millimeter (mm)",
+      "nm": "Nanometer (nm)",
+      "nmi": "Nautical mile (NM)",
+      "rod": "Rod",
+      "yd": "Yard (yd)",
+      "µm": "Micrometer (µm)"
+    },
+    "distanceKm": "Real distance between the points (km)",
+    "paperDistanceCm": "Distance on the paper map (cm, optional)",
+    "paperDistanceHint": "Length of the same segment on the paper map. Enables distance input and display in centimetres.",
+    "byPoints": "Two points",
+    "byRatio": "Known ratio",
+    "ratioHint": "Enter the ratio for this file if known, for example from MapAnnot. It depends on the image resolution.",
+    "ratioLabel": "Metres per pixel",
+    "paperScaleLabel": "Km per 1 cm (optional)",
+    "paperScaleHint": "For example: 10 for a 1:1,000,000 map. Enables distances in centimetres.",
+    "adjustHint": "Click a point, then adjust it with the arrow keys. Shift + arrows for a larger step.",
+    "ratioValue": "1 pixel = {value} m",
+    "paperScaleValue": "1 cm on the map = {value} km",
+    "ratioPreview": "Scroll to zoom · Drag to pan",
+    "recalibrate": "Recalibrate"
   }
 }

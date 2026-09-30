@@ -29,8 +29,8 @@
           />
 
           <div class="d-flex gap-2 mb-4">
-            <v-text-field
-              v-model.number="form.distance"
+            <DistanceField
+              v-model="form.distance"
               class="flex-grow-1"
               density="compact"
               :label="$t('modals.addPointOnSegment.distance')"
@@ -63,12 +63,15 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import DistanceField from '@/components/shared/DistanceField.vue';
 import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { useDrawingContext } from '@/composables/mapContext';
+import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { useLayersStore } from '@/stores/layers';
 import { useUIStore } from '@/stores/ui';
 
+const { formatDistance } = useDistanceDisplay();
 const { getDistance, getSegmentEndpoint, interpolateLine, pointAtDistance } = useProjectGeometry();
 
 const { t } = useI18n();
@@ -184,7 +187,7 @@ function submitForm() {
       // Default: include distance info
       name = t('modals.addPointOnSegment.pointAtDistance', {
         line: segment.name,
-        distance: form.value.distance.toFixed(2),
+        distance: formatDistance(form.value.distance, 2),
       });
     }
   }

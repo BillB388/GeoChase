@@ -845,6 +845,38 @@ const DEFAULT_DATA: Section[] = [
     ],
   },
   {
+    id: 'image-map',
+    title: 'Fond de carte image',
+    icon: 'mdi-image-outline',
+    intro: '',
+    subsections: [
+      {
+        id: 'image-map-import',
+        title: '',
+        icon: 'mdi-image-plus-outline',
+        items: Array.from({ length: 3 }, () => ({ text: '' })),
+      },
+      {
+        id: 'image-map-points',
+        title: '',
+        icon: 'mdi-crosshairs',
+        items: Array.from({ length: 5 }, () => ({ text: '' })),
+      },
+      {
+        id: 'image-map-ratio',
+        title: '',
+        icon: 'mdi-ruler',
+        items: Array.from({ length: 3 }, () => ({ text: '' })),
+      },
+      {
+        id: 'image-map-usage',
+        title: '',
+        icon: 'mdi-image-edit-outline',
+        items: Array.from({ length: 5 }, () => ({ text: '' })),
+      },
+    ],
+  },
+  {
     id: 'pdf',
     title: 'Documents PDF',
     icon: 'mdi-file-pdf-box',
@@ -943,6 +975,7 @@ const sectionTitleKeys: Record<string, string> = {
   notes: 'tutorial.notes',
   points: 'layers.points',
   projects: 'tutorial.projects',
+  'image-map': 'tutorial.imageMapSection.title',
   pdf: 'tutorial.pdf',
   tips: 'tutorial.tipsTricks',
 };
@@ -970,6 +1003,11 @@ const featureContentKeys: Record<string, string> = {
 };
 
 const subsectionTitleKeys: Record<string, string> = {
+  'image-map-import': 'tutorial.imageMapSection.import.title',
+  'image-map-points': 'tutorial.imageMapSection.points.title',
+  'image-map-ratio': 'tutorial.imageMapSection.ratio.title',
+  'image-map-usage': 'tutorial.imageMapSection.usage.title',
+
   'interface-toolbar': 'tutorial.guideContent.interface.toolbar.title',
   'interface-more-menu': 'tutorial.guideContent.interface.moreMenu.title',
   'interface-sidebar': 'tutorial.guideContent.interface.sidebar.title',
@@ -1015,6 +1053,23 @@ const subsectionContentKeys: Record<string, string> = {
 };
 
 const subsectionItemKeys: Record<string, string[]> = {
+  'image-map-import': Array.from(
+    { length: 3 },
+    (_, index) => `tutorial.imageMapSection.import.item${index + 1}`
+  ),
+  'image-map-points': Array.from(
+    { length: 5 },
+    (_, index) => `tutorial.imageMapSection.points.item${index + 1}`
+  ),
+  'image-map-ratio': Array.from(
+    { length: 3 },
+    (_, index) => `tutorial.imageMapSection.ratio.item${index + 1}`
+  ),
+  'image-map-usage': Array.from(
+    { length: 5 },
+    (_, index) => `tutorial.imageMapSection.usage.item${index + 1}`
+  ),
+
   'interface-toolbar': [
     'tutorial.guideContent.interface.toolbar.item1',
     'tutorial.guideContent.interface.toolbar.item2',
@@ -1218,6 +1273,7 @@ function sectionIntro(id: string, fallback: string): string {
     notes: 'tutorial.notesSection.intro',
     points: 'tutorial.pointsSection.intro',
     projects: 'tutorial.projectsSection.intro',
+    'image-map': 'tutorial.imageMapSection.intro',
     pdf: 'tutorial.pdfSection.intro',
     tips: 'tutorial.guideContent.intros.tips',
   };
