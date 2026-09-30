@@ -162,9 +162,12 @@
             v-for="member in displayedGroupMembers(group)"
             :key="`${member.type}:${member.element.id}`"
             class="layer-item group-member-item"
-            :class="{
-              'layer-item-hidden': !uiStore.isElementVisible(member.type, member.element.id),
-            }"
+            :class="[
+              dropClasses(member.type, member.element.id),
+              {
+                'layer-item-hidden': !uiStore.isElementVisible(member.type, member.element.id),
+              },
+            ]"
             :data-group-id="group.id"
             :data-layer-id="member.element.id"
             :data-layer-type="member.type"
@@ -1531,6 +1534,7 @@ function dropClasses(type: ListElementType, id: string) {
   return {
     'layer-item-dragging': draggedElement.value?.type === type && draggedElement.value.id === id,
     'drag-over': position === 'link',
+    'point-link-target': position === 'link',
     'drop-before': position === 'before',
     'drop-after': position === 'after',
   };
@@ -2049,10 +2053,12 @@ onBeforeUnmount(cancelElementDrag);
   left: 0;
   right: 0;
   height: 4px;
+  border-radius: 999px;
   background: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.16);
+  box-shadow: 0 0 7px 2px rgba(var(--v-theme-primary), 0.55);
   pointer-events: none;
   z-index: 1;
+  animation: layer-drop-glow 0.8s ease-in-out infinite alternate;
 }
 .drop-before::before {
   top: -2px;
@@ -2234,5 +2240,35 @@ onBeforeUnmount(cancelElementDrag);
   background: rgba(var(--v-theme-primary), 0.15) !important;
   box-shadow: inset 0 0 0 2px rgb(var(--v-theme-primary));
   border-radius: 4px;
+}
+
+.layer-item.point-link-target {
+  background: rgba(var(--v-theme-primary), 0.2) !important;
+  box-shadow:
+    inset 0 0 0 2px rgb(var(--v-theme-primary)),
+    0 0 10px 3px rgba(var(--v-theme-primary), 0.5);
+  animation: layer-target-glow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes layer-drop-glow {
+  from {
+    opacity: 0.75;
+    box-shadow: 0 0 5px 1px rgba(var(--v-theme-primary), 0.4);
+  }
+
+  to {
+    opacity: 1;
+    box-shadow: 0 0 10px 3px rgba(var(--v-theme-primary), 0.7);
+  }
+}
+
+@keyframes layer-target-glow {
+  from {
+    filter: brightness(1.05);
+  }
+
+  to {
+    filter: brightness(1.3);
+  }
 }
 </style>
