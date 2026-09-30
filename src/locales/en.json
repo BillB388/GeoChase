@@ -459,12 +459,21 @@
         "organize": {
           "title": "Find and organize items",
           "content": "The left notebook groups project drawings and notes so you can find and manage them.",
-          "item1": "Groups contain circles, lines, routes, points, polygons and notes; expand or collapse each group.",
+          "item1": "Items stay organized by category; create a custom group to collect different types together.",
           "item2": "Use the Filter by name field to find an item.",
-          "item3": "Use a group eye button to show or hide all its items; each ⋮ menu controls one item.",
+          "item3": "A category eye shows or hides its items; each ⋮ menu offers actions for one item.",
           "item4": "Select an item name to center the map on it.",
           "item5": "Drag an item within its group to change its order.",
           "item6": "Drag one point onto another in the notebook to create a line."
+        },
+        "groups": {
+          "title": "Create and manage groups",
+          "content": "Collect different types of items in a group to keep the notebook easier to scan.",
+          "item1": "Click the folder + button next to the Elements heading, name the group and select the items to include.",
+          "item2": "A group can contain circles, lines, routes, points, polygons and notes.",
+          "item3": "Drag an item onto a group heading to move it into the group.",
+          "item4": "Use the pencil to rename the group or change its items; the eye shows or hides all its items.",
+          "item5": "Choose Remove from group in an item’s ⋮ menu to return it to its category. The folder − button dissolves the group without deleting its items."
         },
         "actions": {
           "item1": "Show or hide: Toggle this item on the map.",

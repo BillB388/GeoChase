@@ -459,12 +459,21 @@
         "organize": {
           "title": "Retrouver et organiser les éléments",
           "content": "Le carnet à gauche regroupe les tracés et les notes du projet pour les retrouver et les gérer facilement.",
-          "item1": "Cercles, lignes, itinéraires, points, polygones et notes sont regroupés ; chaque catégorie peut être repliée.",
+          "item1": "Les éléments restent classés par catégorie ; créez un groupe personnalisé pour rassembler des types différents.",
           "item2": "Utilisez le champ Filtrer par nom pour retrouver un élément.",
-          "item3": "L’œil d’une catégorie affiche ou masque tous ses éléments ; le menu ⋮ agit sur un élément seul.",
+          "item3": "L’œil d’une catégorie affiche ou masque ses éléments ; le menu ⋮ propose les actions d’un élément seul.",
           "item4": "Cliquez sur le nom d’un élément pour centrer la carte dessus.",
           "item5": "Faites glisser un élément dans sa catégorie pour changer l’ordre.",
           "item6": "Faites glisser un point sur un autre dans le carnet pour créer une ligne."
+        },
+        "groups": {
+          "title": "Créer et gérer des groupes",
+          "content": "Rassemblez des éléments de types différents dans un groupe pour alléger le carnet.",
+          "item1": "Cliquez sur le bouton dossier + près du titre Éléments, nommez le groupe et sélectionnez les éléments à y placer.",
+          "item2": "Un groupe peut contenir des cercles, lignes, itinéraires, points, polygones et notes.",
+          "item3": "Faites glisser un élément sur l’en-tête d’un groupe pour le ranger dedans.",
+          "item4": "Le crayon permet de modifier le nom et la sélection ; l’œil affiche ou masque tous les éléments du groupe.",
+          "item5": "Dans le menu ⋮ d’un élément, choisissez Sortir du groupe pour le remettre dans sa catégorie. Le bouton dossier − dissout le groupe sans supprimer ses éléments."
         },
         "actions": {
           "item1": "Afficher ou masquer : bascule la visibilité de l’élément sur la carte.",
