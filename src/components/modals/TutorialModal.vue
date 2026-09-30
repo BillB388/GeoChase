@@ -1,727 +1,974 @@
 <template>
-  <FloatingDialog v-model="isOpen" max-width="900px">
-    <v-card class="tutorial-card">
-      <v-card-title class="tutorial-title d-flex align-center gap-2">
-        <v-icon icon="mdi-book-open-variant" />
-        {{ $t('tutorial.title') }}
-      </v-card-title>
+  <FloatingDialog v-model="isOpen" max-width="1200px">
+    <v-card
+      class="tutorial-card d-flex flex-row overflow-hidden border bg-background"
+      elevation="24"
+      rounded="xl"
+    >
+      <v-sheet
+        class="tutorial-sidebar flex-shrink-0 d-flex flex-column h-100 border-e bg-surface"
+        width="290"
+      >
+        <div class="sidebar-header pa-6 border-b">
+          <div class="d-flex align-center gap-3 mb-1">
+            <v-avatar
+              class="elevation-2 shadow-primary"
+              color="primary"
+              rounded="lg"
+              size="38"
+              variant="flat"
+            >
+              <v-icon color="white" icon="mdi-book-open-variant" size="20" />
+            </v-avatar>
 
-      <v-card-text class="tutorial-content">
-        <v-tabs v-model="activeTab" class="tutorial-tabs">
-          <!-- Getting Started Tab -->
-          <v-tab value="getting-started">
-            <v-icon class="me-2" icon="mdi-rocket" />
-            {{ $t('tutorial.gettingStarted') }}
-          </v-tab>
+            <v-card-title
+              class="text-h6 font-weight-black text-high-emphasis tracking-tight line-height-tight pa-0"
+            >
+              {{ $t('tutorial.title') }}
+            </v-card-title>
+          </div>
 
-          <!-- Drawing Tab -->
-          <v-tab value="drawing">
-            <v-icon class="me-2" icon="mdi-pencil" />
-            {{ $t('tutorial.drawingTools') }}
-          </v-tab>
+          <div class="text-caption text-medium-emphasis ml-12">
+            {{ $t('tutorial.guideSubtitle') }}
+          </div>
+        </div>
 
-          <!-- Search Tab -->
-          <v-tab value="search">
-            <v-icon class="me-2" icon="mdi-magnify" />
-            {{ $t('tutorial.searchExplore') }}
-          </v-tab>
-
-          <!-- Navigation Tab -->
-          <v-tab value="navigation">
-            <v-icon class="me-2" icon="mdi-navigation" />
-            {{ $t('tutorial.navigation') }}
-          </v-tab>
-
-          <!-- Tools Tab -->
-          <v-tab value="tools">
-            <v-icon class="me-2" icon="mdi-tools" />
-            {{ $t('tutorial.tools') }}
-          </v-tab>
-
-          <!-- Layers Tab -->
-          <v-tab value="layers">
-            <v-icon class="me-2" icon="mdi-layers" />
-            {{ $t('tutorial.layers') }}
-          </v-tab>
-
-          <!-- Notes Tab -->
-          <v-tab value="notes">
-            <v-icon class="me-2" icon="mdi-note-text" />
-            {{ $t('tutorial.notes') }}
-          </v-tab>
-
-          <!-- Points Tab -->
-          <v-tab value="points">
-            <v-icon class="me-2" icon="mdi-map-marker" />
-            {{ $t('layers.points') }}
-          </v-tab>
-
-          <!-- Projects Tab -->
-          <v-tab value="projects">
-            <v-icon class="me-2" icon="mdi-folder" />
-            {{ $t('tutorial.projects') }}
-          </v-tab>
-
-          <!-- PDF Tab -->
-          <v-tab value="pdf">
-            <v-icon class="me-2" icon="mdi-file-pdf-box" />
-            {{ $t('tutorial.pdf') }}
-          </v-tab>
-
-          <!-- Tips Tab -->
-          <v-tab value="tips">
-            <v-icon class="me-2" icon="mdi-lightbulb" />
-            {{ $t('tutorial.tipsTricks') }}
+        <v-tabs
+          v-model="activeTabId"
+          class="tutorial-tabs flex-grow-1 overflow-y-auto px-3 py-4"
+          direction="vertical"
+          hide-slider
+        >
+          <v-tab
+            v-for="section in tutorialData"
+            :key="section.id"
+            :aria-label="sectionTitle(section.id)"
+            class="modern-nav-item mb-1 rounded-lg justify-start"
+            :value="section.id"
+          >
+            <v-icon :icon="section.icon" size="20" start />
+            {{ sectionTitle(section.id) }}
           </v-tab>
         </v-tabs>
 
-        <v-window v-model="activeTab" class="mt-4">
-          <!-- Getting Started -->
-          <v-window-item value="getting-started">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.gettingStartedSection.heading') }}</h3>
+        <div class="sidebar-footer pa-4 border-t d-flex flex-column gap-3">
+          <div class="text-center">
+            <span
+              class="text-caption text-medium-emphasis d-flex align-center justify-center gap-2"
+            >
+              <kbd class="modern-kbd px-2 py-1 rounded">ESC</kbd>
+              {{ $t('tutorial.closeHint') }}
+            </span>
+          </div>
+        </div>
+      </v-sheet>
 
-              <p class="mb-2">
-                {{ $t('tutorial.gettingStartedSection.intro') }}
+      <div
+        class="tutorial-content-area v-window-item--active flex-grow-1 overflow-y-auto bg-background"
+      >
+        <v-container v-if="activeSection" class="pa-10" fluid>
+          <div
+            class="tutorial-section content-header mb-10 d-flex align-start justify-space-between"
+          >
+            <div>
+              <h3 class="text-h3 font-weight-black text-high-emphasis mb-3 tracking-tight">
+                {{ sectionTitle(activeSection.id) }}
+              </h3>
+
+              <p class="text-h6 text-medium-emphasis font-weight-regular max-width-700">
+                {{ sectionIntro(activeSection.id, activeSection.intro) }}
+              </p>
+            </div>
+
+            <v-btn color="medium-emphasis" rounded="xl" variant="tonal" @click="isOpen = false">
+              <v-icon icon="mdi-close" start />
+              {{ $t('common.close') }}
+            </v-btn>
+          </div>
+
+          <div v-if="activeSection.id === 'getting-started'" class="welcome-dashboard">
+            <v-row class="mb-4" dense>
+              <v-col
+                v-for="sub in activeSection.subsections"
+                :key="sub.id"
+                class="pa-3"
+                cols="12"
+                md="6"
+              >
+                <v-card
+                  :aria-label="sub.title"
+                  class="h-100 modern-feature-card pa-5 d-flex flex-column rounded-xl"
+                  variant="flat"
+                  @click="navigateTo(sub.linkTarget)"
+                >
+                  <div class="d-flex align-start gap-4 mb-3">
+                    <v-avatar color="primary" rounded="lg" size="46" variant="tonal">
+                      <v-icon :icon="sub.icon || 'mdi-compass'" size="24" />
+                    </v-avatar>
+
+                    <div class="pt-1">
+                      <v-card-title
+                        class="text-h6 font-weight-bold text-high-emphasis pa-0 mb-1 line-height-tight"
+                      >
+                        {{ sub.title }}
+                      </v-card-title>
+
+                      <v-card-text class="text-body-2 text-medium-emphasis pa-0">
+                        {{ sub.content }}
+                      </v-card-text>
+                    </div>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </div>
+
+          <div v-else class="content-blocks">
+            <div
+              v-for="sub in activeSection.subsections"
+              :key="sub.id"
+              class="tutorial-step modern-pedagogical-block mb-8 pa-6 rounded-xl bg-surface border"
+              :data-testid="
+                sub.id === 'proj-actions'
+                  ? 'projection-tutorial'
+                  : sub.id === 'draw-crossing'
+                    ? 'crossing-point-tutorial'
+                    : sub.id === 'draw-intersection-edit'
+                      ? 'intersection-edit-tutorial'
+                      : undefined
+              "
+            >
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div class="d-flex align-center gap-3">
+                  <div
+                    class="icon-wrapper d-flex align-center justify-center rounded-lg bg-background border"
+                  >
+                    <v-icon color="primary" :icon="sub.icon || 'mdi-chevron-right'" size="20" />
+                  </div>
+
+                  <h4 class="text-h5 font-weight-bold text-high-emphasis">
+                    {{ subsectionTitle(sub.id, sub.title) }}
+                  </h4>
+                </div>
+
+                <v-chip
+                  v-if="sub.badge"
+                  class="font-weight-bold"
+                  color="primary"
+                  size="small"
+                  variant="elevated"
+                >
+                  {{ sub.badge }}
+                </v-chip>
+              </div>
+
+              <p
+                v-if="sub.content"
+                class="text-body-1 text-medium-emphasis mb-5 text-pre-wrap ml-12"
+              >
+                {{ subsectionContent(sub) }}
               </p>
 
-              <p class="mb-3">{{ $t('tutorial.gettingStartedSection.whatYouCanDo') }}</p>
-
-              <ul class="tutorial-list">
-                <li>
-                  <strong>{{ $t('tutorial.gettingStartedSection.features.drawShapes') }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{
-                    $t('tutorial.gettingStartedSection.features.searchLocations')
-                  }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{
-                    $t('tutorial.gettingStartedSection.features.findAlongPaths')
-                  }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{ $t('tutorial.gettingStartedSection.features.viewElevation') }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{ $t('tutorial.gettingStartedSection.features.savePoints') }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{
-                    $t('tutorial.gettingStartedSection.features.manageProjects')
-                  }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{ $t('tutorial.gettingStartedSection.features.navigate') }}</strong>
-                </li>
-
-                <li>
-                  <strong>{{ $t('tutorial.gettingStartedSection.features.exportGPX') }}</strong>
-                </li>
-              </ul>
-            </div>
-          </v-window-item>
-
-          <!-- Drawing Tools -->
-          <v-window-item value="drawing">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.drawingToolsSection.heading') }}</h3>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.accessing.title') }}</h4>
-
-                <p class="mb-2">
-                  {{ $t('tutorial.drawingToolsSection.accessing.description') }}
-                </p>
-
+              <div
+                v-if="sub.items && sub.items.length > 0"
+                class="bullets-container mt-2 pa-5 rounded-lg ml-12 bg-background border-dashed"
+              >
                 <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.drawingToolsSection.accessing.clickButtons') }}</li>
-                  <li>{{ $t('tutorial.drawingToolsSection.accessing.collapse') }}</li>
-                  <li>{{ $t('tutorial.drawingToolsSection.accessing.toolsInclude') }}</li>
-                </ul>
-              </div>
+                  <li v-for="(item, bIndex) in sub.items" :key="bIndex">
+                    <strong v-if="item.label" class="text-high-emphasis"
+                      >{{ item.label }} <span class="text-primary mx-1">•</span>
+                    </strong>
 
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.circle.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.drawingToolsSection.circle.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.circle.name') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.circle.center') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.circle.radius') }}</strong>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.line.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.drawingToolsSection.line.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.twoPoints') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.azimuth') }}</strong>
-                  </li>
-
-                  <li>{{ $t('tutorial.drawingToolsSection.line.angle') }}</li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.intersection') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.parallel') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.freeHand') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.line.dragDrop') }}</strong>
-                  </li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4" data-testid="intersection-edit-tutorial">
-                <h4 class="mb-2">
-                  {{ $t('tutorial.drawingToolsSection.intersectionEditing.title') }}
-                </h4>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.drawingToolsSection.intersectionEditing.start') }}</li>
-                  <li>{{ $t('tutorial.drawingToolsSection.intersectionEditing.move') }}</li>
-                  <li>{{ $t('tutorial.drawingToolsSection.intersectionEditing.snap') }}</li>
-                  <li>{{ $t('tutorial.drawingToolsSection.intersectionEditing.save') }}</li>
-                </ol>
-
-                <p class="mt-2">
-                  {{ $t('tutorial.drawingToolsSection.intersectionEditing.cancel') }}
-                </p>
-              </div>
-
-              <div class="tutorial-step mb-4" data-testid="crossing-point-tutorial">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.crossingPoint.title') }}</h4>
-                <p>{{ $t('tutorial.drawingToolsSection.crossingPoint.hover') }}</p>
-                <p class="mt-2">{{ $t('tutorial.drawingToolsSection.crossingPoint.create') }}</p>
-                <p class="mt-2">{{ $t('tutorial.drawingToolsSection.crossingPoint.endpoints') }}</p>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.point.title') }}</h4>
-
-                <p>
-                  {{ $t('tutorial.drawingToolsSection.point.description') }}
-                </p>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.drawingToolsSection.polygon.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.drawingToolsSection.polygon.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.polygon.selectPoints') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.polygon.visual') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.polygon.extractCenter') }}</strong>
-                  </li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.drawingToolsSection.polygon.useCase') }}</strong>
+                    <span class="text-medium-emphasis">{{ item.text }}</span>
                   </li>
                 </ul>
               </div>
             </div>
-          </v-window-item>
-
-          <!-- Search & Explore -->
-          <v-window-item value="search">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.searchSection.heading') }}</h3>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.searchSection.addressSearch.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.searchSection.addressSearch.description') }}</p>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.searchSection.addressSearch.step1') }}</li>
-                  <li>{{ $t('tutorial.searchSection.addressSearch.step2') }}</li>
-                  <li>{{ $t('tutorial.searchSection.addressSearch.step3') }}</li>
-                  <li>{{ $t('tutorial.searchSection.addressSearch.step4') }}</li>
-                  <li>{{ $t('tutorial.searchSection.addressSearch.step5') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.searchSection.alongPath.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.searchSection.alongPath.description') }}</p>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.searchSection.alongPath.step1') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step2') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step3') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step4') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step5') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step6') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step7') }}</li>
-                  <li>{{ $t('tutorial.searchSection.alongPath.step8') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.searchSection.tips.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.searchSection.tips.elevationData') }}</li>
-                  <li>{{ $t('tutorial.searchSection.tips.altitudeFilter') }}</li>
-                  <li>{{ $t('tutorial.searchSection.tips.filtered') }}</li>
-                  <li>{{ $t('tutorial.searchSection.tips.nameFilter') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Navigation -->
-          <v-window-item value="navigation">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.navigationSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.navigationSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.navigationSection.howTo.title') }}</h4>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.navigationSection.howTo.step1') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.howTo.step2') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.howTo.step3') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.howTo.step4') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.howTo.step5') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.navigationSection.tips.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.navigationSection.tips.speedAdjust') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.tips.zoomBehavior') }}</li>
-                  <li>{{ $t('tutorial.navigationSection.tips.sidebarHide') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Tools -->
-          <v-window-item value="tools">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.toolsSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.toolsSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.toolsSection.accessing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.toolsSection.accessing.location') }}</li>
-                  <li>{{ $t('tutorial.toolsSection.accessing.toggle') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.toolsSection.ruler.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.toolsSection.ruler.description') }}</p>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.toolsSection.ruler.step1') }}</li>
-                  <li>{{ $t('tutorial.toolsSection.ruler.step2') }}</li>
-                  <li>{{ $t('tutorial.toolsSection.ruler.step3') }}</li>
-                  <li>{{ $t('tutorial.toolsSection.ruler.step4') }}</li>
-                </ol>
-
-                <p class="mt-2">{{ $t('tutorial.toolsSection.ruler.notSaved') }}</p>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Layers -->
-          <v-window-item value="layers">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.layersSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.layersSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.layersSection.accessing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.layersSection.accessing.location') }}</li>
-                  <li>{{ $t('tutorial.layersSection.accessing.toggle') }}</li>
-                  <li>{{ $t('tutorial.layersSection.accessing.sections') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.layersSection.actions.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.layersSection.actions.click') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.menu') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.hideShow') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.edit') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.delete') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.searchAlong') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.navigate') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.bearings') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.createWith') }}</li>
-                  <li>{{ $t('tutorial.layersSection.actions.addCenter') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.layersSection.dragDrop.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.layersSection.dragDrop.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.layersSection.dragDrop.drag') }}</li>
-                  <li>{{ $t('tutorial.layersSection.dragDrop.autoCreate') }}</li>
-                  <li>{{ $t('tutorial.layersSection.dragDrop.naming') }}</li>
-                  <li>{{ $t('tutorial.layersSection.dragDrop.fastest') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Notes -->
-          <v-window-item value="notes">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.notesSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.notesSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.notesSection.howToAdd.title') }}</h4>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.notesSection.howToAdd.step1') }}</li>
-                  <li>{{ $t('tutorial.notesSection.howToAdd.step2') }}</li>
-                  <li>{{ $t('tutorial.notesSection.howToAdd.step3') }}</li>
-                  <li>{{ $t('tutorial.notesSection.howToAdd.step4') }}</li>
-                  <li>{{ $t('tutorial.notesSection.howToAdd.step5') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.notesSection.managing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.notesSection.managing.viewOnMap') }}</li>
-                  <li>{{ $t('tutorial.notesSection.managing.edit') }}</li>
-                  <li>{{ $t('tutorial.notesSection.managing.delete') }}</li>
-                  <li>{{ $t('tutorial.notesSection.managing.onePerElement') }}</li>
-                  <li>{{ $t('tutorial.notesSection.managing.saved') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.notesSection.useCases.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.notesSection.useCases.clues') }}</li>
-                  <li>{{ $t('tutorial.notesSection.useCases.observations') }}</li>
-                  <li>{{ $t('tutorial.notesSection.useCases.whyCreated') }}</li>
-                  <li>{{ $t('tutorial.notesSection.useCases.calculations') }}</li>
-                  <li>{{ $t('tutorial.notesSection.useCases.reminders') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Points -->
-          <v-window-item value="points">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.pointsSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.pointsSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.pointsSection.howToCreate.title') }}</h4>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.pointsSection.howToCreate.step1') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.howToCreate.step2') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.howToCreate.step3') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.howToCreate.step4') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.howToCreate.step5') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.pointsSection.managing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.pointsSection.managing.access') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.managing.view') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.managing.edit') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.managing.delete') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.managing.sorted') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.pointsSection.useCases.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.pointsSection.useCases.circleCenter') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.useCases.lineEndpoints') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.useCases.polygonVertices') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.useCases.quickReference') }}</li>
-                  <li>{{ $t('tutorial.pointsSection.useCases.autoGenerated') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Projects -->
-          <v-window-item value="projects">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.projectsSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.projectsSection.intro') }}</p>
-
-              <div class="mb-4" data-testid="projection-tutorial">
-                <h4 class="mb-2">{{ $t('tutorial.projectsSection.projection.title') }}</h4>
-                <p>{{ $t('tutorial.projectsSection.projection.choice') }}</p>
-                <p class="mt-2">{{ $t('tutorial.projectsSection.projection.settings') }}</p>
-                <p class="mt-2">{{ $t('tutorial.projectsSection.projection.export') }}</p>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.projectsSection.accessing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.projectsSection.accessing.icon') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.accessing.dropdown') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.projectsSection.projectActions.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.projectsSection.projectActions.newProject') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.projectActions.loadProject') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.projectActions.exportJSON') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.projectActions.importJSON') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.projectActions.exportGPX') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.projectsSection.features.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.projectsSection.features.storage') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.features.autoSave') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.features.renameDelete') }}</li>
-                  <li>{{ $t('tutorial.projectsSection.features.gpxExport') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- PDF Documents -->
-          <v-window-item value="pdf">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.pdfSection.heading') }}</h3>
-              <p class="mb-3">{{ $t('tutorial.pdfSection.intro') }}</p>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.pdfSection.uploading.title') }}</h4>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.pdfSection.uploading.step1') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.uploading.step2') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.uploading.step3') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.uploading.step4') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.pdfSection.viewing.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.pdfSection.viewing.openPanel') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.viewing.resize') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.viewing.navigate') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.viewing.zoom') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.pdfSection.passwordProtected.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.pdfSection.passwordProtected.description') }}</p>
-
-                <ol class="tutorial-list">
-                  <li>{{ $t('tutorial.pdfSection.passwordProtected.step1') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.passwordProtected.step2') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.passwordProtected.step3') }}</li>
-                </ol>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.pdfSection.features.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.pdfSection.features.storage') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.features.perProject') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.features.persistent') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.features.delete') }}</li>
-                  <li>{{ $t('tutorial.pdfSection.features.notExported') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-
-          <!-- Tips & Tricks -->
-          <v-window-item value="tips">
-            <div class="tutorial-section">
-              <h3 class="mb-3">{{ $t('tutorial.tipsSection.heading') }}</h3>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.keyboardShortcuts.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.arrows') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.z') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.esc') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.rightClick') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.alt') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.keyboardShortcuts.ctrl') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.precisionMode.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.tipsSection.precisionMode.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.activate') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.lens') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.crosshair') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.sameZoom') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.deactivate') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.precisionMode.use') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.bearingsAnalysis.title') }}</h4>
-                <p class="mb-2">{{ $t('tutorial.tipsSection.bearingsAnalysis.description') }}</p>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.bearingsAnalysis.openView') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.bearingsAnalysis.viewCalc') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.bearingsAnalysis.sort') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.bearingsAnalysis.navigate') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.bearingsAnalysis.use') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.drawingTips.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.saveFirst') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.quickLine') }}</li>
-
-                  <li>
-                    <strong>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.title') }}</strong>
-
-                    <ul>
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.setStart') }}</li>
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.preview') }}</li>
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.lockAzimuth') }}</li>
-
-                      <li>
-                        {{ $t('tutorial.tipsSection.drawingTips.freeHandMode.lockDistance') }}
-                      </li>
-
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.tooltip') }}</li>
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.finalize') }}</li>
-                      <li>{{ $t('tutorial.tipsSection.drawingTips.freeHandMode.predefined') }}</li>
-                    </ul>
-                  </li>
-
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.multipleLines') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.intersectionMode') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.azimuthMode') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.parallelMode') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.drawingTips.autoNames') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step mb-4">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.searchWorkflow.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.searchWorkflow.addressSearch') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.searchWorkflow.drawLine') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.searchWorkflow.searchAlong') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.searchWorkflow.filterAltitude') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.searchWorkflow.markFindings') }}</li>
-                </ul>
-              </div>
-
-              <div class="tutorial-step">
-                <h4 class="mb-2">{{ $t('tutorial.tipsSection.projectManagement.title') }}</h4>
-
-                <ul class="tutorial-list">
-                  <li>{{ $t('tutorial.tipsSection.projectManagement.saveFrequently') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.projectManagement.descriptiveNames') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.projectManagement.exportGPX') }}</li>
-                  <li>{{ $t('tutorial.tipsSection.projectManagement.importGPX') }}</li>
-                </ul>
-              </div>
-            </div>
-          </v-window-item>
-        </v-window>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="primary" @click="isOpen = false">{{ $t('common.close') }}</v-btn>
-      </v-card-actions>
+          </div>
+        </v-container>
+      </div>
     </v-card>
   </FloatingDialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+// Le bloc script reste rigoureusement identique pour garantir la compatibilité
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FloatingDialog from '@/components/shared/FloatingDialog.vue';
 import { useUIStore } from '@/stores/ui';
 
-const uiStore = useUIStore();
-const activeTab = ref('getting-started');
+interface DetailItem {
+  label?: string;
+  text: string;
+}
 
+interface Subsection {
+  id: string;
+  title: string;
+  icon?: string;
+  badge?: string;
+  content?: string;
+  linkTarget?: string;
+  items?: DetailItem[];
+}
+
+interface Section {
+  id: string;
+  title: string;
+  icon: string;
+  intro: string;
+  subsections: Subsection[];
+}
+
+const uiStore = useUIStore();
+const { t } = useI18n();
 const isOpen = ref(false);
+const activeTabId = ref('getting-started');
+
+const DEFAULT_DATA: Section[] = [
+  {
+    id: 'getting-started',
+    title: 'Premiers Pas',
+    icon: 'mdi-rocket',
+    intro: "Bienvenue dans l'interface cartographique. Voici les fonctionnalités principales :",
+    subsections: [
+      {
+        id: 'feat-workspace',
+        title: 'Repérer les commandes',
+        icon: 'mdi-view-dashboard-outline',
+        content:
+          'Les outils principaux sont dans le bandeau du haut. « Construire » ouvre les tracés avancés.',
+        linkTarget: 'drawing',
+      },
+      {
+        id: 'feat-interface',
+        title: 'Personnaliser l’espace de travail',
+        icon: 'mdi-palette-outline',
+        content:
+          'Le menu ⋯ en haut à droite donne accès aux thèmes, à la langue et au dépôt GitHub.',
+        linkTarget: 'interface',
+      },
+      {
+        id: 'feat-draw',
+        title: 'Tracer des formes',
+        icon: 'mdi-pencil-ruler',
+        content:
+          'Points, cercles, lignes, itinéraires et polygones, avec des constructions avancées.',
+        linkTarget: 'drawing',
+      },
+      {
+        id: 'feat-search',
+        title: 'Recherche de lieux',
+        icon: 'mdi-magnify-expand',
+        content:
+          'La recherche d’adresse est au centre du bandeau supérieur ; choisissez aussi le fond de carte à droite.',
+        linkTarget: 'search',
+      },
+      {
+        id: 'feat-path',
+        title: "Recherche le long d'un parcours",
+        icon: 'mdi-map-marker-path',
+        content: "Trouver des éléments à distance définie d'un itinéraire.",
+        linkTarget: 'search',
+      },
+      {
+        id: 'feat-elevation',
+        title: 'Profils altimétriques',
+        icon: 'mdi-chart-bell-curve-cumulative',
+        content: "Analyser le relief et l'altitude des segments.",
+        linkTarget: 'search',
+      },
+      {
+        id: 'feat-points',
+        title: 'Enregistrer des points',
+        icon: 'mdi-map-marker',
+        content: 'Gérer coordonnées et centres géométriques.',
+        linkTarget: 'points',
+      },
+      {
+        id: 'feat-projects',
+        title: 'Gérer des projets',
+        icon: 'mdi-folder-cog',
+        content: 'Sauvegardes, projections et exports GPX.',
+        linkTarget: 'projects',
+      },
+    ],
+  },
+  {
+    id: 'interface',
+    title: 'Interface et thèmes',
+    icon: 'mdi-palette-outline',
+    intro: 'Retrouvez les commandes dans la nouvelle disposition de l’espace de travail.',
+    subsections: [
+      {
+        id: 'interface-toolbar',
+        title: 'Bandeau supérieur',
+        icon: 'mdi-dock-top',
+        content:
+          'La première rangée contient la recherche d’adresse, le menu Projets, l’aide et le menu ⋯. La seconde rangée rassemble les outils de dessin et le choix du fond de carte.',
+        items: [
+          {
+            label: 'Point, Cercle, Ligne, Itinéraire, Polygone',
+            text: 'Ouvrent leur formulaire de création.',
+          },
+          {
+            label: 'Construire',
+            text: 'Dépliez ce menu pour accéder à Azimut, Intersection, Parallèle, Main levée et Ligne avec angle.',
+          },
+          {
+            label: 'Note et PDF',
+            text: 'Créent une note ou importent/ouvrent le document PDF du projet.',
+          },
+          {
+            label: 'Fond de carte',
+            text: 'Le sélecteur à droite propose Geoportail (IGN), OpenStreetMap et les fonds Google Plan, Satellite et Relief.',
+          },
+          {
+            label: 'Replier le bandeau',
+            text: 'Utilisez la petite flèche sous le bandeau pour gagner de la place ; la flèche le rouvre.',
+          },
+        ],
+      },
+      {
+        id: 'interface-more-menu',
+        title: 'Menu ⋯ : thèmes, langue et GitHub',
+        icon: 'mdi-dots-horizontal',
+        content:
+          'Le menu à trois points en haut à droite regroupe les réglages de l’espace de travail.',
+        items: [
+          {
+            label: 'Thèmes',
+            text: 'Ouvre les 12 palettes : Clair, Océan, Forêt, Iris, Lagon, Terre cuite, Rose, Ambre, Menthe, Indigo, Prune et Sombre. Le choix est mémorisé.',
+          },
+          {
+            label: 'Langue',
+            text: 'Ouvre le choix de la langue de l’application : français ou anglais.',
+          },
+          { label: 'GitHub', text: 'Ouvre le dépôt du projet dans un nouvel onglet.' },
+        ],
+      },
+      {
+        id: 'interface-sidebar',
+        title: 'Carnet latéral et carte',
+        icon: 'mdi-book-open-page-variant-outline',
+        content:
+          'Le bouton au milieu du bord gauche ouvre ou masque le carnet des éléments. Les boutons + et − en bas à droite règlent le zoom de la carte. Le bouton rond des outils, juste en dessous, ouvre la règle de mesure.',
+      },
+    ],
+  },
+  {
+    id: 'drawing',
+    title: 'Outils de Dessin',
+    icon: 'mdi-pencil',
+    intro: 'Outils de tracé pour une précision géométrique sur la carte.',
+    subsections: [
+      {
+        id: 'draw-access',
+        title: 'Accès aux outils',
+        icon: 'mdi-toolbox',
+        content:
+          'Dans le bandeau supérieur, les boutons Point, Cercle, Ligne, Itinéraire et Polygone ouvrent chacun un formulaire. Le menu Construire regroupe les autres outils de tracé.',
+        items: [
+          { text: 'Renseignez les paramètres, puis validez pour lancer ou enregistrer le dessin.' },
+          {
+            text: 'Pour une ligne, ouvrez Construire pour choisir Azimut, Intersection, Parallèle, Main levée ou Ligne avec angle.',
+          },
+          {
+            text: 'La couleur et les propriétés des éléments existants se règlent depuis leur menu ⋮ dans le carnet.',
+          },
+        ],
+      },
+      {
+        id: 'draw-itineraire',
+        title: 'Itinéraire',
+        icon: 'mdi-sign-direction',
+        content:
+          'Le bouton Itinéraire ouvre un formulaire qui calcule un trajet routier entre des points déjà enregistrés.',
+        items: [
+          { label: 'Nom', text: "Nom de l'itinéraire" },
+          {
+            label: 'Départ et arrivée',
+            text: 'Choisissez les points enregistrés dans les listes.',
+          },
+          {
+            label: 'Étapes',
+            text: 'Ajoutez des points de passage, puis réordonnez-les ou retirez-les si besoin.',
+          },
+          {
+            label: 'Profil et optimisation',
+            text: 'Choisissez À pied ou En voiture, puis Le plus court ou Le plus rapide.',
+          },
+          {
+            label: 'Calculer',
+            text: 'L’itinéraire calculé apparaît ensuite dans le carnet avec les autres éléments.',
+          },
+        ],
+      },
+      {
+        id: 'draw-circle',
+        title: 'Cercle de Rayon',
+        icon: 'mdi-circle-outline',
+        content: "Cercle de portée exacte autour d'un centre.",
+        items: [
+          { label: 'Nom', text: 'Nom personnalisé du cercle' },
+          { label: 'Centre', text: 'Sélectionnez un point enregistré ou saisie de coordonnées' },
+          { label: 'Rayon', text: 'Saisie en kilomètres' },
+        ],
+      },
+      {
+        id: 'draw-line',
+        title: 'Tracé de Lignes & Azimuts',
+        icon: 'mdi-vector-line',
+        badge: 'Essentiel',
+        content: 'Modes de tracé disponibles :',
+        items: [
+          { label: 'Par deux points', text: "Sélection d'un point A puis d'un point B" },
+          {
+            label: 'Mode Azimut',
+            text: 'Dans Construire → Azimut, indiquez un point de départ, un angle (0° à 360°) et une longueur.',
+          },
+          {
+            label: 'Ligne avec angle',
+            text: 'Sélectionnez un point de départ, puis une ligne de référence passant par ce point.',
+          },
+          {
+            label: 'Intersection',
+            text: 'Dans Construire → Intersection, choisissez un départ, un point d’intersection et la longueur au-delà du croisement ; vous pouvez aussi créer le point d’arrivée.',
+          },
+          {
+            label: 'Parallèle',
+            text: 'Choisissez un point enregistré pour définir la latitude de la ligne parallèle.',
+          },
+          {
+            label: 'Main levée',
+            text: 'Placez le départ puis déplacez le curseur et cliquez pour terminer. Maintenez Alt pour verrouiller l’azimut ou Ctrl pour verrouiller la distance.',
+          },
+          {
+            label: 'Créer depuis deux points',
+            text: 'Dans le carnet, faites glisser un point sur un autre pour relier les deux points.',
+          },
+        ],
+      },
+      {
+        id: 'draw-intersection-edit',
+        title: "Édition d'Intersection",
+        icon: 'mdi-crosshairs-gps',
+        badge: 'Avancé',
+        content: "Ajustement du point d'intersection :",
+        items: [
+          {
+            label: '1',
+            text: "Activez la modification : Survolez l'extrémité de la ligne et cliquez sur la poignée bleue.",
+          },
+          {
+            label: '2',
+            text: "Ajustez la ligne : Déplacez la souris pour la prolonger ou la raccourcir. Le point de départ et l'intersection restent fixes.",
+          },
+          {
+            label: '3',
+            text: "Utilisez l'aimantage (optionnel) : L'extrémité peut s'accrocher à une autre ligne, un cercle ou un polygone proche (la poignée devient alors verte).",
+          },
+          {
+            label: '4',
+            text: 'Le panneau d’édition indique la distance au-delà du croisement. Cliquez de nouveau pour enregistrer et mettre à jour les éléments liés.',
+          },
+          {
+            label: '5',
+            text: 'Appuyez sur Échap ou choisissez Annuler pour restaurer la ligne d’origine.',
+          },
+        ],
+      },
+      {
+        id: 'draw-crossing',
+        title: 'Points de Croisement',
+        icon: 'mdi-map-marker-distance',
+        content:
+          'En mode ligne libre, survolez le croisement intérieur de deux lignes visibles : un marqueur signale le point détecté. Cliquez dessus pour ouvrir le formulaire et créer un point à ces coordonnées.',
+      },
+      {
+        id: 'draw-point',
+        title: 'Points Isolés',
+        icon: 'mdi-map-marker',
+        content:
+          'Le bouton Point du bandeau supérieur ouvre le formulaire. Vous pouvez aussi faire un clic droit sur la carte pour créer un point à cet endroit, puis lui donner un nom et vérifier ses coordonnées.',
+      },
+      {
+        id: 'draw-polygon',
+        title: 'Polygones',
+        icon: 'mdi-polygon',
+        content: 'Zones fermées à plusieurs sommets.',
+        items: [
+          {
+            label: 'Préparer les sommets',
+            text: 'Créez d’abord les points qui délimitent la zone, puis choisissez-les dans le formulaire Polygone.',
+          },
+          {
+            label: 'Calculs',
+            text: 'Le carnet affiche le nombre de sommets, le périmètre et la surface.',
+          },
+          {
+            label: 'Centre',
+            text: 'Dans le menu ⋮ du polygone, choisissez Ajouter le centre comme point.',
+          },
+          {
+            label: "Cas d'utilisation",
+            text: "Définir des zones de recherche, marquer des zones d'intérêt ou visualiser des limites",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'search',
+    title: 'Recherche & Exploration',
+    icon: 'mdi-magnify',
+    intro:
+      'Recherchez une adresse depuis le champ situé au centre du bandeau supérieur, puis explorez les lieux à proximité de vos tracés.',
+    subsections: [
+      {
+        id: 'search-address',
+        title: "Recherche d'adresse",
+        icon: 'mdi-map-marker-search',
+        items: [
+          {
+            label: '1',
+            text: 'Saisissez une adresse, une ville ou un lieu-dit dans la barre de recherche au centre du bandeau supérieur.',
+          },
+          {
+            label: '2',
+            text: 'Choisissez un résultat dans la liste pour centrer la carte sur cet emplacement.',
+          },
+          {
+            label: '3',
+            text: 'Utilisez le lieu sélectionné pour créer un point ou un cercle depuis les outils du bandeau.',
+          },
+        ],
+      },
+      {
+        id: 'search-path',
+        title: "Rechercher près d'une ligne ou d'un itinéraire",
+        icon: 'mdi-map-marker-path',
+        badge: 'Analyse',
+        items: [
+          {
+            label: '1',
+            text: 'Dans le carnet, ouvrez le menu ⋮ d’une ligne, d’un itinéraire ou d’un point et choisissez Lieux à proximité.',
+          },
+          {
+            label: '2',
+            text: 'Réglez la distance pour afficher la zone de recherche autour de l’élément.',
+          },
+          {
+            label: '3',
+            text: 'Filtrez les résultats par catégorie, nom ou altitude lorsque ces données sont disponibles ; cliquez sur un résultat pour le repérer sur la carte.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'navigation',
+    title: 'Navigation Virtuelle',
+    icon: 'mdi-navigation',
+    intro: 'Suivez un cercle, une ligne ou un itinéraire sur la carte au clavier.',
+    subsections: [
+      {
+        id: 'nav-howto',
+        title: "Mode d'emploi",
+        icon: 'mdi-compass-rose',
+        items: [
+          {
+            label: '1',
+            text: 'Dans le carnet, ouvrez le menu ⋮ d’un cercle, d’une ligne ou d’un itinéraire.',
+          },
+          {
+            label: '2',
+            text: 'Choisissez Naviguer : le bandeau supérieur affiche les consignes du mode.',
+          },
+          {
+            label: '3',
+            text: 'Utilisez les flèches gauche et droite pour avancer ou reculer le long du tracé ; Échap ou le bouton Quitter termine la navigation.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tools',
+    title: 'Outils de Mesure',
+    icon: 'mdi-tools',
+    intro: 'La règle mesure sur la carte sans ajouter de dessin au projet.',
+    subsections: [
+      {
+        id: 'tool-ruler',
+        title: 'Règle de Mesure',
+        icon: 'mdi-ruler',
+        items: [
+          {
+            label: '1',
+            text: 'Cliquez sur le bouton rond Outils en bas à droite, puis choisissez la règle dans la petite barre qui apparaît.',
+          },
+          {
+            label: '2',
+            text: 'Cliquez pour placer le départ, déplacez le curseur pour lire distance et azimut, puis cliquez de nouveau pour terminer. Échap annule la mesure ; aucun calque n’est créé.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'layers',
+    title: 'Gestion des Calques',
+    icon: 'mdi-layers',
+    intro: 'Le carnet à gauche réunit le projet courant, les éléments dessinés et leurs actions.',
+    subsections: [
+      {
+        id: 'layers-actions',
+        title: 'Retrouver et organiser les éléments',
+        icon: 'mdi-format-list-bulleted',
+        items: [
+          {
+            label: 'Catégories',
+            text: 'Cercles, lignes, itinéraires, points, polygones et notes sont regroupés et peuvent être repliés.',
+          },
+          {
+            label: 'Filtrer',
+            text: 'Utilisez le champ Filtrer par nom pour retrouver un élément.',
+          },
+          {
+            label: 'Visibilité',
+            text: 'Le bouton œil d’une catégorie affiche ou masque tous ses éléments ; chaque menu ⋮ permet de basculer un élément seul.',
+          },
+          {
+            label: 'Centrer',
+            text: 'Cliquez sur le nom d’un élément pour centrer la carte dessus.',
+          },
+          {
+            label: 'Réordonner',
+            text: 'Faites glisser un élément dans sa catégorie pour modifier l’ordre de la liste.',
+          },
+          {
+            label: 'Lier deux points',
+            text: 'Faites glisser un point sur un autre point pour créer une ligne entre eux.',
+          },
+        ],
+      },
+      {
+        id: 'layers-actions-2',
+        title: 'Actions du menu ⋮',
+        icon: 'mdi-format-list-bulleted',
+        items: [
+          {
+            label: 'Afficher / Masquer',
+            text: 'Change la visibilité de cet élément sur la carte.',
+          },
+          {
+            label: 'Lieux à proximité',
+            text: 'Disponible pour les lignes, itinéraires et points ; lance une recherche autour de cet élément.',
+          },
+          {
+            label: 'Naviguer',
+            text: 'Disponible pour les cercles, lignes et itinéraires ; lance le déplacement au clavier.',
+          },
+          {
+            label: 'Ajouter un point sur',
+            text: 'Pour une ligne, place un nouveau point à une distance définie depuis l’une de ses extrémités.',
+          },
+          {
+            label: 'Relèvements',
+            text: 'Pour un point, ouvre les distances et azimuts vers les autres points.',
+          },
+          {
+            label: 'Ajouter une note',
+            text: 'Ajoute ou modifie la note attachée à l’élément.',
+          },
+          {
+            label: 'Modifier',
+            text: 'Modifie les propriétés de l’élément ; le polygone se gère à partir de ses points.',
+          },
+          {
+            label: 'Couleur',
+            text: 'Pour les formes autres que les points, ouvre le sélecteur de couleur.',
+          },
+          { label: 'Ajouter le centre comme point', text: 'Action proposée pour les polygones.' },
+          { label: 'Supprimer', text: 'Retire l’élément après confirmation.' },
+        ],
+      },
+      {
+        id: 'layers-dragdrop',
+        title: 'Importer et exporter',
+        icon: 'mdi-file-upload-outline',
+        content:
+          'Le menu Projets du bandeau supérieur regroupe l’importation JSON, les exports JSON et GPX, ainsi que la gestion des projets.',
+      },
+    ],
+  },
+  {
+    id: 'notes',
+    title: 'Notes & Remarques',
+    icon: 'mdi-note-text',
+    intro:
+      'Ajoutez des notes autonomes depuis le bouton Note du bandeau supérieur, ou associez une note à un élément depuis son menu ⋮.',
+    subsections: [
+      {
+        id: 'notes-add',
+        title: 'Ajouter une Note',
+        icon: 'mdi-note-plus-outline',
+        items: [
+          {
+            label: '1',
+            text: 'Pour une note liée, ouvrez le menu ⋮ de l’élément dans le carnet ou sur la carte, puis choisissez Ajouter une note.',
+          },
+          {
+            label: '2',
+            text: 'Pour une note libre, cliquez sur Note dans la rangée d’outils du bandeau supérieur.',
+          },
+          {
+            label: '3',
+            text: 'Saisissez un titre et un contenu ; une note liée reste associée à l’élément choisi.',
+          },
+          {
+            label: '4',
+            text: 'Dans le formulaire, choisissez le type de forme à lier puis sélectionnez l’élément proposé.',
+          },
+          {
+            label: '5',
+            text: 'Les notes liées apparaissent sous forme d’infobulles lorsque vous survolez leur élément sur la carte.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'points',
+    title: "Points d'Intérêt",
+    icon: 'mdi-map-marker',
+    intro:
+      'Créez des repères géographiques, réutilisez-les dans vos tracés et retrouvez-les dans le carnet.',
+    subsections: [
+      {
+        id: 'points-manage',
+        title: 'Gestion',
+        icon: 'mdi-map-marker-multiple',
+        items: [
+          {
+            label: 'Créer',
+            text: 'Cliquez sur Point dans le bandeau supérieur, ou faites un clic droit à l’emplacement voulu sur la carte.',
+          },
+          {
+            label: 'Coordonnées',
+            text: 'Saisissez latitude et longitude, ou choisissez un point enregistré dans les champs de coordonnées des formulaires.',
+          },
+          {
+            label: 'Nom',
+            text: 'Donnez un nom au point ; s’il est laissé vide, l’application peut proposer un nom à partir du lieu.',
+          },
+          {
+            label: 'Gérer',
+            text: 'Retrouvez les points dans leur catégorie du carnet : cliquez pour centrer la carte, utilisez ⋮ pour modifier, ajouter une note, ouvrir les relèvements ou supprimer.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'projects',
+    title: 'Projets & Projections',
+    icon: 'mdi-folder',
+    intro:
+      'Le menu Projets (bouton dossier) du bandeau supérieur permet de gérer le travail enregistré.',
+    subsections: [
+      {
+        id: 'proj-system',
+        title: 'Créer, ouvrir et sauvegarder un projet',
+        icon: 'mdi-earth',
+        content:
+          'Les projets conservent automatiquement leurs éléments sur cet appareil. Le bouton Projets porte une icône de dossier.',
+        items: [
+          {
+            label: 'Nouveau projet',
+            text: 'Crée un espace de travail nommé ; choisissez sa projection à la création.',
+          },
+          {
+            label: 'Charger un projet',
+            text: 'Ouvre la liste des projets enregistrés pour basculer vers l’un d’eux.',
+          },
+          {
+            label: 'Exporter JSON',
+            text: 'Télécharge une sauvegarde de votre projet au format JSON.',
+          },
+          {
+            label: 'Importer JSON',
+            text: 'Charge un projet depuis un fichier de sauvegarde JSON.',
+          },
+          {
+            label: 'Exporter GPX',
+            text: 'Exporte les tracés du projet au format GPX pour les utiliser dans d’autres applications cartographiques.',
+          },
+          {
+            label: 'Paramètres du projet',
+            text: 'Ouvre le réglage de projection du projet courant.',
+          },
+          {
+            label: 'Enregistrement',
+            text: 'Les modifications sont sauvegardées automatiquement dans le navigateur. Exportez aussi un JSON pour disposer d’une copie de sauvegarde.',
+          },
+        ],
+      },
+      {
+        id: 'proj-actions',
+        title: 'Projection cartographique',
+        icon: 'mdi-earth',
+        content:
+          'Choisissez la projection dans le formulaire de nouveau projet, ou ouvrez Projet → Paramètres du projet pour la modifier ensuite. Mercator garde droites les lignes du tracé sur la carte ; Géodésique (WGS84) suit les plus courts chemins sur la Terre et peut apparaître courbé. Le fond de carte se choisit séparément dans le sélecteur à droite du bandeau.',
+        items: [
+          {
+            label: 'Portée',
+            text: 'La projection agit sur la géométrie, les distances et les azimuts du projet.',
+          },
+          {
+            label: 'Sauvegarde',
+            text: 'Le réglage est conservé dans le projet et dans les exports JSON.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pdf',
+    title: 'Documents PDF',
+    icon: 'mdi-file-pdf-box',
+    intro:
+      'Le bouton PDF du bandeau supérieur importe un document dans le projet courant ou ouvre son lecteur.',
+    subsections: [
+      {
+        id: 'pdf-upload',
+        title: 'Importer et lire un PDF',
+        icon: 'mdi-file-document-outline',
+        items: [
+          {
+            label: '1',
+            text: 'Ouvrez ou créez un projet, puis cliquez sur PDF dans la seconde rangée du bandeau supérieur.',
+          },
+          {
+            label: '2',
+            text: 'Si le projet n’a pas encore de document, choisissez un fichier PDF (50 Mo maximum). Sinon, le lecteur s’ouvre.',
+          },
+          {
+            label: '3',
+            text: 'Dans le lecteur, changez de page, cliquez sur le numéro pour accéder à une page, réglez le zoom, ajustez à la largeur ou à la page, faites pivoter, affichez les miniatures ou téléchargez le document.',
+          },
+          {
+            label: '4',
+            text: 'Redimensionnez le panneau en faisant glisser son bord gauche. Pour un PDF protégé, saisissez son mot de passe lorsqu’il est demandé.',
+          },
+          {
+            label: '4',
+            text: "Le mot de passe est enregistré localement pour éviter de le ressaisir ; il n'est pas envoyé à un serveur.",
+          },
+          {
+            label: 'Fonctionnalités',
+            text: 'Chaque projet peut avoir son propre PDF. Le document est conservé dans le stockage du navigateur séparément des dessins.',
+          },
+          {
+            label: 'Fonctionnalités',
+            text: 'La corbeille du lecteur supprime le PDF du projet. Le PDF est conservé séparément et n’est pas inclus dans l’export JSON.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tips',
+    title: 'Astuces & Raccourcis',
+    icon: 'mdi-lightbulb',
+    intro: 'Optimisation de votre flux de travail.',
+    subsections: [
+      {
+        id: 'tips-shortcuts',
+        title: 'Raccourcis Clavier',
+        icon: 'mdi-keyboard',
+        items: [
+          { label: 'Échap', text: 'Annuler le tracé ou fermer la modale' },
+          {
+            label: 'Z',
+            text: 'Activer ou quitter la loupe de précision ; Échap ou un clic droit la ferme également.',
+          },
+          {
+            label: 'Clic Droit',
+            text: 'Créer un point aux coordonnées cliquées sur la carte. Si la loupe est active, le clic droit la ferme.',
+          },
+          {
+            label: 'Ctrl',
+            text: 'Maintenez pendant le dessin main levée pour verrouiller la distance',
+          },
+          {
+            label: 'Clic gauche sur une forme',
+            text: 'Sélectionne l’élément dans le carnet et ouvre son menu d’actions à côté du pointeur.',
+          },
+          {
+            label: 'Alt / Ctrl en main levée',
+            text: 'Alt verrouille l’azimut et Ctrl verrouille la distance lorsque vous dessinez à main levée. Alt n’agit pas si un azimut a déjà été défini dans le formulaire.',
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const tutorialData = ref<Section[]>(DEFAULT_DATA);
+
+const activeSection = computed(() => {
+  return tutorialData.value.find((s) => s.id === activeTabId.value) || tutorialData.value[0];
+});
+
+const sectionTitleKeys: Record<string, string> = {
+  'getting-started': 'tutorial.gettingStarted',
+  interface: 'tutorial.interface',
+  drawing: 'tutorial.drawingTools',
+  search: 'tutorial.searchExplore',
+  navigation: 'tutorial.navigation',
+  tools: 'tutorial.tools',
+  layers: 'tutorial.layers',
+  notes: 'tutorial.notes',
+  points: 'layers.points',
+  projects: 'tutorial.projects',
+  pdf: 'tutorial.pdf',
+  tips: 'tutorial.tipsTricks',
+};
+
+function sectionTitle(id: string): string {
+  const key = sectionTitleKeys[id];
+  return key ? String(t(key)) : '';
+}
+
+function subsectionTitle(id: string, fallback: string): string {
+  if (id === 'tips-shortcuts') return String(t('tutorial.tipsSection.keyboardShortcuts.title'));
+  return fallback;
+}
+
+function subsectionContent(subsection: Subsection): string {
+  if (subsection.id === 'proj-actions') return String(t('tutorial.projectionHelp'));
+  if (subsection.id === 'draw-crossing') {
+    return `${t('tutorial.drawingToolsSection.crossingPoint.create')} ${t('tutorial.drawingToolsSection.crossingPoint.endpoints')}`;
+  }
+  if (subsection.id === 'draw-intersection-edit') {
+    const prefix = 'tutorial.drawingToolsSection.intersectionEditing';
+    return `${t(`${prefix}.start`)} ${t(`${prefix}.snap`)} ${t(`${prefix}.save`)} ${t(`${prefix}.cancel`)}`;
+  }
+  return subsection.content ?? '';
+}
+
+function sectionIntro(id: string, fallback: string): string {
+  return id === 'getting-started' ? String(t('tutorial.gettingStartedSection.intro')) : fallback;
+}
+
+function navigateTo(targetId?: string) {
+  if (targetId && tutorialData.value.some((s) => s.id === targetId)) {
+    activeTabId.value = targetId;
+  }
+}
 
 watch(
   () => uiStore.showTutorial,
@@ -739,98 +986,132 @@ watch(isOpen, (newValue) => {
 
 <style scoped>
 .tutorial-card {
-  background-color: rgb(var(--v-theme-surface-bright));
+  width: min(1000px, calc(100vw - 32px));
+  max-height: min(780px, calc(100dvh - 32px));
+  min-height: min(620px, calc(100dvh - 32px));
 }
 
-.tutorial-title {
-  background-color: rgb(var(--v-theme-surface));
-  color: rgb(var(--v-theme-on-surface));
+.tutorial-sidebar {
+  min-height: 0;
 }
 
-.tutorial-content {
-  max-height: 500px;
-  overflow-y: auto;
-  padding: 24px;
-  background-color: rgb(var(--v-theme-surface-bright));
+.tutorial-tabs :deep(.v-tab) {
+  justify-content: flex-start;
+  min-height: 44px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-.tutorial-tabs {
-  background-color: rgb(var(--v-theme-surface-bright));
+.tutorial-tabs :deep(.v-tab--selected) {
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
 }
 
-.tutorial-section {
-  padding: 12px 0;
-}
-
-.tutorial-section h3 {
-  font-size: 18px;
+.modern-kbd {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-bottom-width: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 12px;
 }
 
-.tutorial-section h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gc-ink);
+.tutorial-content-area {
+  min-width: 0;
 }
 
-.tutorial-step {
-  padding: 12px;
-  background: transparent;
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  border-radius: 4px;
+.tracking-tight {
+  letter-spacing: -0.03em !important;
+}
+.max-width-700 {
+  max-width: 700px;
+}
+.icon-wrapper {
+  width: 36px;
+  height: 36px;
+}
+.border-dashed {
+  border: 1px dashed rgba(var(--v-border-color), 0.4);
+}
+
+.modern-feature-card {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.modern-feature-card:hover,
+.modern-feature-card:focus-visible {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
 }
 
 .tutorial-list {
-  margin: 8px 0;
-  padding-left: 24px;
-  color: rgb(var(--v-theme-on-surface));
-  font-size: 14px;
-  line-height: 1.6;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-
 .tutorial-list li {
-  margin: 6px 0;
-  color: rgb(var(--v-theme-on-surface));
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
-
-.tutorial-list strong {
-  color: var(--gc-ink);
-  font-weight: 600;
-}
-
-p {
-  color: rgb(var(--v-theme-on-surface));
-  font-size: 14px;
+.text-pre-wrap {
+  white-space: pre-wrap;
   line-height: 1.6;
 }
 
-:deep(.v-tab) {
-  color: rgba(255, 255, 255, 0.7);
+@media (max-width: 700px) {
+  .tutorial-card {
+    flex-direction: column !important;
+    min-height: 0;
+  }
+  .tutorial-sidebar {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .sidebar-header {
+    padding: 16px !important;
+  }
+  .tutorial-tabs {
+    max-height: 132px;
+    padding: 8px !important;
+  }
+  .tutorial-tabs :deep(.v-slide-group__content) {
+    flex-direction: row;
+  }
+  .tutorial-tabs :deep(.v-tab) {
+    flex: 0 0 auto;
+    padding-inline: 12px;
+  }
+  .sidebar-footer {
+    display: none !important;
+  }
+  .tutorial-content-area .v-container {
+    padding: 20px !important;
+  }
+  .content-header {
+    gap: 12px;
+  }
+  .content-header h3 {
+    font-size: 1.75rem !important;
+  }
 }
 
-:deep(.v-tab--selected) {
-  color: rgb(var(--v-theme-on-surface));
-}
-
-:deep(.v-window) {
-  background-color: transparent;
-}
-
-:deep(.v-icon) {
-  color: var(--gc-muted);
-}
-
-:deep(.v-tab--selected .v-icon) {
-  color: var(--accent);
-}
-
-:deep(.v-card-actions) {
-  background-color: rgb(var(--v-theme-surface));
-}
-
-:deep(.v-btn) {
-  color: rgb(var(--v-theme-on-surface));
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

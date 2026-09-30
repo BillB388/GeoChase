@@ -117,6 +117,14 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+.floating-dialog > .v-overlay__content {
+  pointer-events: none;
+}
+
+.floating-dialog > .v-overlay__content > * {
+  pointer-events: auto;
+}
+
 .floating-dialog .v-card-title {
   cursor: grab;
   touch-action: none;
