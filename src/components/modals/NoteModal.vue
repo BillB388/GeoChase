@@ -112,6 +112,7 @@ const linkOptions = computed(() => [
   { label: t('route.title'), value: 'route' },
   { label: t('common.line'), value: 'lineSegment' },
   { label: t('common.point'), value: 'point' },
+  { label: t('common.polygon'), value: 'polygon' },
 ]);
 
 const availableElements = computed(() => {
@@ -128,6 +129,9 @@ const availableElements = computed(() => {
     }
     case 'lineSegment': {
       return layersStore.lineSegments.map((l) => ({ id: l.id, name: l.name }));
+    }
+    case 'polygon': {
+      return layersStore.polygons.map((polygon) => ({ id: polygon.id, name: polygon.name }));
     }
     case 'point': {
       return layersStore.points.map((p) => ({ id: p.id, name: p.name }));

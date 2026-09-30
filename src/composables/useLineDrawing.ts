@@ -10,6 +10,7 @@ import { fromLonLat, transform } from 'ol/proj';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { v4 as uuidv4 } from 'uuid';
 import { useLayersStore } from '@/stores/layers';
+import { useUIStore } from '@/stores/ui';
 import { usePointDrawing } from './usePointDrawing';
 import { useProjectGeometry } from './useProjectGeometry';
 
@@ -300,6 +301,8 @@ export function useLineDrawing(mapRef: MapContainer) {
       mapRef.linesSource.value.removeFeature(intersectionMarker);
     }
 
+    if (!useUIStore().isElementVisible('lineSegment', lineId)) return;
+
     // Redraw line segment
     const coordinates = lineCoordinates(
       { lat: startLat, lon: startLon },
@@ -429,6 +432,8 @@ export function useLineDrawing(mapRef: MapContainer) {
     if (feature) {
       mapRef.linesSource.value.removeFeature(feature);
     }
+
+    if (!useUIStore().isElementVisible('lineSegment', lineId)) return;
 
     // Redraw parallel
     const coordinates = [fromLonLat([-180, latitude]), fromLonLat([180, latitude])];

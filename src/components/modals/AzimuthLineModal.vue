@@ -108,38 +108,42 @@ const form = reactive({
   endpointName: '',
 });
 
-watch(isOpen, (newVal) => {
-  if (newVal) {
-    if (isEditing.value && uiStore.editingElement) {
-      const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
-      if (element) {
-        form.name = element.name;
-        form.startCoord = `${element.center.lat},${element.center.lon}`;
-        form.azimuth = element.endpoint
-          ? calculateBearing(
-              element.center.lat,
-              element.center.lon,
-              element.endpoint.lat,
-              element.endpoint.lon
-            )
-          : element.azimuth || 0;
-        form.distance = element.endpoint
-          ? getDistance(
-              [element.center.lon, element.center.lat],
-              [element.endpoint.lon, element.endpoint.lat]
-            ) / 1000
-          : element.distance || 0;
+watch(
+  isOpen,
+  (newVal) => {
+    if (newVal) {
+      if (isEditing.value && uiStore.editingElement) {
+        const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
+        if (element) {
+          form.name = element.name;
+          form.startCoord = `${element.center.lat},${element.center.lon}`;
+          form.azimuth = element.endpoint
+            ? calculateBearing(
+                element.center.lat,
+                element.center.lon,
+                element.endpoint.lat,
+                element.endpoint.lon
+              )
+            : element.azimuth || 0;
+          form.distance = element.endpoint
+            ? getDistance(
+                [element.center.lon, element.center.lat],
+                [element.endpoint.lon, element.endpoint.lat]
+              ) / 1000
+            : element.distance || 0;
+        }
+      } else {
+        form.name = '';
+        form.startCoord = null;
+        form.azimuth = 0;
+        form.distance = 0;
+        form.createEndpoint = false;
+        form.endpointName = '';
       }
-    } else {
-      form.name = '';
-      form.startCoord = null;
-      form.azimuth = 0;
-      form.distance = 0;
-      form.createEndpoint = false;
-      form.endpointName = '';
     }
-  }
-});
+  },
+  { immediate: true }
+);
 
 function closeModal() {
   uiStore.closeModal('azimuthLineModal');

@@ -11,6 +11,7 @@ import { fromLonLat } from 'ol/proj';
 import { Stroke, Style } from 'ol/style';
 import { v4 as uuidv4 } from 'uuid';
 import { useLayersStore } from '@/stores/layers';
+import { useUIStore } from '@/stores/ui';
 import { useProjectGeometry } from './useProjectGeometry';
 
 const DEFAULT_COLOR = '#000000';
@@ -148,6 +149,8 @@ export function useCircleDrawing(mapRef: MapContainer) {
     if (feature) {
       mapRef.circlesSource.value?.removeFeature(feature);
     }
+
+    if (!useUIStore().isElementVisible('circle', circleId)) return;
 
     // Redraw circle
     redrawCircleOnMap(

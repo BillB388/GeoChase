@@ -188,10 +188,7 @@ async function submitForm() {
     if (controller.signal.aborted || !isOpen.value) return;
 
     if (editingId) {
-      // Note: Point update not yet implemented in useDrawing
-      // For now, delete and recreate
-      drawing.deleteElement('point', editingId);
-      drawing.drawPoint(lat, lon, name);
+      drawing.updatePoint(editingId, lat, lon, name);
       uiStore.addToast(t('point.updated'), 'success');
       uiStore.stopEditing();
     } else {

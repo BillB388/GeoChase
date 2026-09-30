@@ -25,7 +25,10 @@ test('renders existing and new lines using the active project, including after s
   page,
   blankProject,
 }) => {
-  await page.evaluate(() => {
+  // Seed on the next document, after the previous page has flushed its autosave.
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('projection-map-seeded')) return;
+    sessionStorage.setItem('projection-map-seeded', '1');
     const projects: ProjectData[] = JSON.parse(localStorage.getItem('geochase_projects')!);
     const project = projects[0]!;
     project.projection = 'geodesic';

@@ -68,22 +68,28 @@ const form = reactive({
   endCoord: null as string | null,
 });
 
-watch(isOpen, (newVal) => {
-  if (newVal) {
-    if (isEditing.value && uiStore.editingElement) {
-      const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
-      if (element) {
-        form.name = element.name;
-        form.startCoord = `${element.center.lat},${element.center.lon}`;
-        form.endCoord = element.endpoint ? `${element.endpoint.lat},${element.endpoint.lon}` : null;
+watch(
+  isOpen,
+  (newVal) => {
+    if (newVal) {
+      if (isEditing.value && uiStore.editingElement) {
+        const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
+        if (element) {
+          form.name = element.name;
+          form.startCoord = `${element.center.lat},${element.center.lon}`;
+          form.endCoord = element.endpoint
+            ? `${element.endpoint.lat},${element.endpoint.lon}`
+            : null;
+        }
+      } else {
+        form.name = '';
+        form.startCoord = null;
+        form.endCoord = null;
       }
-    } else {
-      form.name = '';
-      form.startCoord = null;
-      form.endCoord = null;
     }
-  }
-});
+  },
+  { immediate: true }
+);
 
 function closeModal() {
   uiStore.closeModal('twoPointsLineModal');

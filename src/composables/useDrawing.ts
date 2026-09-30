@@ -12,6 +12,7 @@ import { Stroke, Style } from 'ol/style';
 import { watch } from 'vue';
 import { useImageMapStore } from '@/stores/imageMap';
 import { useLayersStore } from '@/stores/layers';
+import { useUIStore } from '@/stores/ui';
 import { useCircleDrawing } from './useCircleDrawing';
 import { useLineDrawing } from './useLineDrawing';
 import { usePointDrawing } from './usePointDrawing';
@@ -135,6 +136,22 @@ export function useDrawing(mapRef: MapContainer) {
           polygonDrawing.redrawPolygonOnMap(polygon.id, polygon.pointIds, polygon.color);
         }
         break;
+      }
+    }
+  };
+
+  const updatePoint = (id: string, lat: number, lon: number, name: string) => {
+    if (!layersStore.points.some((point) => point.id === id)) return;
+    const ui = useUIStore();
+    layersStore.updatePoint(id, { name, coordinates: { lat, lon } });
+    removeElementFromMap('point', id, mapRef.pointsSource?.value);
+    if (ui.isElementVisible('point', id)) {
+      pointDrawing.redrawPointOnMap(id, lat, lon);
+    }
+    for (const polygon of layersStore.polygons.filter((polygon) => polygon.pointIds.includes(id))) {
+      removeElementFromMap('polygon', polygon.id, mapRef.polygonsSource?.value);
+      if (ui.isElementVisible('polygon', polygon.id)) {
+        polygonDrawing.redrawPolygonOnMap(polygon.id, polygon.pointIds, polygon.color);
       }
     }
   };
@@ -559,6 +576,7 @@ export function useDrawing(mapRef: MapContainer) {
     updateParallel: lineDrawing.updateParallel,
     // Point methods
     drawPoint: pointDrawing.drawPoint,
+    updatePoint,
     // Polygon methods
     drawPolygon: polygonDrawing.drawPolygon,
     // Utility methods

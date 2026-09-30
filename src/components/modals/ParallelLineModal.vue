@@ -72,20 +72,24 @@ const latitudeItems = computed(() => {
   }));
 });
 
-watch(isOpen, (newVal) => {
-  if (newVal) {
-    if (isEditing.value && uiStore.editingElement) {
-      const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
-      if (element && element.longitude !== undefined) {
-        form.name = element.name;
-        form.latitude = element.longitude; // Note: this stores latitude in longitude field
+watch(
+  isOpen,
+  (newVal) => {
+    if (newVal) {
+      if (isEditing.value && uiStore.editingElement) {
+        const element = layersStore.lineSegments.find((l) => l.id === uiStore.editingElement?.id);
+        if (element && element.longitude !== undefined) {
+          form.name = element.name;
+          form.latitude = element.longitude; // Note: this stores latitude in longitude field
+        }
+      } else {
+        form.name = '';
+        form.latitude = null;
       }
-    } else {
-      form.name = '';
-      form.latitude = null;
     }
-  }
-});
+  },
+  { immediate: true }
+);
 
 function closeModal() {
   uiStore.closeModal('parallelLineModal');

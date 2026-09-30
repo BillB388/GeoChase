@@ -121,7 +121,10 @@ for (const target of ['point', 'line']) {
     blankProject,
   }) => {
     if (target === 'line') {
-      await page.evaluate(() => {
+      // The current app flushes its state on pagehide; seed the next document instead.
+      await page.addInitScript(() => {
+        if (sessionStorage.getItem('drag-target-seeded')) return;
+        sessionStorage.setItem('drag-target-seeded', '1');
         const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
         projects[0].data.lineSegments = [
           {
@@ -181,7 +184,9 @@ for (const projection of ['mercator', 'geodesic']) {
     page,
     blankProject,
   }) => {
-    await page.evaluate((projection) => {
+    await page.addInitScript((projection) => {
+      if (sessionStorage.getItem('drag-projection-seeded')) return;
+      sessionStorage.setItem('drag-projection-seeded', '1');
       const projects = JSON.parse(localStorage.getItem('geochase_projects')!);
       projects[0].projection = projection;
       localStorage.setItem('geochase_projects', JSON.stringify(projects));
