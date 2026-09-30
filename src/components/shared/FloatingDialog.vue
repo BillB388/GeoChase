@@ -66,6 +66,7 @@ function closeOnEscape(event: KeyboardEvent) {
 }
 
 function startDrag(event: PointerEvent) {
+  if (props.blocking) return;
   const target = event.target;
   if (!(target instanceof Element) || event.button !== 0) return;
   const title = target.closest('.v-card-title');
@@ -119,6 +120,15 @@ onBeforeUnmount(() => {
 <style>
 .floating-dialog > .v-overlay__content {
   pointer-events: none;
+}
+
+.floating-dialog.tutorial-fullscreen > .v-overlay__content {
+  width: 100vw;
+  height: 100dvh;
+  max-width: 100vw;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
 }
 
 .floating-dialog > .v-overlay__content > * {

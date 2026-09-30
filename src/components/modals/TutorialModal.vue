@@ -1,5 +1,5 @@
 <template>
-  <FloatingDialog v-model="isOpen" max-width="1200px">
+  <FloatingDialog v-model="isOpen" blocking class="tutorial-fullscreen" fullscreen>
     <v-card
       class="tutorial-card d-flex flex-row overflow-hidden border bg-background"
       elevation="24"
@@ -986,9 +986,11 @@ watch(isOpen, (newValue) => {
 
 <style scoped>
 .tutorial-card {
-  width: min(1000px, calc(100vw - 32px));
-  max-height: min(780px, calc(100dvh - 32px));
-  min-height: min(620px, calc(100dvh - 32px));
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 100dvh;
+  border-radius: 0 !important;
 }
 
 .tutorial-sidebar {

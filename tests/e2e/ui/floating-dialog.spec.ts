@@ -42,7 +42,6 @@ test('drawing windows can move while the map remains interactive', async ({
 
 for (const entry of [
   { name: 'note', button: 'create-note-btn' },
-  { name: 'tutorial', label: 'Welcome to GeoChase' },
   { name: 'point', button: 'draw-point-btn' },
   { name: 'circle', button: 'draw-circle-btn' },
   { name: 'line', button: 'draw-line-btn' },
@@ -106,3 +105,27 @@ for (const entry of [
     await expect(dialog).not.toBeVisible();
   });
 }
+
+test('tutorial opens as a full-page modal', async ({ page, blankProject }) => {
+  void blankProject;
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.getByRole('button', { name: 'Welcome to GeoChase', exact: true }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('.v-overlay__scrim')).toBeVisible();
+
+  const content = dialog.locator('.v-overlay__content');
+  await expect
+    .poll(async () => {
+      const bounds = await content.boundingBox();
+      return (
+        bounds !== null &&
+        Math.abs(bounds.x) <= 1 &&
+        Math.abs(bounds.y) <= 1 &&
+        Math.abs(bounds.width - 1440) <= 1 &&
+        Math.abs(bounds.height - 1100) <= 1
+      );
+    })
+    .toBe(true);
+});
