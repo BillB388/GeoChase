@@ -165,6 +165,32 @@ const definitions = [
     '#caacce',
     '#6a4471',
   ],
+  [
+    'goldVelvet',
+    'goldVelvet',
+    true,
+    '#050505',
+    '#121212',
+    '#242424',
+    '#ffd700',
+    '#ff5252',
+    '#fffdf5',
+    '#d6d0c1',
+    '#746000',
+  ],
+  [
+    'clockworkOrange',
+    'clockworkOrange',
+    true,
+    '#171412',
+    '#24201c',
+    '#342b24',
+    '#ff8a00',
+    '#f5f0e8',
+    '#f5f0e8',
+    '#c0b6a7',
+    '#5a4634',
+  ],
 ] as const;
 export const palettes: Palette[] = definitions.map(([id, theme]) => ({ id, theme }));
 export const themes: Record<string, ThemeDefinition> = Object.fromEntries(

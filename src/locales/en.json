@@ -443,7 +443,7 @@
         "moreMenu": {
           "title": "More menu: themes, language and GitHub",
           "content": "The three-dot menu in the top-right corner contains workspace settings.",
-          "item1": "Themes offers 12 palettes. Your choice is remembered.",
+          "item1": "Themes offers 14 palettes. Your choice is remembered.",
           "item2": "Language switches the app between French and English.",
           "item3": "GitHub opens the project repository in a new tab."
         },
@@ -468,12 +468,21 @@
         "organize": {
           "title": "Find and organize items",
           "content": "The left notebook groups project drawings and notes so you can find and manage them.",
-          "item1": "Groups contain circles, lines, routes, points, polygons and notes; expand or collapse each group.",
+          "item1": "Items stay organized by category; create a custom group to collect different types together.",
           "item2": "Use the Filter by name field to find an item.",
-          "item3": "Use a group eye button to show or hide all its items; each ⋮ menu controls one item.",
+          "item3": "A category eye shows or hides its items; each ⋮ menu offers actions for one item.",
           "item4": "Select an item name to center the map on it.",
           "item5": "Drag an item within its group to change its order.",
           "item6": "Drag one point onto another in the notebook to create a line."
+        },
+        "groups": {
+          "title": "Create and manage groups",
+          "content": "Collect different types of items in a group to keep the notebook easier to scan.",
+          "item1": "Click the folder + button next to Elements and name the group. You can create it empty and add items later.",
+          "item2": "A group can contain circles, lines, routes, points, polygons and notes.",
+          "item3": "Drag an item onto a group heading to add it, or drag it within the group to reorder its items.",
+          "item4": "Use the pencil to rename the group or change its items; the eye shows or hides all its items.",
+          "item5": "Drag an item out of the group to return it to its category, or choose Remove from group in its ⋮ menu. The folder − button dissolves the group without deleting its items."
         },
         "actions": {
           "item1": "Show or hide: Toggle this item on the map.",
@@ -908,10 +917,23 @@
     "noMatch": "No matching elements",
     "showAllCircles": "Show All Circles",
     "lineSegmentType": "Line",
+    "circleType": "Circle",
     "pointType": "Point",
     "polygonType": "Polygon",
     "standaloneNote": "Standalone note",
-    "linkedTo": "Linked to"
+    "linkedTo": "Linked to",
+    "createGroup": "Create group",
+    "editGroup": "Edit group",
+    "groupName": "Group name",
+    "selectGroupItems": "Choose items for this group",
+    "groupSearch": "Search items...",
+    "groupNoMatches": "No matching items",
+    "groupEmpty": "You can save an empty group and add items later.",
+    "groupShow": "Show all items in group",
+    "groupHide": "Hide all items in group",
+    "groupDelete": "Dissolve group",
+    "groupDeleteConfirm": "Dissolve “{name}” and return its items to the main lists? The elements will stay in the project.",
+    "groupSave": "Save group"
   },
   "contextMenu": {
     "edit": "Edit",
@@ -928,7 +950,8 @@
     "hide": "Hide",
     "locationNear": "Location Near",
     "navigate": "Navigate",
-    "show": "Show"
+    "show": "Show",
+    "removeFromGroup": "Remove from group"
   },
   "validation": {
     "required": "This field is required",
@@ -1203,7 +1226,9 @@
       "mint": "Mint",
       "indigo": "Indigo",
       "plum": "Plum",
-      "classicDark": "Dark"
+      "classicDark": "Dark",
+      "goldVelvet": "Gold & Velvet",
+      "clockworkOrange": "A Clockwork Orange"
     },
     "regularizeProjectTitle": "Save your work",
     "regularizeProjectDescription": "Your elements do not belong to a project. Name your project to keep them and continue.",

@@ -98,6 +98,11 @@
         <v-list-item-title>{{ $t('drawingColor.title') }}</v-list-item-title>
       </v-list-item>
 
+      <v-list-item v-if="inGroup" @click="handleRemoveFromGroup">
+        <template #prepend><v-icon icon="mdi-folder-remove-outline" size="small" /></template>
+        <v-list-item-title>{{ $t('contextMenu.removeFromGroup') }}</v-list-item-title>
+      </v-list-item>
+
       <!-- Delete -->
       <v-list-item class="text-error" @click="handleDelete">
         <template #prepend>
@@ -135,6 +140,7 @@ interface Props {
   elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon';
   elementId: string;
   position?: [number, number];
+  inGroup?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -143,6 +149,7 @@ const emit = defineEmits<{
     element: RouteElement | CircleElement | LineSegmentElement | PointElement | PolygonElement,
   ];
   delete: [elementType: string, elementId: string];
+  'remove-from-group': [elementType: string, elementId: string];
 }>();
 
 const isOpen = defineModel<boolean>({ default: false });
@@ -287,6 +294,11 @@ function handleDelete() {
     uiStore.addToast(t('toasts.elementDeleted', { name: element.name }), 'success');
     isOpen.value = false;
   }
+}
+
+function handleRemoveFromGroup() {
+  emit('remove-from-group', props.elementType, props.elementId);
+  isOpen.value = false;
 }
 
 function handleLocationNear() {

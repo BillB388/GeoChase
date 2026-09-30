@@ -54,6 +54,7 @@ export async function useMapInitialization(
           // Load project data into stores (preserves IDs)
           // Pass savedCoordinates for migration to points (legacy support)
           layersStore.loadLayers({
+            elementGroups: activeProject.data.elementGroups ?? [],
             circles: activeProject.data.circles,
             routes: activeProject.data.routes ?? [],
             lineSegments: activeProject.data.lineSegments,

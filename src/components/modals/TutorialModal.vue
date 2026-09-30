@@ -348,7 +348,7 @@ const DEFAULT_DATA: Section[] = [
         items: [
           {
             label: 'Thèmes',
-            text: 'Ouvre les 12 palettes : Clair, Océan, Forêt, Iris, Lagon, Terre cuite, Rose, Ambre, Menthe, Indigo, Prune et Sombre. Le choix est mémorisé.',
+            text: 'Ouvre les 14 palettes, dont Or & Velours et Orange mécanique. Le choix est mémorisé.',
           },
           {
             label: 'Langue',
@@ -705,6 +705,32 @@ const DEFAULT_DATA: Section[] = [
         ],
       },
       {
+        id: 'layers-groups',
+        title: 'Créer et gérer des groupes',
+        icon: 'mdi-folder-multiple-outline',
+        content:
+          'Rassemblez dans un groupe des éléments de types différents pour alléger le carnet.',
+        items: [
+          {
+            label: '1',
+            text: 'Cliquez sur le dossier + près du titre Calques, donnez un nom au groupe et sélectionnez les éléments.',
+          },
+          {
+            label: '2',
+            text: 'Vous pouvez regrouper des cercles, lignes, itinéraires, points, polygones et notes.',
+          },
+          { label: '3', text: 'Faites glisser un élément sur le groupe pour le ranger dedans.' },
+          {
+            label: '4',
+            text: 'Utilisez le crayon pour modifier le nom ou la sélection ; l’œil affiche ou masque tous les éléments du groupe.',
+          },
+          {
+            label: '5',
+            text: 'Dans le menu ⋮ d’un élément, choisissez Sortir du groupe pour le remettre dans sa catégorie. Le bouton dossier − dissout le groupe sans supprimer ses éléments.',
+          },
+        ],
+      },
+      {
         id: 'layers-dragdrop',
         title: 'Importer et exporter',
         icon: 'mdi-file-upload-outline',
@@ -1025,6 +1051,7 @@ const subsectionTitleKeys: Record<string, string> = {
   'tool-ruler': 'tutorial.toolsSection.ruler.title',
   'layers-actions': 'tutorial.guideContent.layers.organize.title',
   'layers-actions-2': 'tutorial.layersSection.actions.title',
+  'layers-groups': 'tutorial.guideContent.layers.groups.title',
   'layers-dragdrop': 'tutorial.guideContent.layers.importExport.title',
   'notes-add': 'tutorial.notesSection.howToAdd.title',
   'points-manage': 'tutorial.pointsSection.managing.title',
@@ -1048,6 +1075,7 @@ const subsectionContentKeys: Record<string, string> = {
   'search-path': 'tutorial.searchSection.alongPath.description',
   'tool-ruler': 'tutorial.toolsSection.ruler.description',
   'layers-actions': 'tutorial.guideContent.layers.organize.content',
+  'layers-groups': 'tutorial.guideContent.layers.groups.content',
   'layers-dragdrop': 'tutorial.guideContent.layers.importExport.content',
   'proj-system': 'tutorial.projectsSection.accessing.dropdown',
 };
@@ -1160,6 +1188,13 @@ const subsectionItemKeys: Record<string, string[]> = {
     'tutorial.guideContent.layers.organize.item4',
     'tutorial.guideContent.layers.organize.item5',
     'tutorial.guideContent.layers.organize.item6',
+  ],
+  'layers-groups': [
+    'tutorial.guideContent.layers.groups.item1',
+    'tutorial.guideContent.layers.groups.item2',
+    'tutorial.guideContent.layers.groups.item3',
+    'tutorial.guideContent.layers.groups.item4',
+    'tutorial.guideContent.layers.groups.item5',
   ],
   'layers-dragdrop': [],
   'notes-add': [

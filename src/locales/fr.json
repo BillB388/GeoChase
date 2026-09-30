@@ -443,7 +443,7 @@
         "moreMenu": {
           "title": "Menu Plus : thèmes, langue et GitHub",
           "content": "Le menu à trois points en haut à droite regroupe les réglages de l’espace de travail.",
-          "item1": "Thèmes propose 12 palettes. Votre choix est mémorisé.",
+          "item1": "Thèmes propose 14 palettes. Votre choix est mémorisé.",
           "item2": "Langue permet de choisir le français ou l’anglais.",
           "item3": "GitHub ouvre le dépôt du projet dans un nouvel onglet."
         },
@@ -468,12 +468,21 @@
         "organize": {
           "title": "Retrouver et organiser les éléments",
           "content": "Le carnet à gauche regroupe les tracés et les notes du projet pour les retrouver et les gérer facilement.",
-          "item1": "Cercles, lignes, itinéraires, points, polygones et notes sont regroupés ; chaque catégorie peut être repliée.",
+          "item1": "Les éléments restent classés par catégorie ; créez un groupe personnalisé pour rassembler des types différents.",
           "item2": "Utilisez le champ Filtrer par nom pour retrouver un élément.",
-          "item3": "L’œil d’une catégorie affiche ou masque tous ses éléments ; le menu ⋮ agit sur un élément seul.",
+          "item3": "L’œil d’une catégorie affiche ou masque ses éléments ; le menu ⋮ propose les actions d’un élément seul.",
           "item4": "Cliquez sur le nom d’un élément pour centrer la carte dessus.",
           "item5": "Faites glisser un élément dans sa catégorie pour changer l’ordre.",
           "item6": "Faites glisser un point sur un autre dans le carnet pour créer une ligne."
+        },
+        "groups": {
+          "title": "Créer et gérer des groupes",
+          "content": "Rassemblez des éléments de types différents dans un groupe pour alléger le carnet.",
+          "item1": "Cliquez sur le bouton dossier + près du titre Éléments et nommez le groupe. Vous pouvez le créer vide, puis lui ajouter des éléments plus tard.",
+          "item2": "Un groupe peut contenir des cercles, lignes, itinéraires, points, polygones et notes.",
+          "item3": "Faites glisser un élément sur l’en-tête d’un groupe pour l’y ranger, ou déplacez-le dans le groupe pour réorganiser ses éléments.",
+          "item4": "Le crayon permet de modifier le nom et la sélection ; l’œil affiche ou masque tous les éléments du groupe.",
+          "item5": "Faites glisser un élément hors du groupe pour le rendre à sa catégorie, ou choisissez Sortir du groupe dans son menu ⋮. Le bouton dossier − dissout le groupe sans supprimer ses éléments."
         },
         "actions": {
           "item1": "Afficher ou masquer : bascule la visibilité de l’élément sur la carte.",
@@ -908,10 +917,23 @@
     "noMatch": "Aucun élément correspondant",
     "showAllCircles": "Afficher tous les cercles",
     "lineSegmentType": "Ligne",
+    "circleType": "Cercle",
     "pointType": "Point",
     "polygonType": "Polygone",
     "standaloneNote": "Note autonome",
-    "linkedTo": "Lié à"
+    "linkedTo": "Lié à",
+    "createGroup": "Créer un groupe",
+    "editGroup": "Modifier le groupe",
+    "groupName": "Nom du groupe",
+    "selectGroupItems": "Choisissez les éléments à regrouper",
+    "groupSearch": "Rechercher parmi les éléments...",
+    "groupNoMatches": "Aucun élément correspondant",
+    "groupEmpty": "Vous pouvez enregistrer un groupe vide et y ajouter des éléments plus tard.",
+    "groupShow": "Afficher tous les éléments du groupe",
+    "groupHide": "Masquer tous les éléments du groupe",
+    "groupDelete": "Dissoudre le groupe",
+    "groupDeleteConfirm": "Dissoudre le groupe « {name} » et remettre ses éléments dans les listes principales ? Les éléments resteront dans le projet.",
+    "groupSave": "Enregistrer le groupe"
   },
   "contextMenu": {
     "edit": "Modifier",
@@ -928,7 +950,8 @@
     "hide": "Masquer",
     "locationNear": "Lieu à proximité",
     "navigate": "Naviguer",
-    "show": "Afficher"
+    "show": "Afficher",
+    "removeFromGroup": "Sortir du groupe"
   },
   "validation": {
     "required": "Ce champ est requis",
@@ -1203,7 +1226,9 @@
       "mint": "Menthe",
       "indigo": "Indigo",
       "plum": "Prune",
-      "classicDark": "Sombre"
+      "classicDark": "Sombre",
+      "goldVelvet": "Or & Velours",
+      "clockworkOrange": "Orange mécanique"
     },
     "regularizeProjectTitle": "Enregistrer votre travail",
     "regularizeProjectDescription": "Vos éléments ne sont associés à aucun projet. Donnez un nom à votre projet pour les conserver et continuer.",

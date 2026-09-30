@@ -30,6 +30,7 @@ export interface ProjectData {
 }
 
 export interface ProjectLayerData {
+  elementGroups?: ElementGroup[];
   routes?: RouteElement[];
   circles: CircleElement[];
   lineSegments: LineSegmentElement[];
@@ -39,7 +40,15 @@ export interface ProjectLayerData {
   savedCoordinates?: LegacyCoordinate[];
 }
 
+export interface ElementGroup {
+  id: string;
+  name: string;
+  /** Stable ordering for mixed element types inside the group. */
+  memberOrder?: string[];
+}
+
 export interface CircleElement {
+  groupId?: string;
   listOrder?: number; // Manual order within the sidebar category
   id: string;
   name: string;
@@ -51,6 +60,7 @@ export interface CircleElement {
 }
 
 export interface LineSegmentElement {
+  groupId?: string;
   listOrder?: number; // Manual order within the sidebar category
   id: string;
   name: string;
@@ -74,6 +84,7 @@ export interface LineSegmentElement {
 }
 
 export interface PointElement {
+  groupId?: string;
   listOrder?: number; // Manual order within the sidebar category
   id: string;
   name: string;
@@ -91,6 +102,7 @@ export interface PointElement {
 }
 
 export interface PolygonElement {
+  groupId?: string;
   listOrder?: number; // Manual order within the sidebar category
   id: string;
   name: string;
@@ -101,6 +113,7 @@ export interface PolygonElement {
 }
 
 export interface NoteElement {
+  groupId?: string;
   listOrder?: number; // Manual order within the sidebar category
   id: string;
   title: string;
@@ -144,6 +157,7 @@ export interface RouteData {
 }
 
 export interface RouteElement extends RouteData {
+  groupId?: string;
   id: string;
   name: string;
   start: { lat: number; lon: number };
