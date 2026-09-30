@@ -723,10 +723,23 @@
     "noMatch": "Aucun élément correspondant",
     "showAllCircles": "Afficher tous les cercles",
     "lineSegmentType": "Ligne",
+    "circleType": "Cercle",
     "pointType": "Point",
     "polygonType": "Polygone",
     "standaloneNote": "Note autonome",
-    "linkedTo": "Lié à"
+    "linkedTo": "Lié à",
+    "createGroup": "Créer un groupe",
+    "editGroup": "Modifier le groupe",
+    "groupName": "Nom du groupe",
+    "selectGroupItems": "Choisissez les éléments à regrouper",
+    "groupSearch": "Rechercher parmi les éléments...",
+    "groupNoMatches": "Aucun élément correspondant",
+    "groupEmpty": "Sélectionnez au moins un élément",
+    "groupShow": "Afficher tous les éléments du groupe",
+    "groupHide": "Masquer tous les éléments du groupe",
+    "groupDelete": "Dissoudre le groupe",
+    "groupDeleteConfirm": "Dissoudre le groupe « {name} » et remettre ses éléments dans les listes principales ? Les éléments resteront dans le projet.",
+    "groupSave": "Enregistrer le groupe"
   },
   "contextMenu": {
     "edit": "Modifier",
@@ -743,7 +756,8 @@
     "hide": "Masquer",
     "locationNear": "Lieu à proximité",
     "navigate": "Naviguer",
-    "show": "Afficher"
+    "show": "Afficher",
+    "removeFromGroup": "Sortir du groupe"
   },
   "validation": {
     "required": "Ce champ est requis",

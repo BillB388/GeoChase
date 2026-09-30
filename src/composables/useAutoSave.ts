@@ -30,6 +30,7 @@ export function useAutoSave() {
       () => layersStore.points,
       () => layersStore.polygons,
       () => layersStore.notes,
+      () => layersStore.elementGroups,
     ],
     debouncedAutoSave,
     { deep: true }

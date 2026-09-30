@@ -1,5 +1,6 @@
 import type {
   CircleElement,
+  ElementGroup,
   LayerImportData,
   LegacyCoordinate,
   LegacyPolygon,
@@ -30,6 +31,7 @@ function validateCircle(circle: unknown): circle is CircleElement {
     isRecord(circle) &&
     typeof circle.id === 'string' &&
     typeof circle.name === 'string' &&
+    (circle.groupId === undefined || typeof circle.groupId === 'string') &&
     isRecord(circle.center) &&
     typeof circle.center.lat === 'number' &&
     typeof circle.center.lon === 'number' &&
@@ -46,7 +48,8 @@ function validateRoute(value: unknown): value is RouteElement {
     !isRecord(value) ||
     !isRouteData(value) ||
     typeof value.id !== 'string' ||
-    typeof value.name !== 'string'
+    typeof value.name !== 'string' ||
+    (value.groupId !== undefined && typeof value.groupId !== 'string')
   )
     return false;
   if (value.intermediates !== undefined && !Array.isArray(value.intermediates)) return false;
@@ -67,6 +70,7 @@ function validateLineSegment(segment: unknown): segment is LineSegmentElement {
     !isRecord(segment) ||
     typeof segment.id !== 'string' ||
     typeof segment.name !== 'string' ||
+    (segment.groupId !== undefined && typeof segment.groupId !== 'string') ||
     !isRecord(segment.center) ||
     typeof segment.center.lat !== 'number' ||
     typeof segment.center.lon !== 'number' ||
@@ -108,6 +112,7 @@ function validatePoint(point: unknown): point is PointElement {
     isRecord(point) &&
     typeof point.id === 'string' &&
     typeof point.name === 'string' &&
+    (point.groupId === undefined || typeof point.groupId === 'string') &&
     isRecord(point.coordinates) &&
     typeof point.coordinates.lat === 'number' &&
     typeof point.coordinates.lon === 'number' &&
@@ -131,6 +136,7 @@ function validatePolygon(polygon: unknown): polygon is PolygonElement {
     isRecord(polygon) &&
     typeof polygon.id === 'string' &&
     typeof polygon.name === 'string' &&
+    (polygon.groupId === undefined || typeof polygon.groupId === 'string') &&
     Array.isArray(polygon.pointIds) &&
     polygon.pointIds.length >= 3 &&
     polygon.pointIds.every((pointId: unknown) => typeof pointId === 'string')
@@ -142,7 +148,18 @@ function validateNote(note: unknown): note is NoteElement {
     isRecord(note) &&
     typeof note.id === 'string' &&
     typeof note.title === 'string' &&
+    (note.groupId === undefined || typeof note.groupId === 'string') &&
     typeof note.content === 'string'
+  );
+}
+
+function validateElementGroup(group: unknown): group is ElementGroup {
+  return (
+    isRecord(group) &&
+    typeof group.id === 'string' &&
+    group.id.length > 0 &&
+    typeof group.name === 'string' &&
+    group.name.trim().length > 0
   );
 }
 
@@ -273,6 +290,24 @@ export function normalizeLayers(data: LayerImportData): ProjectLayerData {
     return validateNote(note);
   });
 
+  const validElementGroups = (data.elementGroups || [])
+    .filter(validateElementGroup)
+    .map((group) => ({ ...group, name: group.name.trim() }))
+    .filter((group, index, groups) => groups.findIndex((item) => item.id === group.id) === index);
+  const validGroupIds = new Set(validElementGroups.map((group) => group.id));
+  const groupableElements = [
+    ...validRoutes,
+    ...validCircles,
+    ...validLineSegments,
+    ...validPoints,
+    ...validPolygons,
+    ...validNotes,
+  ];
+  for (const element of groupableElements) {
+    if (element.groupId && !validGroupIds.has(element.groupId)) delete element.groupId;
+  }
+  const usedGroupIds = new Set(groupableElements.map((element) => element.groupId).filter(Boolean));
+
   // Assign timestamps to elements that don't have them (for old projects)
   // Use a sequential counter to maintain original order
   let baseTimestamp =
@@ -294,7 +329,9 @@ export function normalizeLayers(data: LayerImportData): ProjectLayerData {
     }
   }
 
+  const usedElementGroups = validElementGroups.filter((group) => usedGroupIds.has(group.id));
   return {
+    ...(usedElementGroups.length > 0 ? { elementGroups: usedElementGroups } : {}),
     routes: validRoutes,
     circles: validCircles,
     lineSegments: validLineSegments,
@@ -316,6 +353,7 @@ export function parseLayersJSON(json: string): ProjectLayerData {
     'points',
     'polygons',
     'notes',
+    'elementGroups',
     'coordinates',
     'savedCoordinates',
   ];
@@ -338,6 +376,7 @@ export function parseLayersJSON(json: string): ProjectLayerData {
     points: array('points', validatePoint),
     polygons: array('polygons', isImportPolygon),
     notes: array('notes', validateNote),
+    elementGroups: array('elementGroups', validateElementGroup),
     savedCoordinates: [...coordinates, ...savedCoordinates].map((coordinate) => ({
       ...coordinate,
       id: coordinate.id || uuidv4(),

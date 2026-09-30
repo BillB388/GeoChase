@@ -4,6 +4,7 @@
 
 import type {
   CircleElement,
+  ElementGroup,
   LayerImportData,
   LineSegmentElement,
   NoteElement,
@@ -12,6 +13,7 @@ import type {
   RouteElement,
 } from '@/types/project';
 import { defineStore } from 'pinia';
+import { v4 as uuidv4 } from 'uuid';
 import { computed, ref } from 'vue';
 import { normalizeLayers } from '@/domain/layers';
 
@@ -30,6 +32,7 @@ export const useLayersStore = defineStore('layers', () => {
   const points = ref<PointElement[]>([]);
   const polygons = ref<PolygonElement[]>([]);
   const notes = ref<NoteElement[]>([]);
+  const elementGroups = ref<ElementGroup[]>([]);
 
   // Computed
   const isEmpty = computed(
@@ -66,6 +69,7 @@ export const useLayersStore = defineStore('layers', () => {
   }
   function deleteRoute(id: string) {
     routes.value = routes.value.filter((route) => route.id !== id);
+    pruneEmptyElementGroups();
   }
 
   const circleCount = computed(() => circles.value.length);
@@ -187,6 +191,7 @@ export const useLayersStore = defineStore('layers', () => {
     const index = circles.value.findIndex((c) => c.id === id);
     if (index !== -1 && circles.value[index]) {
       circles.value.splice(index, 1);
+      pruneEmptyElementGroups();
     }
   }
 
@@ -231,6 +236,7 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       lineSegments.value.splice(index, 1);
+      pruneEmptyElementGroups();
     }
   }
 
@@ -290,6 +296,7 @@ export const useLayersStore = defineStore('layers', () => {
 
       // Delete the point
       points.value.splice(index, 1);
+      pruneEmptyElementGroups();
     }
   }
 
@@ -335,6 +342,7 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       polygons.value.splice(index, 1);
+      pruneEmptyElementGroups();
     }
   }
 
@@ -446,6 +454,7 @@ export const useLayersStore = defineStore('layers', () => {
       }
 
       notes.value.splice(index, 1);
+      pruneEmptyElementGroups();
     }
   }
 
@@ -456,6 +465,68 @@ export const useLayersStore = defineStore('layers', () => {
     points.value = [];
     polygons.value = [];
     notes.value = [];
+    elementGroups.value = [];
+  }
+
+  function pruneEmptyElementGroups(): void {
+    const used = new Set(
+      [
+        ...routes.value,
+        ...circles.value,
+        ...lineSegments.value,
+        ...points.value,
+        ...polygons.value,
+        ...notes.value,
+      ]
+        .map((element) => element.groupId)
+        .filter(Boolean)
+    );
+    elementGroups.value = elementGroups.value.filter((group) => used.has(group.id));
+  }
+
+  function createElementGroup(name: string): ElementGroup {
+    const group = { id: uuidv4(), name: name.trim() };
+    elementGroups.value.push(group);
+    return group;
+  }
+
+  function updateElementGroup(id: string, name: string): void {
+    const group = elementGroups.value.find((item) => item.id === id);
+    if (group) group.name = name.trim();
+  }
+
+  function deleteElementGroup(id: string): void {
+    elementGroups.value = elementGroups.value.filter((group) => group.id !== id);
+    for (const element of [
+      ...routes.value,
+      ...circles.value,
+      ...lineSegments.value,
+      ...points.value,
+      ...polygons.value,
+      ...notes.value,
+    ]) {
+      if (element.groupId === id) delete element.groupId;
+    }
+  }
+
+  function setElementGroup(
+    type: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon' | 'note',
+    id: string,
+    groupId?: string
+  ): void {
+    if (groupId && !elementGroups.value.some((group) => group.id === groupId)) return;
+    const items = {
+      route: routes.value,
+      circle: circles.value,
+      lineSegment: lineSegments.value,
+      point: points.value,
+      polygon: polygons.value,
+      note: notes.value,
+    }[type];
+    const element = items.find((item) => item.id === id);
+    if (!element) return;
+    if (groupId) element.groupId = groupId;
+    else delete element.groupId;
   }
 
   function loadLayers(data: LayerImportData): void {
@@ -466,6 +537,7 @@ export const useLayersStore = defineStore('layers', () => {
     points.value = normalized.points;
     polygons.value = normalized.polygons;
     notes.value = normalized.notes;
+    elementGroups.value = normalized.elementGroups ?? [];
 
     // Update point references in all lines
     // This ensures compatibility with both old projects (without point refs)
@@ -494,6 +566,7 @@ export const useLayersStore = defineStore('layers', () => {
       points: points.value,
       polygons: polygons.value,
       notes: notes.value,
+      ...(elementGroups.value.length > 0 ? { elementGroups: elementGroups.value } : {}),
     };
   }
 
@@ -665,6 +738,7 @@ export const useLayersStore = defineStore('layers', () => {
     points,
     polygons,
     notes,
+    elementGroups,
 
     // Computed
     isEmpty,
@@ -697,6 +771,11 @@ export const useLayersStore = defineStore('layers', () => {
     addNote,
     updateNote,
     deleteNote,
+    createElementGroup,
+    updateElementGroup,
+    deleteElementGroup,
+    setElementGroup,
+    pruneEmptyElementGroups,
     clearLayers,
     loadLayers,
     exportLayers,

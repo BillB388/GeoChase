@@ -21,6 +21,17 @@
       <h2 class="layers-panel-title">{{ $t('layers.title') }}</h2>
 
       <span class="element-count">{{ elementCount }}</span>
+
+      <v-btn
+        class="ml-auto"
+        color="primary"
+        :disabled="groupableItems.length === 0"
+        icon="mdi-folder-plus-outline"
+        size="small"
+        :title="$t('layers.createGroup')"
+        variant="text"
+        @click="openCreateGroupDialog"
+      />
     </div>
 
     <!-- Search bar (only show when there are elements) -->
@@ -86,6 +97,7 @@
         filteredRoutes.length === 0 &&
         filteredLines.length === 0 &&
         filteredPoints.length === 0 &&
+        filteredElementGroups.length === 0 &&
         filteredPolygons.length === 0 &&
         filteredNotes.length === 0
       "
@@ -96,6 +108,123 @@
 
     <!-- Layers list -->
     <div v-else class="layers-list">
+      <div
+        v-for="group in filteredElementGroups"
+        :key="group.id"
+        class="element-group"
+        :class="{ 'element-group-drop-target': dropGroupTargetId === group.id }"
+        :data-element-group-id="group.id"
+      >
+        <div class="layers-section-header">
+          <button
+            class="layers-section-title"
+            type="button"
+            @click="toggleElementGroupExpanded(group.id)"
+          >
+            <v-icon icon="mdi-folder-outline" size="16" />
+            <span class="group-title-text">{{ group.name }}</span>
+            <span class="element-count">{{ groupMembers(group.id).length }}</span>
+
+            <span aria-hidden="true" class="collapse-icon">{{
+              expandedElementGroups[group.id] === false ? '▶' : '▼'
+            }}</span>
+          </button>
+
+          <div class="layers-section-actions">
+            <v-btn
+              :icon="isElementGroupVisible(group) ? 'mdi-eye-off' : 'mdi-eye'"
+              size="x-small"
+              :title="$t(isElementGroupVisible(group) ? 'layers.groupHide' : 'layers.groupShow')"
+              variant="text"
+              @click.stop="toggleElementGroupVisibility(group)"
+            />
+
+            <v-btn
+              icon="mdi-pencil"
+              size="x-small"
+              :title="$t('layers.editGroup')"
+              variant="text"
+              @click.stop="openEditGroupDialog(group.id)"
+            />
+
+            <v-btn
+              color="error"
+              icon="mdi-folder-remove-outline"
+              size="x-small"
+              :title="$t('layers.groupDelete')"
+              variant="text"
+              @click.stop="removeElementGroup(group.id)"
+            />
+          </div>
+        </div>
+
+        <div v-show="expandedElementGroups[group.id] !== false" class="layer-items">
+          <div
+            v-for="member in displayedGroupMembers(group)"
+            :key="`${member.type}:${member.element.id}`"
+            class="layer-item group-member-item"
+            :class="{
+              'layer-item-hidden': !uiStore.isElementVisible(member.type, member.element.id),
+            }"
+            :data-layer-id="member.element.id"
+            :data-layer-type="member.type"
+            role="button"
+            tabindex="0"
+            @click="handleGroupMemberClick(member)"
+            @keydown.enter="handleGroupMemberClick(member)"
+            @keydown.space.prevent="handleGroupMemberClick(member)"
+            @lostpointercapture="cancelElementDrag"
+            @pointercancel="cancelElementDrag"
+            @pointerdown="startElementDrag($event, member.type, member.element.id)"
+            @pointermove="moveElementDrag"
+            @pointerup="finishElementDrag"
+          >
+            <div class="layer-item-info">
+              <div class="layer-item-name">{{ groupMemberName(member) }}</div>
+              <div class="layer-item-type">{{ groupMemberDetail(member) }}</div>
+            </div>
+
+            <div class="layer-item-actions" @click.stop>
+              <LayerContextMenu
+                v-if="member.type !== 'note'"
+                :element-id="member.element.id"
+                :element-type="member.type"
+                in-group
+                @delete="handleDeleteElement"
+                @edit="handleGroupMemberEdit(member)"
+                @remove-from-group="ungroupElement"
+              />
+
+              <v-menu v-else location="bottom">
+                <template #activator="{ props }"
+                  ><v-btn v-bind="props" icon="mdi-dots-vertical" size="x-small" variant="text"
+                /></template>
+
+                <v-list density="compact">
+                  <v-list-item @click="ungroupElement('note', member.element.id)"
+                    ><v-list-item-title>{{
+                      $t('contextMenu.removeFromGroup')
+                    }}</v-list-item-title></v-list-item
+                  >
+
+                  <v-list-item @click="handleEditNote(member.element)"
+                    ><v-list-item-title>{{ $t('common.edit') }}</v-list-item-title></v-list-item
+                  >
+
+                  <v-list-item @click="handleDeleteNote(member.element)"
+                    ><v-list-item-title>{{ $t('common.delete') }}</v-list-item-title></v-list-item
+                  >
+                </v-list>
+              </v-menu>
+            </div>
+          </div>
+
+          <p v-if="displayedGroupMembers(group).length === 0" class="group-no-match">
+            {{ $t('layers.groupNoMatches') }}
+          </p>
+        </div>
+      </div>
+
       <!-- Circles -->
       <div v-if="filteredCircles.length > 0">
         <div class="layers-section-header">
@@ -559,12 +688,78 @@
       <v-icon icon="mdi-drag" size="small" />
     </div>
   </Teleport>
+
+  <v-dialog v-model="groupDialogOpen" max-width="560">
+    <v-card class="group-editor-card">
+      <v-card-title>{{
+        $t(editingElementGroupId ? 'layers.editGroup' : 'layers.createGroup')
+      }}</v-card-title>
+
+      <v-card-text>
+        <v-text-field
+          v-model="elementGroupName"
+          autofocus
+          counter="60"
+          :label="$t('layers.groupName')"
+          maxlength="60"
+          variant="outlined"
+          @keydown.enter.prevent="saveElementGroup"
+        />
+
+        <v-text-field
+          v-model="groupItemSearch"
+          clearable
+          density="compact"
+          hide-details
+          :placeholder="$t('layers.groupSearch')"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+        />
+
+        <div class="group-member-picker">
+          <div v-for="item in filteredGroupableItems" :key="item.key" class="group-picker-row">
+            <v-checkbox
+              v-model="selectedGroupMemberKeys"
+              density="compact"
+              hide-details
+              :label="item.name"
+              :value="item.key"
+            />
+
+            <span class="group-picker-type">{{ item.detail }}</span>
+          </div>
+
+          <p v-if="filteredGroupableItems.length === 0" class="group-no-match">
+            {{ $t('layers.groupNoMatches') }}
+          </p>
+        </div>
+
+        <p v-if="selectedGroupMemberKeys.length === 0" class="group-empty-hint">
+          {{ $t('layers.groupEmpty') }}
+        </p>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="groupDialogOpen = false">{{ $t('common.cancel') }}</v-btn>
+
+        <v-btn
+          color="primary"
+          :disabled="!elementGroupName.trim() || selectedGroupMemberKeys.length === 0"
+          variant="flat"
+          @click="saveElementGroup"
+          >{{ $t('layers.groupSave') }}</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts" setup>
 import type {
   CircleElement,
   DrawingElement,
+  ElementGroup,
   LineSegmentElement,
   NoteElement,
   PointElement,
@@ -601,12 +796,34 @@ const mapContainer = useMapContext();
 
 const searchQuery = ref('');
 type ListElementType = 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon' | 'note';
+type GroupableType = ListElementType;
+type GroupMember =
+  | { type: 'route'; element: RouteElement }
+  | { type: 'circle'; element: CircleElement }
+  | { type: 'lineSegment'; element: LineSegmentElement }
+  | { type: 'point'; element: PointElement }
+  | { type: 'polygon'; element: PolygonElement }
+  | { type: 'note'; element: NoteElement };
+interface GroupableItem {
+  key: string;
+  type: GroupableType;
+  id: string;
+  name: string;
+  detail: string;
+}
+const groupDialogOpen = ref(false);
+const editingElementGroupId = ref<string | null>(null);
+const elementGroupName = ref('');
+const groupItemSearch = ref('');
+const selectedGroupMemberKeys = ref<string[]>([]);
+const expandedElementGroups = ref<Record<string, boolean>>({});
 const draggedElement = ref<{ type: ListElementType; id: string } | null>(null);
 const dropTarget = ref<{
   type: ListElementType;
   id: string;
   position: 'before' | 'after' | 'link';
 } | null>(null);
+const dropGroupTargetId = ref<string | null>(null);
 const isDragging = ref(false);
 const dragPreview = ref<{
   x: number;
@@ -631,15 +848,17 @@ let autoScrollInterval: ReturnType<typeof setInterval> | null = null;
 // Filtered lists based on search query (using sorted arrays)
 const filteredCircles = computed(() => {
   if (!searchQuery.value) {
-    return layersStore.sortedCircles;
+    return layersStore.sortedCircles.filter((circle) => !circle.groupId);
   }
   const query = searchQuery.value.toLowerCase();
-  return layersStore.sortedCircles.filter((c) => c.name.toLowerCase().includes(query));
+  return layersStore.sortedCircles.filter(
+    (c) => !c.groupId && c.name.toLowerCase().includes(query)
+  );
 });
 
 const filteredRoutes = computed(() =>
-  layersStore.sortedRoutes.filter((route) =>
-    route.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  layersStore.sortedRoutes.filter(
+    (route) => !route.groupId && route.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
 const routesExpanded = ref(true);
@@ -656,37 +875,266 @@ function handleEditRoute(route: RouteElement) {
 
 const filteredLines = computed(() => {
   if (!searchQuery.value) {
-    return layersStore.sortedLineSegments;
+    return layersStore.sortedLineSegments.filter((line) => !line.groupId);
   }
   const query = searchQuery.value.toLowerCase();
-  return layersStore.sortedLineSegments.filter((l) => l.name.toLowerCase().includes(query));
+  return layersStore.sortedLineSegments.filter(
+    (l) => !l.groupId && l.name.toLowerCase().includes(query)
+  );
 });
 
 const filteredPoints = computed(() => {
   if (!searchQuery.value) {
-    return layersStore.sortedPoints;
+    return layersStore.sortedPoints.filter((point) => !point.groupId);
   }
   const query = searchQuery.value.toLowerCase();
-  return layersStore.sortedPoints.filter((p) => p.name.toLowerCase().includes(query));
+  return layersStore.sortedPoints.filter((p) => !p.groupId && p.name.toLowerCase().includes(query));
 });
 
 const filteredPolygons = computed(() => {
   if (!searchQuery.value) {
-    return layersStore.sortedPolygons;
+    return layersStore.sortedPolygons.filter((polygon) => !polygon.groupId);
   }
   const query = searchQuery.value.toLowerCase();
-  return layersStore.sortedPolygons.filter((p) => p.name.toLowerCase().includes(query));
+  return layersStore.sortedPolygons.filter(
+    (p) => !p.groupId && p.name.toLowerCase().includes(query)
+  );
 });
 
 const filteredNotes = computed(() => {
   if (!searchQuery.value) {
-    return layersStore.sortedNotes;
+    return layersStore.sortedNotes.filter((note) => !note.groupId);
   }
   const query = searchQuery.value.toLowerCase();
   return layersStore.sortedNotes.filter(
-    (n) => n.title.toLowerCase().includes(query) || n.content.toLowerCase().includes(query)
+    (n) =>
+      !n.groupId &&
+      (n.title.toLowerCase().includes(query) || n.content.toLowerCase().includes(query))
   );
 });
+
+const groupableItems = computed<GroupableItem[]>(() => [
+  ...layersStore.sortedRoutes.map((route) => ({
+    key: `route:${route.id}`,
+    type: 'route' as const,
+    id: route.id,
+    name: route.name,
+    detail: t('route.title'),
+  })),
+  ...layersStore.sortedCircles.map((circle) => ({
+    key: `circle:${circle.id}`,
+    type: 'circle' as const,
+    id: circle.id,
+    name: circle.name,
+    detail: t('layers.circleType'),
+  })),
+  ...layersStore.sortedLineSegments.map((line) => ({
+    key: `lineSegment:${line.id}`,
+    type: 'lineSegment' as const,
+    id: line.id,
+    name: line.name,
+    detail: t('layers.lineSegmentType'),
+  })),
+  ...layersStore.sortedPoints.map((point) => ({
+    key: `point:${point.id}`,
+    type: 'point' as const,
+    id: point.id,
+    name: point.name,
+    detail: t('layers.pointType'),
+  })),
+  ...layersStore.sortedPolygons.map((polygon) => ({
+    key: `polygon:${polygon.id}`,
+    type: 'polygon' as const,
+    id: polygon.id,
+    name: polygon.name,
+    detail: t('layers.polygonType'),
+  })),
+  ...layersStore.sortedNotes.map((note) => ({
+    key: `note:${note.id}`,
+    type: 'note' as const,
+    id: note.id,
+    name: note.title,
+    detail: t('layers.notes'),
+  })),
+]);
+const filteredGroupableItems = computed(() => {
+  const query = groupItemSearch.value.trim().toLowerCase();
+  return groupableItems.value.filter((item) => !query || item.name.toLowerCase().includes(query));
+});
+const filteredElementGroups = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  return layersStore.elementGroups.filter(
+    (group) =>
+      !query ||
+      group.name.toLowerCase().includes(query) ||
+      groupMembers(group.id).some((member) => groupMemberName(member).toLowerCase().includes(query))
+  );
+});
+
+function groupMembers(groupId: string): GroupMember[] {
+  return [
+    ...layersStore.sortedRoutes
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'route' as const, element })),
+    ...layersStore.sortedCircles
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'circle' as const, element })),
+    ...layersStore.sortedLineSegments
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'lineSegment' as const, element })),
+    ...layersStore.sortedPoints
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'point' as const, element })),
+    ...layersStore.sortedPolygons
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'polygon' as const, element })),
+    ...layersStore.sortedNotes
+      .filter((item) => item.groupId === groupId)
+      .map((element) => ({ type: 'note' as const, element })),
+  ];
+}
+
+function groupMemberName(member: GroupMember): string {
+  return member.type === 'note' ? member.element.title : member.element.name;
+}
+
+function displayedGroupMembers(group: ElementGroup): GroupMember[] {
+  const query = searchQuery.value.trim().toLowerCase();
+  const members = groupMembers(group.id);
+  return !query || group.name.toLowerCase().includes(query)
+    ? members
+    : members.filter((member) => groupMemberName(member).toLowerCase().includes(query));
+}
+
+function groupMemberDetail(member: GroupMember): string {
+  return t(
+    (
+      {
+        route: 'route.title',
+        circle: 'layers.circleType',
+        lineSegment: 'layers.lineSegmentType',
+        point: 'layers.pointType',
+        polygon: 'layers.polygonType',
+        note: 'layers.notes',
+      } as const
+    )[member.type]
+  );
+}
+
+function toggleElementGroupExpanded(groupId: string) {
+  expandedElementGroups.value[groupId] = expandedElementGroups.value[groupId] === false;
+}
+
+function isElementGroupVisible(group: ElementGroup): boolean {
+  const members = groupMembers(group.id);
+  return (
+    members.length > 0 &&
+    members.every((member) => uiStore.isElementVisible(member.type, member.element.id))
+  );
+}
+
+function toggleElementGroupVisibility(group: ElementGroup) {
+  const visible = !isElementGroupVisible(group);
+  for (const member of groupMembers(group.id)) {
+    uiStore.setElementVisibility(member.type, member.element.id, visible);
+    drawing.updateElementVisibility(member.type, member.element.id, visible);
+  }
+}
+
+function openCreateGroupDialog() {
+  editingElementGroupId.value = null;
+  elementGroupName.value = '';
+  groupItemSearch.value = '';
+  selectedGroupMemberKeys.value = [];
+  groupDialogOpen.value = true;
+}
+
+function openEditGroupDialog(groupId: string) {
+  const group = layersStore.elementGroups.find((item) => item.id === groupId);
+  if (!group) return;
+  editingElementGroupId.value = groupId;
+  elementGroupName.value = group.name;
+  groupItemSearch.value = '';
+  selectedGroupMemberKeys.value = groupMembers(groupId).map(
+    (member) => `${member.type}:${member.element.id}`
+  );
+  groupDialogOpen.value = true;
+}
+
+function getGroupableElement(type: GroupableType, id: string) {
+  return {
+    route: layersStore.routes,
+    circle: layersStore.circles,
+    lineSegment: layersStore.lineSegments,
+    point: layersStore.points,
+    polygon: layersStore.polygons,
+    note: layersStore.notes,
+  }[type].find((item) => item.id === id);
+}
+
+function saveElementGroup() {
+  const name = elementGroupName.value.trim();
+  if (!name || selectedGroupMemberKeys.value.length === 0) return;
+  const group = editingElementGroupId.value
+    ? layersStore.elementGroups.find((item) => item.id === editingElementGroupId.value)
+    : layersStore.createElementGroup(name);
+  if (!group) return;
+  layersStore.updateElementGroup(group.id, name);
+  const selected = new Set(selectedGroupMemberKeys.value);
+  for (const item of groupableItems.value) {
+    const element = getGroupableElement(item.type, item.id);
+    if (selected.has(item.key)) layersStore.setElementGroup(item.type, item.id, group.id);
+    else if (element?.groupId === group.id) layersStore.setElementGroup(item.type, item.id);
+  }
+  layersStore.pruneEmptyElementGroups();
+  expandedElementGroups.value[group.id] = true;
+  groupDialogOpen.value = false;
+}
+
+function removeElementGroup(groupId: string) {
+  const group = layersStore.elementGroups.find((item) => item.id === groupId);
+  if (group && confirm(t('layers.groupDeleteConfirm', { name: group.name }))) {
+    layersStore.deleteElementGroup(groupId);
+    delete expandedElementGroups.value[groupId];
+  }
+}
+
+function ungroupElement(type: string, id: string) {
+  if (['route', 'circle', 'lineSegment', 'point', 'polygon', 'note'].includes(type)) {
+    layersStore.setElementGroup(type as GroupableType, id);
+    layersStore.pruneEmptyElementGroups();
+  }
+}
+
+function handleGroupMemberClick(member: GroupMember) {
+  if (member.type === 'note') handleNoteClick(member.element);
+  else handleGoTo(member.type, member.element);
+}
+
+function handleGroupMemberEdit(member: GroupMember) {
+  switch (member.type) {
+    case 'route': {
+      handleEditRoute(member.element);
+      break;
+    }
+    case 'circle': {
+      handleEditCircle(member.element);
+      break;
+    }
+    case 'lineSegment': {
+      handleEditLineSegment(member.element);
+      break;
+    }
+    case 'point': {
+      handleEditPoint(member.element);
+      break;
+    }
+    case 'note': {
+      handleEditNote(member.element);
+      break;
+    }
+  }
+}
 
 // Calculate polygon perimeter in kilometers
 function calculatePolygonPerimeter(polygon: PolygonElement): number {
@@ -1053,6 +1501,7 @@ function cancelElementDrag() {
   document.documentElement.classList.remove('dragging-layer');
   draggedElement.value = null;
   dropTarget.value = null;
+  dropGroupTargetId.value = null;
   document.removeEventListener('keydown', cancelDragOnEscape);
   document.removeEventListener('pointerup', cancelElementDrag);
   document.removeEventListener('pointercancel', cancelElementDrag);
@@ -1086,6 +1535,7 @@ function handlePolygonClick(polygon: PolygonElement) {
 
 function updateDropTarget(event: PointerEvent) {
   dropTarget.value = null;
+  dropGroupTargetId.value = null;
   stopAutoScroll();
   const source = draggedElement.value;
   if (!source || !pendingDrag) return;
@@ -1099,6 +1549,14 @@ function updateDropTarget(event: PointerEvent) {
     event.clientY > bounds.bottom
   )
     return;
+  const groupTarget = document
+    .elementFromPoint(event.clientX, event.clientY)
+    ?.closest<HTMLElement>('[data-element-group-id]');
+  if (groupTarget?.dataset.elementGroupId) {
+    dropGroupTargetId.value = groupTarget.dataset.elementGroupId;
+    handleAutoScroll(event, groupTarget);
+    return;
+  }
   const items = Array.from(
     pendingDrag.handle.parentElement?.querySelectorAll<HTMLElement>('.layer-item') ?? []
   );
@@ -1153,7 +1611,9 @@ function updateDropTarget(event: PointerEvent) {
 function applyElementDrop() {
   const source = draggedElement.value;
   const target = dropTarget.value;
-  if (source && target) {
+  if (source && dropGroupTargetId.value) {
+    layersStore.setElementGroup(source.type, source.id, dropGroupTargetId.value);
+  } else if (source && target) {
     if (target.position === 'link') {
       const start = layersStore.points.find((point) => point.id === source.id);
       const end = layersStore.points.find((point) => point.id === target.id);
@@ -1541,6 +2001,74 @@ onBeforeUnmount(cancelElementDrag);
 
 .layer-item:last-child {
   border-bottom: none;
+}
+
+.group-title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-member-item {
+  cursor: pointer;
+}
+
+.element-group-drop-target {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+
+.group-no-match,
+.group-empty-hint {
+  margin: 8px 10px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 12px;
+}
+
+.group-member-picker {
+  max-height: min(36dvh, 320px);
+  margin-top: 8px;
+  overflow-y: auto;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.15);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.group-picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.group-picker-row:last-child {
+  border-bottom: 0;
+}
+
+.group-picker-row :deep(.v-checkbox) {
+  flex: 1;
+  min-width: 0;
+}
+
+.group-picker-type {
+  flex: 0 0 auto;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 11px;
+}
+
+.group-editor-card {
+  display: flex;
+  max-height: 88dvh;
+  flex-direction: column;
+}
+
+.group-editor-card :deep(.v-card-text) {
+  overflow-y: auto;
 }
 
 .layer-item:hover {

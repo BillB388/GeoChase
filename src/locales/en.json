@@ -723,10 +723,23 @@
     "noMatch": "No matching elements",
     "showAllCircles": "Show All Circles",
     "lineSegmentType": "Line",
+    "circleType": "Circle",
     "pointType": "Point",
     "polygonType": "Polygon",
     "standaloneNote": "Standalone note",
-    "linkedTo": "Linked to"
+    "linkedTo": "Linked to",
+    "createGroup": "Create group",
+    "editGroup": "Edit group",
+    "groupName": "Group name",
+    "selectGroupItems": "Choose items for this group",
+    "groupSearch": "Search items...",
+    "groupNoMatches": "No matching items",
+    "groupEmpty": "Select at least one item",
+    "groupShow": "Show all items in group",
+    "groupHide": "Hide all items in group",
+    "groupDelete": "Dissolve group",
+    "groupDeleteConfirm": "Dissolve “{name}” and return its items to the main lists? The elements will stay in the project.",
+    "groupSave": "Save group"
   },
   "contextMenu": {
     "edit": "Edit",
@@ -743,7 +756,8 @@
     "hide": "Hide",
     "locationNear": "Location Near",
     "navigate": "Navigate",
-    "show": "Show"
+    "show": "Show",
+    "removeFromGroup": "Remove from group"
   },
   "validation": {
     "required": "This field is required",
