@@ -348,7 +348,7 @@ const DEFAULT_DATA: Section[] = [
         items: [
           {
             label: 'Thèmes',
-            text: 'Ouvre les 12 palettes : Clair, Océan, Forêt, Iris, Lagon, Terre cuite, Rose, Ambre, Menthe, Indigo, Prune et Sombre. Le choix est mémorisé.',
+            text: 'Ouvre les 14 palettes, dont Or & Velours et Orange mécanique. Le choix est mémorisé.',
           },
           {
             label: 'Langue',

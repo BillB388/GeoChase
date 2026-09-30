@@ -434,7 +434,7 @@
         "moreMenu": {
           "title": "Menu Plus : thèmes, langue et GitHub",
           "content": "Le menu à trois points en haut à droite regroupe les réglages de l’espace de travail.",
-          "item1": "Thèmes propose 12 palettes. Votre choix est mémorisé.",
+          "item1": "Thèmes propose 14 palettes. Votre choix est mémorisé.",
           "item2": "Langue permet de choisir le français ou l’anglais.",
           "item3": "GitHub ouvre le dépôt du projet dans un nouvel onglet."
         },
@@ -1185,7 +1185,9 @@
       "mint": "Menthe",
       "indigo": "Indigo",
       "plum": "Prune",
-      "classicDark": "Sombre"
+      "classicDark": "Sombre",
+      "goldVelvet": "Or & Velours",
+      "clockworkOrange": "Orange mécanique"
     },
     "regularizeProjectTitle": "Enregistrer votre travail",
     "regularizeProjectDescription": "Vos éléments ne sont associés à aucun projet. Donnez un nom à votre projet pour les conserver et continuer.",

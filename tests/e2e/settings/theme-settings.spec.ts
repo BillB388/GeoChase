@@ -23,13 +23,15 @@ for (const viewport of [
         'mint',
         'indigo',
         'plum',
+        'goldVelvet',
+        'clockworkOrange',
       ];
       await page.getByRole('button', { name: 'More', exact: true }).click();
       await expect(page.getByTestId('theme-toggle')).toHaveCount(0);
       await page.getByTestId('theme-picker-btn').click();
       const dialog = page.getByRole('dialog');
       await expect(dialog).toBeVisible();
-      await expect(dialog.locator('.palette-option')).toHaveCount(12);
+      await expect(dialog.locator('.palette-option')).toHaveCount(14);
       const backgrounds = new Set<string>();
       for (const palette of palettes) {
         await page.getByTestId(`palette-${palette}`).click();
@@ -44,10 +46,10 @@ for (const viewport of [
             .evaluate((el) => getComputedStyle(el).backgroundColor)
         );
       }
-      expect(backgrounds.size).toBe(12);
+      expect(backgrounds.size).toBe(14);
       await dialog.getByRole('button', { name: 'Close', exact: true }).last().click();
       await page.reload();
-      await expect(page.locator('html')).toHaveAttribute('data-palette', 'plum');
+      await expect(page.locator('html')).toHaveAttribute('data-palette', 'clockworkOrange');
       await page.getByRole('button', { name: 'More', exact: true }).click();
       await page.getByTestId('theme-picker-btn').click();
       await page.getByTestId('palette-classic').click();

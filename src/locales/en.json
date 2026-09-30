@@ -434,7 +434,7 @@
         "moreMenu": {
           "title": "More menu: themes, language and GitHub",
           "content": "The three-dot menu in the top-right corner contains workspace settings.",
-          "item1": "Themes offers 12 palettes. Your choice is remembered.",
+          "item1": "Themes offers 14 palettes. Your choice is remembered.",
           "item2": "Language switches the app between French and English.",
           "item3": "GitHub opens the project repository in a new tab."
         },
@@ -1185,7 +1185,9 @@
       "mint": "Mint",
       "indigo": "Indigo",
       "plum": "Plum",
-      "classicDark": "Dark"
+      "classicDark": "Dark",
+      "goldVelvet": "Gold & Velvet",
+      "clockworkOrange": "A Clockwork Orange"
     },
     "regularizeProjectTitle": "Save your work",
     "regularizeProjectDescription": "Your elements do not belong to a project. Name your project to keep them and continue.",
