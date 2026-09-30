@@ -5,7 +5,13 @@
   <MapEffects />
 
   <!-- Fullscreen map -->
-  <div id="map" :class="{ 'freehand-drawing': uiStore.freeHandDrawing.isDrawing }" />
+  <div
+    id="map"
+    :class="{
+      'freehand-drawing': uiStore.freeHandDrawing.isDrawing,
+      'map-background-hidden': !uiStore.mapBackgroundVisible,
+    }"
+  />
 
   <MapElementContextMenu
     v-if="contextMenu"
@@ -116,6 +122,7 @@ import { drawingKey, mapKey, noteTooltipsKey } from '@/composables/mapContext';
 import { useAppSetup } from '@/composables/useAppSetup';
 import { useAutoSave } from '@/composables/useAutoSave';
 import { useDrawing } from '@/composables/useDrawing';
+import { useVisibilityShortcuts } from '@/composables/useElementVisibility';
 import { useMap } from '@/composables/useMap';
 import { usePrecisionLens } from '@/composables/usePrecisionLens';
 import { useViewDataSync } from '@/composables/useViewDataSync';
@@ -235,6 +242,7 @@ const pdfPanelDisplayWidth = computed(() =>
 
 const mapContainer = useMap('map', uiStore, { sidebarWidth, topBarHeight });
 const drawing = useDrawing(mapContainer);
+useVisibilityShortcuts(drawing);
 const precisionLens = usePrecisionLens(mapContainer);
 const viewDataSync = useViewDataSync(mapContainer);
 
@@ -393,6 +401,10 @@ body,
 
 :global(.ol-viewport) {
   background: rgb(var(--v-theme-background));
+}
+
+#map.map-background-hidden :deep(.ol-viewport) {
+  background: #fff;
 }
 
 /* Cursor change for free hand drawing */

@@ -60,6 +60,7 @@ export function useMap(
   const tileSource = shallowRef<XYZ | null>(null);
 
   let stopProviderWatch: WatchStopHandle | undefined;
+  let stopBackgroundWatch: WatchStopHandle | undefined;
 
   // Store initial view data for map initialization
   let initialViewData: { lat: number; lon: number; zoom: number } | null = null;
@@ -200,8 +201,8 @@ export function useMap(
           () => [uiStore.mapProvider, imageMaps.image, projects.activeProjection] as const,
           ([newProvider, image], previous) => {
             const useImage = newProvider === 'image' && image !== null;
-            baseLayer.setVisible(newProvider !== 'image');
-            imageLayer.setVisible(useImage);
+            baseLayer.setVisible(uiStore.mapBackgroundVisible && newProvider !== 'image');
+            imageLayer.setVisible(uiStore.mapBackgroundVisible && useImage);
             const view = map.value!.getView();
             view.setMaxZoom(useImage ? 40 : 28);
             if (useImage) {
@@ -235,6 +236,19 @@ export function useMap(
         );
       }
 
+      if (uiStore) {
+        stopBackgroundWatch = watch(
+          () => uiStore.mapBackgroundVisible,
+          (visible) => {
+            baseLayer.setVisible(visible && uiStore.mapProvider !== 'image');
+            imageLayer.setVisible(
+              visible && uiStore.mapProvider === 'image' && imageMaps.image !== null
+            );
+          },
+          { immediate: true }
+        );
+      }
+
       // Update map size
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -251,6 +265,8 @@ export function useMap(
   const destroyMap = () => {
     stopProviderWatch?.();
     stopProviderWatch = undefined;
+    stopBackgroundWatch?.();
+    stopBackgroundWatch = undefined;
     if (map.value) {
       // Clear all overlays (point labels, note tooltips, etc.)
       const overlays = map.value.getOverlays().getArray().slice(); // Clone array to avoid mutation during iteration

@@ -37,14 +37,15 @@ function zoomBy(delta: number) {
   z-index: 1048;
   display: flex;
   flex-direction: column;
-  padding: 3px;
+  width: 40px;
+  padding: 0;
   background: var(--bg);
   border: 1px solid var(--gc-border);
   border-radius: 13px;
   box-shadow: 0 4px 20px #2037451a;
 }
 .map-controls .v-btn {
-  width: 40px;
+  width: 100%;
   height: 40px;
 }
 .map-controls-separator {
@@ -56,8 +57,10 @@ function zoomBy(delta: number) {
   bottom: 144px;
 }
 @media (pointer: coarse) {
+  .map-controls {
+    width: 48px;
+  }
   .map-controls .v-btn {
-    width: 44px;
     height: 44px;
   }
 }

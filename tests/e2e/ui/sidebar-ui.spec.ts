@@ -188,8 +188,11 @@ test.describe('Sidebar UI', () => {
         .click();
       await page.waitForTimeout(300);
 
-      // Toast should appear
-      await expect(page.locator('.v-snackbar').first()).toBeVisible();
+      const points = page.locator('[data-layer-type="point"]');
+      await expect(points).toHaveCount(3);
+      await expect(page.locator('[data-layer-type="point"].layer-item-hidden')).toHaveCount(3);
+      await page.getByTitle('Show all points', { exact: true }).click();
+      await expect(page.locator('[data-layer-type="point"].layer-item-hidden')).toHaveCount(0);
     });
   });
 

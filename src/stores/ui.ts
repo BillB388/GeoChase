@@ -79,6 +79,7 @@ export const useUIStore = defineStore('ui', () => {
   // State
   const openModals = ref<Set<string>>(new Set());
   const gameMode = ref(false);
+  const mapBackgroundVisible = ref(true);
   const drawingMode = ref<DrawingMode>('none');
   const toasts = ref<Toast[]>([]);
   const isLoading = ref(false);
@@ -427,6 +428,7 @@ export const useUIStore = defineStore('ui', () => {
     canInteractWithLines,
     toolInstructionsVisible,
     gameMode,
+    mapBackgroundVisible,
     // State
     openModals,
     drawingMode,

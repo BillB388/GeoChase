@@ -129,8 +129,8 @@ function handleExitFreeHand(): void {
 .navigation-bar {
   background: rgb(var(--v-theme-primary));
   border-bottom: none;
-  padding: 16px 24px;
-  min-height: 76px;
+  padding: 8px 24px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;

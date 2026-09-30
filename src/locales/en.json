@@ -933,7 +933,19 @@
     "groupHide": "Hide all items in group",
     "groupDelete": "Dissolve group",
     "groupDeleteConfirm": "Dissolve “{name}” and return its items to the main lists? The elements will stay in the project.",
-    "groupSave": "Save group"
+    "groupSave": "Save group",
+    "globalVisibility": "Global map visibility",
+    "hideCategory": "Hide all {category}",
+    "showCategory": "Show all {category}",
+    "hideMapBackground": "Hide map background (white background)",
+    "showMapBackground": "Show map background",
+    "visibilityCategories": {
+      "point": "points",
+      "circle": "circles",
+      "lineSegment": "lines",
+      "polygon": "polygons",
+      "route": "routes"
+    }
   },
   "contextMenu": {
     "edit": "Edit",

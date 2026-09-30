@@ -933,7 +933,19 @@
     "groupHide": "Masquer tous les éléments du groupe",
     "groupDelete": "Dissoudre le groupe",
     "groupDeleteConfirm": "Dissoudre le groupe « {name} » et remettre ses éléments dans les listes principales ? Les éléments resteront dans le projet.",
-    "groupSave": "Enregistrer le groupe"
+    "groupSave": "Enregistrer le groupe",
+    "globalVisibility": "Visibilité globale de la carte",
+    "hideCategory": "Masquer tous les {category}",
+    "showCategory": "Afficher tous les {category}",
+    "hideMapBackground": "Masquer le fond de carte (fond blanc)",
+    "showMapBackground": "Afficher le fond de carte",
+    "visibilityCategories": {
+      "point": "points",
+      "circle": "cercles",
+      "lineSegment": "segments",
+      "polygon": "polygones",
+      "route": "itinéraires"
+    }
   },
   "contextMenu": {
     "edit": "Modifier",

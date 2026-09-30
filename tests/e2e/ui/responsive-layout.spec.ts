@@ -123,7 +123,9 @@ test('tool instructions replace the toolbar and keep panels below it while resiz
   await page.getByRole('button', { name: 'Start Drawing', exact: true }).click();
   const toolbar = page.getByTestId('topbar');
   await expect(toolbar.locator('.navigation-bar')).toBeVisible();
-  await expect.poll(async () => (await toolbar.boundingBox())!.height).toBe(normalHeight);
+  await expect
+    .poll(async () => (await toolbar.boundingBox())!.height)
+    .toBe(Math.ceil(normalHeight / 2));
   await expect
     .poll(async () => {
       const bar = await toolbar.locator('.navigation-bar').boundingBox();

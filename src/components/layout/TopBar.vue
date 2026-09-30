@@ -12,7 +12,7 @@
       <div ref="toolbarContent" class="topbar-content">
         <Transition name="tool-instructions">
           <div v-if="uiStore.toolInstructionsVisible" class="tool-instructions-layer">
-            <NavigationBar :style="{ minHeight: `${normalToolbarHeight}px` }" />
+            <NavigationBar :style="{ minHeight: `${normalToolbarHeight / 2}px` }" />
           </div>
         </Transition>
 

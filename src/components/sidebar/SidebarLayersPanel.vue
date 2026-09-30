@@ -33,6 +33,47 @@
       />
     </div>
 
+    <div :aria-label="$t('layers.globalVisibility')" class="visibility-controls" role="group">
+      <button
+        v-for="category in visibilityCategories"
+        :key="category.type"
+        :aria-keyshortcuts="visibilityShortcut(category.key)"
+        :aria-label="categoryVisibilityTitle(category.type)"
+        :aria-pressed="areAllTargetsVisible(categoryVisibilityTargets(category.type))"
+        class="visibility-button"
+        :class="{
+          'visibility-button-active': areAllTargetsVisible(
+            categoryVisibilityTargets(category.type)
+          ),
+        }"
+        :data-visibility-category="category.type"
+        :disabled="categoryVisibilityTargets(category.type).length === 0"
+        :title="`${categoryVisibilityTitle(category.type)} · ${visibilityShortcut(category.key)}`"
+        type="button"
+        @click="toggleVisibilityTargets(categoryVisibilityTargets(category.type))"
+      >
+        <v-icon :icon="category.icon" size="18" />
+      </button>
+
+      <span aria-hidden="true" class="visibility-divider" />
+
+      <button
+        :aria-keyshortcuts="visibilityShortcut(mapVisibilityKey)"
+        :aria-label="
+          $t(uiStore.mapBackgroundVisible ? 'layers.hideMapBackground' : 'layers.showMapBackground')
+        "
+        :aria-pressed="uiStore.mapBackgroundVisible"
+        class="visibility-button"
+        :class="{ 'visibility-button-active': uiStore.mapBackgroundVisible }"
+        data-testid="toggle-map-background"
+        :title="`${$t(uiStore.mapBackgroundVisible ? 'layers.hideMapBackground' : 'layers.showMapBackground')} · ${visibilityShortcut(mapVisibilityKey)}`"
+        type="button"
+        @click="uiStore.mapBackgroundVisible = !uiStore.mapBackgroundVisible"
+      >
+        <v-icon icon="mdi-map-outline" size="18" />
+      </button>
+    </div>
+
     <!-- Search bar (only show when there are elements) -->
     <div v-if="!layersStore.isEmpty || layersStore.elementGroups.length > 0" class="mb-3">
       <v-text-field
@@ -131,6 +172,7 @@
 
           <div class="layers-section-actions">
             <v-btn
+              :disabled="groupVisibilityTargets(group).length === 0"
               :icon="isElementGroupVisible(group) ? 'mdi-eye-off' : 'mdi-eye'"
               size="x-small"
               :title="$t(isElementGroupVisible(group) ? 'layers.groupHide' : 'layers.groupShow')"
@@ -165,7 +207,9 @@
             :class="[
               dropClasses(member.type, member.element.id),
               {
-                'layer-item-hidden': !uiStore.isElementVisible(member.type, member.element.id),
+                'layer-item-hidden':
+                  member.type !== 'note' &&
+                  !uiStore.isElementVisible(member.type, member.element.id),
               },
             ]"
             :data-group-id="group.id"
@@ -780,6 +824,7 @@ import type {
   CircleElement,
   DrawingElement,
   ElementGroup,
+  ElementType,
   LineSegmentElement,
   NoteElement,
   PointElement,
@@ -791,6 +836,13 @@ import { useI18n } from 'vue-i18n';
 import LayerContextMenu from '@/components/layers/LayerContextMenu.vue';
 import { useDrawingContext, useMapContext } from '@/composables/mapContext';
 import { useDistanceDisplay } from '@/composables/useDistanceDisplay';
+import {
+  mapVisibilityKey,
+  useElementVisibility,
+  visibilityCategories,
+  visibilityShortcut,
+  type VisibilityTarget,
+} from '@/composables/useElementVisibility';
 import { useProjectGeometry } from '@/composables/useProjectGeometry';
 import { routeBounds } from '@/services/routing';
 import { useLayersStore } from '@/stores/layers';
@@ -814,6 +866,8 @@ const elementCount = computed(
     layersStore.notes.length
 );
 const drawing = useDrawingContext();
+const { categoryVisibilityTargets, areAllTargetsVisible, toggleVisibilityTargets } =
+  useElementVisibility(drawing);
 const mapContainer = useMapContext();
 
 const searchQuery = ref('');
@@ -886,9 +940,7 @@ const filteredRoutes = computed(() =>
   )
 );
 const routesExpanded = ref(true);
-const allRoutesVisible = computed(() =>
-  layersStore.routes.every((route) => uiStore.isElementVisible('route', route.id))
-);
+const allRoutesVisible = computed(() => areAllTargetsVisible(sectionVisibilityTargets('route')));
 function getRouteInfo(route: RouteElement) {
   return `${t(route.profile === 'car' ? 'route.car' : 'route.pedestrian')} • ${formatDistance(route.distance / 1000, 2)} • ${Math.ceil(route.duration / 60)} min • IGN`;
 }
@@ -1069,20 +1121,36 @@ function toggleElementGroupExpanded(groupId: string) {
   expandedElementGroups.value[groupId] = expandedElementGroups.value[groupId] === false;
 }
 
-function isElementGroupVisible(group: ElementGroup): boolean {
-  const members = groupMembers(group.id);
-  return (
-    members.length > 0 &&
-    members.every((member) => uiStore.isElementVisible(member.type, member.element.id))
+function categoryVisibilityTitle(type: ElementType): string {
+  const action = areAllTargetsVisible(categoryVisibilityTargets(type))
+    ? 'hideCategory'
+    : 'showCategory';
+  return t(`layers.${action}`, { category: t(`layers.visibilityCategories.${type}`) });
+}
+
+function groupVisibilityTargets(group: ElementGroup): VisibilityTarget[] {
+  return displayedGroupMembers(group).flatMap((member) =>
+    member.type === 'note' ? [] : [{ type: member.type, id: member.element.id }]
   );
 }
 
+function sectionVisibilityTargets(type: ElementType): VisibilityTarget[] {
+  const sections = {
+    route: filteredRoutes,
+    circle: filteredCircles,
+    lineSegment: filteredLines,
+    point: filteredPoints,
+    polygon: filteredPolygons,
+  };
+  return sections[type].value.map((element) => ({ type, id: element.id }));
+}
+
+function isElementGroupVisible(group: ElementGroup): boolean {
+  return areAllTargetsVisible(groupVisibilityTargets(group));
+}
+
 function toggleElementGroupVisibility(group: ElementGroup) {
-  const visible = !isElementGroupVisible(group);
-  for (const member of groupMembers(group.id)) {
-    uiStore.setElementVisibility(member.type, member.element.id, visible);
-    drawing.updateElementVisibility(member.type, member.element.id, visible);
-  }
+  toggleVisibilityTargets(groupVisibilityTargets(group));
 }
 
 function openCreateGroupDialog() {
@@ -1282,24 +1350,14 @@ watch(
   }
 );
 
-// Check if all elements of a type are visible
-const allCirclesVisible = computed(() => {
-  return layersStore.circles.every((c) => c.id && uiStore.isElementVisible('circle', c.id));
-});
-
-const allLinesVisible = computed(() => {
-  return layersStore.lineSegments.every(
-    (l) => l.id && uiStore.isElementVisible('lineSegment', l.id)
-  );
-});
-
-const allPointsVisible = computed(() => {
-  return layersStore.points.every((p) => p.id && uiStore.isElementVisible('point', p.id));
-});
-
-const allPolygonsVisible = computed(() => {
-  return layersStore.polygons.every((p) => p.id && uiStore.isElementVisible('polygon', p.id));
-});
+const allCirclesVisible = computed(() => areAllTargetsVisible(sectionVisibilityTargets('circle')));
+const allLinesVisible = computed(() =>
+  areAllTargetsVisible(sectionVisibilityTargets('lineSegment'))
+);
+const allPointsVisible = computed(() => areAllTargetsVisible(sectionVisibilityTargets('point')));
+const allPolygonsVisible = computed(() =>
+  areAllTargetsVisible(sectionVisibilityTargets('polygon'))
+);
 
 function getLineInfo(line: LineSegmentElement) {
   // Special handling for parallel mode
@@ -1899,60 +1957,8 @@ function handleDeleteNote(note: NoteElement) {
   }
 }
 
-function toggleAllElementsOfType(
-  elementType: 'route' | 'circle' | 'lineSegment' | 'point' | 'polygon'
-) {
-  let elements: DrawingElement[];
-  let typeName: string;
-  let allVisible: boolean;
-
-  switch (elementType) {
-    case 'circle': {
-      elements = layersStore.circles;
-      typeName = 'circles';
-      allVisible = allCirclesVisible.value;
-      break;
-    }
-    case 'route': {
-      elements = layersStore.routes;
-      typeName = 'routes';
-      allVisible = allRoutesVisible.value;
-      break;
-    }
-    case 'lineSegment': {
-      elements = layersStore.lineSegments;
-      typeName = 'lines';
-      allVisible = allLinesVisible.value;
-      break;
-    }
-    case 'point': {
-      elements = layersStore.points;
-      typeName = 'points';
-      allVisible = allPointsVisible.value;
-      break;
-    }
-    case 'polygon': {
-      elements = layersStore.polygons;
-      typeName = 'polygons';
-      allVisible = allPolygonsVisible.value;
-      break;
-    }
-  }
-
-  // Toggle visibility: if all are visible, hide all; otherwise show all
-  const newVisibility = !allVisible;
-
-  for (const element of elements) {
-    if (element.id) {
-      uiStore.setElementVisibility(elementType, element.id, newVisibility);
-      if (drawing) {
-        drawing.updateElementVisibility(elementType, element.id, newVisibility);
-      }
-    }
-  }
-
-  const action = newVisibility ? 'shown' : 'hidden';
-  uiStore.addToast(`All ${typeName} ${action}`, 'info');
+function toggleAllElementsOfType(elementType: ElementType) {
+  toggleVisibilityTargets(sectionVisibilityTargets(elementType));
 }
 
 function stopAutoScroll() {
@@ -1997,6 +2003,48 @@ onBeforeUnmount(cancelElementDrag);
   font-size: 11px;
   color: var(--gc-muted);
   line-height: 1.6;
+}
+.visibility-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 18px 12px 22px;
+}
+.visibility-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid var(--gc-border);
+  border-radius: 6px;
+  color: var(--gc-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.visibility-button-active {
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-color: rgba(var(--v-theme-primary), 0.25);
+}
+.visibility-button:hover:not(:disabled) {
+  background: rgba(var(--v-theme-primary), 0.16);
+}
+.visibility-button:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+.visibility-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.visibility-divider {
+  height: 18px;
+  border-left: 1px solid var(--gc-border);
+  margin: 0 3px;
 }
 .layers-heading {
   flex-shrink: 0;
