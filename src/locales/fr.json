@@ -331,6 +331,8 @@
     "title": "Bienvenue sur GeoChase",
     "welcome": "Bienvenue",
     "getStarted": "Commencer",
+    "guideSubtitle": "Guide de l’espace de travail",
+    "closeHint": "pour fermer",
     "next": "Suivant",
     "previous": "Précédent",
     "skip": "Passer le tutoriel",
@@ -344,6 +346,144 @@
     "coordinates": "Coordonnées",
     "drawingTools": "Outils de dessin",
     "gettingStarted": "Commencer",
+    "interface": "Interface et thèmes",
+    "projectionHelp": "Choisissez une projection à la création du projet, ou ouvrez Paramètres du projet dans le menu Projets pour la modifier ensuite. Mercator garde droites les lignes tracées sur la carte ; Géodésique (WGS84) suit les plus courts chemins sur la Terre courbe, les lignes peuvent donc paraître courbées. Le fond de carte se choisit séparément dans le bandeau supérieur. La projection s’applique à tout le projet et figure dans le projet ainsi que dans les exports JSON.",
+    "guideContent": {
+      "intros": {
+        "interface": "Retrouvez les commandes principales, les réglages et le panneau de la carte.",
+        "tips": "Raccourcis clavier et conseils pratiques pour votre travail cartographique."
+      },
+      "badges": {
+        "essential": "Essentiel",
+        "advanced": "Avancé",
+        "analysis": "Analyse"
+      },
+      "cards": {
+        "workspace": "Repérer les commandes",
+        "workspaceContent": "Les outils principaux sont dans le bandeau du haut. Ouvrez Construire pour accéder aux tracés avancés.",
+        "interface": "Personnaliser l’espace de travail",
+        "interfaceContent": "Le menu en haut à droite permet de changer de thème ou de langue, et d’ouvrir le dépôt du projet.",
+        "drawing": "Tracer des formes",
+        "drawingContent": "Créez des points, cercles, lignes, itinéraires et polygones avec les outils de construction avancés.",
+        "search": "Recherche de lieux",
+        "searchContent": "Recherchez depuis le bandeau supérieur et choisissez un fond de carte dans le sélecteur à droite.",
+        "path": "Recherche le long d’un parcours",
+        "pathContent": "Trouvez des lieux à une distance donnée d’un itinéraire.",
+        "elevation": "Profils altimétriques",
+        "elevationContent": "Consultez le relief et l’altitude le long des segments.",
+        "points": "Enregistrer des points",
+        "pointsContent": "Gérez les coordonnées et réutilisez les points comme centres géométriques.",
+        "projects": "Gérer des projets",
+        "projectsContent": "Enregistrez le travail, choisissez une projection et exportez au format GPX."
+      },
+      "search": {
+        "address": {
+          "item1": "Saisissez un lieu ou une adresse dans la recherche.",
+          "item2": "Choisissez un résultat pour centrer la carte sur ce lieu.",
+          "item3": "Utilisez les actions du résultat pour créer un point ou un cercle à cet emplacement."
+        },
+        "alongPath": {
+          "title": "Rechercher le long d’un parcours",
+          "item1": "Ouvrez Lieux à proximité depuis le menu d’une ligne, d’un itinéraire ou d’un point.",
+          "item2": "Définissez la bande de distance autour du parcours ou du point sélectionné.",
+          "item3": "Filtrez les résultats par catégorie, nom ou altitude, puis sélectionnez-en un pour le consulter."
+        }
+      },
+      "tools": {
+        "ruler": {
+          "item1": "Ouvrez le bouton rond Outils sur la carte, puis choisissez la règle.",
+          "item2": "Définissez le départ et l’arrivée ; la distance et l’azimut se mettent à jour pendant le déplacement. Cliquez pour terminer ou appuyez sur Échap pour annuler sans ajouter de calque."
+        }
+      },
+      "notes": {
+        "add": {
+          "item1": "Ouvrez le menu ⋮ d’un élément et choisissez Ajouter une note pour lui associer une note.",
+          "item2": "Utilisez le bouton Note du bandeau supérieur pour créer une note libre.",
+          "item3": "Saisissez un titre et le texte de la note.",
+          "item4": "Pour une note libre, choisissez si nécessaire la forme ou l’élément de carte concerné.",
+          "item5": "Survolez le marqueur d’une note pour afficher son aperçu."
+        }
+      },
+      "points": {
+        "manage": {
+          "item1": "Choisissez Point dans le bandeau supérieur ou faites un clic droit sur la carte.",
+          "item2": "Saisissez des coordonnées ou sélectionnez un point enregistré comme emplacement.",
+          "item3": "Nommez le point ; GeoChase peut proposer un nom automatiquement.",
+          "item4": "Retrouvez les points enregistrés dans le carnet pour les modifier ou les supprimer."
+        }
+      },
+      "pdf": {
+        "item1": "Ouvrez un projet, puis utilisez PDF dans le bandeau supérieur pour ajouter ou consulter son document.",
+        "item2": "Sélectionnez un fichier PDF (jusqu’à 50 Mo) pour l’ouvrir dans le lecteur.",
+        "item3": "Les commandes du lecteur permettent de changer de page, zoomer, ajuster, pivoter, afficher les miniatures ou télécharger le fichier.",
+        "item4": "Redimensionnez le lecteur depuis son bord gauche ; saisissez le mot de passe si le PDF est protégé.",
+        "item5": "Le mot de passe du PDF est enregistré localement dans ce navigateur.",
+        "item6": "Utilisez la corbeille pour retirer le PDF du projet.",
+        "item7": "Les PDF sont associés au projet courant et ne sont pas inclus dans les exports JSON."
+      },
+      "interface": {
+        "toolbar": {
+          "title": "Bandeau supérieur",
+          "content": "La première rangée contient la recherche, Projets, l’aide et le menu Plus. La seconde regroupe les outils de dessin et le sélecteur de fond de carte.",
+          "item1": "Point, Cercle, Ligne, Itinéraire et Polygone ouvrent leur formulaire de création.",
+          "item2": "Ouvrez Construire pour accéder à Azimut, Intersection, Parallèle, Main levée et Ligne avec angle.",
+          "item3": "Note crée une note ; PDF importe ou ouvre le document du projet.",
+          "item4": "Le sélecteur à droite propose Geoportail (IGN), OpenStreetMap et les fonds Google Plan, Satellite et Relief.",
+          "item5": "Utilisez la petite flèche sous le bandeau pour le replier ou le rouvrir."
+        },
+        "moreMenu": {
+          "title": "Menu Plus : thèmes, langue et GitHub",
+          "content": "Le menu à trois points en haut à droite regroupe les réglages de l’espace de travail.",
+          "item1": "Thèmes propose 12 palettes. Votre choix est mémorisé.",
+          "item2": "Langue permet de choisir le français ou l’anglais.",
+          "item3": "GitHub ouvre le dépôt du projet dans un nouvel onglet."
+        },
+        "sidebar": {
+          "title": "Panneau latéral et carte",
+          "content": "Le bouton au milieu du bord gauche affiche ou masque le carnet. Les boutons en bas à droite règlent le zoom ; le bouton rond des outils ouvre la règle de mesure.",
+          "item1": "Utilisez le carnet pour gérer les éléments ; les commandes de la carte règlent le zoom et ouvrent la règle."
+        }
+      },
+      "drawing": {
+        "itinerary": {
+          "title": "Itinéraire",
+          "content": "Créez un itinéraire à pied ou en voiture entre des points enregistrés.",
+          "item1": "Saisissez un nom pour l’itinéraire.",
+          "item2": "Choisissez les points enregistrés pour le départ et l’arrivée.",
+          "item3": "Ajoutez, réordonnez ou retirez des étapes si nécessaire.",
+          "item4": "Choisissez À pied ou En voiture, puis Le plus court ou Le plus rapide.",
+          "item5": "L’itinéraire calculé apparaît dans le carnet avec les autres éléments."
+        }
+      },
+      "layers": {
+        "organize": {
+          "title": "Retrouver et organiser les éléments",
+          "content": "Le carnet à gauche regroupe les tracés et les notes du projet pour les retrouver et les gérer facilement.",
+          "item1": "Cercles, lignes, itinéraires, points, polygones et notes sont regroupés ; chaque catégorie peut être repliée.",
+          "item2": "Utilisez le champ Filtrer par nom pour retrouver un élément.",
+          "item3": "L’œil d’une catégorie affiche ou masque tous ses éléments ; le menu ⋮ agit sur un élément seul.",
+          "item4": "Cliquez sur le nom d’un élément pour centrer la carte dessus.",
+          "item5": "Faites glisser un élément dans sa catégorie pour changer l’ordre.",
+          "item6": "Faites glisser un point sur un autre dans le carnet pour créer une ligne."
+        },
+        "actions": {
+          "item1": "Afficher ou masquer : bascule la visibilité de l’élément sur la carte.",
+          "item2": "Lieux à proximité : rechercher autour de cet élément.",
+          "item3": "Naviguer : se déplacer le long du cercle, de la ligne ou de l’itinéraire avec les flèches du clavier.",
+          "item4": "Ajouter un point sur une ligne : placer un point à une distance choisie d’une extrémité.",
+          "item5": "Azimuts : afficher les distances et directions vers les autres points.",
+          "item6": "Ajouter une note : créer ou modifier une note associée à cet élément.",
+          "item7": "Modifier : changer les propriétés de l’élément.",
+          "item8": "Couleur : changer la couleur des formes compatibles.",
+          "item9": "Ajouter le centre comme point : créer un point au centre d’un polygone.",
+          "item10": "Supprimer : retirer l’élément après confirmation."
+        },
+        "importExport": {
+          "title": "Importer et exporter",
+          "content": "Le menu Projets du bandeau supérieur permet de créer ou d’ouvrir des projets, d’importer du JSON et d’exporter les données en JSON ou GPX."
+        }
+      }
+    },
     "layers": "Calques",
     "navigation": "Navigation",
     "notes": "Notes",
@@ -369,6 +509,7 @@
     },
     "drawingToolsSection": {
       "heading": "🔧 Outils de dessin",
+      "intro": "Créez des tracés géométriques précis avec les outils du bandeau supérieur.",
       "accessing": {
         "title": "Accéder aux outils de dessin",
         "description": "Tous les outils de dessin se trouvent dans la barre supérieure :",
@@ -423,6 +564,7 @@
     },
     "searchSection": {
       "heading": "🔍 Rechercher et explorer",
+      "intro": "Recherchez une adresse depuis le bandeau supérieur, puis trouvez des lieux près de vos tracés.",
       "addressSearch": {
         "title": "🏘️ Recherche d'adresse",
         "description": "Trouvez des lieux par adresse et explorez les endroits à proximité :",
@@ -508,7 +650,9 @@
         "navigate": "🧭 Naviguer : Utiliser les touches fléchées pour se déplacer autour de la forme (cercles et lignes)",
         "bearings": "🧭 Relèvements : Voir les distances et azimuts vers tous les autres points (points uniquement)",
         "createWith": "➕ Créer avec : Créer de nouvelles formes à partir d'un point",
-        "addCenter": "⬟ Ajouter le centre comme point : Extraire le centre du polygone comme nouveau point (polygones uniquement)"
+        "addCenter": "⬟ Ajouter le centre comme point : Extraire le centre du polygone comme nouveau point (polygones uniquement)",
+        "addNote": "Ajouter une note : créer ou modifier une note associée à cet élément",
+        "color": "Couleur : modifier la couleur des formes compatibles"
       },
       "dragDrop": {
         "title": "Glisser-déposer",

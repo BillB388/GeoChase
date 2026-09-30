@@ -35,7 +35,12 @@ let observer: ResizeObserver | undefined;
 let stopDrag: (() => void) | undefined;
 
 function clampPosition(position = offset.value) {
-  const rect = dialog.value?.contentEl?.getBoundingClientRect();
+  const content = dialog.value?.contentEl;
+  if (content?.closest('.v-dialog--fullscreen')) {
+    offset.value = { x: 0, y: 0 };
+    return;
+  }
+  const rect = content?.getBoundingClientRect();
   if (!rect) return;
   const margin = 12;
   offset.value = {
@@ -66,6 +71,7 @@ function closeOnEscape(event: KeyboardEvent) {
 }
 
 function startDrag(event: PointerEvent) {
+  if (props.blocking) return;
   const target = event.target;
   if (!(target instanceof Element) || event.button !== 0) return;
   const title = target.closest('.v-card-title');
@@ -117,6 +123,36 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+.floating-dialog > .v-overlay__content {
+  pointer-events: none;
+}
+
+.floating-dialog.tutorial-fullscreen > .v-overlay__content {
+  width: 100vw;
+  height: 100dvh;
+  max-width: 100vw;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+.floating-dialog.tutorial-fullscreen > .v-overlay__content > .tutorial-card {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.floating-dialog > .v-overlay__content > * {
+  pointer-events: auto;
+}
+
 .floating-dialog .v-card-title {
   cursor: grab;
   touch-action: none;
