@@ -1217,7 +1217,7 @@
     "clickScale": "Place points 1 and 2 in the image.",
     "customFactor": "Meters per custom unit",
     "distance": "Distance between points",
-    "extentError": "This scale exceeds the map limits. Check the distance in kilometres.",
+    "extentError": "Unable to calculate this scale. Check the calibration values.",
     "fileError": "Unreadable or unsupported image. Choose an image below 25 MB and 100 megapixels.",
     "fileHint": "PNG, JPEG, WebP, GIF or BMP · Up to 25 MB. The file stays in this browser.",
     "importStep": "1 · Import",

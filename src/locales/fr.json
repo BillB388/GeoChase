@@ -1217,7 +1217,7 @@
     "clickScale": "Placez les points 1 et 2 dans l’image.",
     "customFactor": "Mètres par unité personnalisée",
     "distance": "Distance entre les points",
-    "extentError": "Cette échelle dépasse les limites de la carte. Vérifiez la distance en kilomètres.",
+    "extentError": "Impossible de calculer cette échelle. Vérifiez les valeurs de calibration.",
     "fileError": "Image illisible ou non prise en charge. Choisissez une image de moins de 25 Mo et 100 mégapixels.",
     "fileHint": "PNG, JPEG, WebP, GIF ou BMP · 25 Mo maximum. Le fichier reste dans ce navigateur.",
     "importStep": "1 · Importer",

@@ -20,9 +20,15 @@
         <v-chip :color="url ? 'primary' : undefined">{{ t('imageMap.calibrateStep') }}</v-chip>
       </div>
 
-      <v-alert v-if="error" class="mx-6 mb-3" closable type="error" @click:close="error = ''">{{
-        error
-      }}</v-alert>
+      <v-alert
+        v-if="error"
+        class="image-map-error mx-6 mb-3"
+        closable
+        density="compact"
+        type="error"
+        @click:close="error = ''"
+        >{{ error }}</v-alert
+      >
 
       <div v-if="!url" class="image-map-import">
         <v-icon color="primary" icon="mdi-image-plus-outline" size="64" />
@@ -521,11 +527,7 @@ async function apply() {
       anchor: url.value === initial?.url ? initial.anchor : undefined,
     };
     const extent = imageMapExtent(image, projects.activeProjection);
-    if (
-      !extent.every((value) => Number.isFinite(value)) ||
-      extent.some((v) => Math.abs(v) > 20_037_508) ||
-      Math.max(extent[2] - extent[0], extent[3] - extent[1]) > 10_000_000
-    ) {
+    if (!extent.every((value) => Number.isFinite(value))) {
       error.value = t('imageMap.extentError');
       return;
     }
@@ -543,6 +545,9 @@ async function apply() {
   height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+.image-map-error {
+  flex: none;
 }
 .image-map-steps {
   display: flex;
