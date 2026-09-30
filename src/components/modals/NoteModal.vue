@@ -153,6 +153,8 @@ watch(
         };
       }
     } else if (newValue) {
+      resetForm();
+
       // Check if we're creating a note from a context menu with pre-filled element
       const preFillElement = uiStore.notePreFillElement;
       if (preFillElement) {

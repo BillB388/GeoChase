@@ -50,16 +50,19 @@ test.describe('Notes Management', () => {
 
   test('should create multiple notes', async ({ page, blankProject }) => {
     const noteTitles = ['Note 1', 'Note 2', 'Note 3'];
+    const dialog = page.getByRole('dialog');
 
     for (const title of noteTitles) {
-      await page.getByTestId('create-note-btn').evaluate((el) => (el as HTMLElement).click());
-      await expect(page.getByTestId('note-title-input')).toBeVisible();
-      await page.getByTestId('note-title-input').locator('input').fill(title);
+      await page.getByTestId('create-note-btn').click();
+      await expect(dialog).toBeVisible();
+      const titleInput = page.getByTestId('note-title-input').locator('input');
+      await titleInput.fill(title);
+      await expect(titleInput).toHaveValue(title);
       await page.getByTestId('note-content-input').locator('textarea').fill(`Content for ${title}`);
-      await page.getByTestId('submit-note-btn').evaluate((el) => (el as HTMLElement).click());
+      await page.getByTestId('submit-note-btn').click();
 
-      await expect(page.locator(`text=Note created`).first()).toBeVisible();
-      await page.waitForTimeout(500);
+      await expect(dialog).not.toBeVisible();
+      await expect(page.locator('.layer-item-name').filter({ hasText: title })).toBeVisible();
     }
 
     // Verify all notes appear in the panel
