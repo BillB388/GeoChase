@@ -348,6 +348,142 @@
     "gettingStarted": "Getting Started",
     "interface": "Interface & Themes",
     "projectionHelp": "Choose a projection when creating a project, or open Project Settings from the Projects menu to change it later. Mercator keeps drawn lines straight on the map; Geodesic (WGS84) follows the shortest paths over the curved Earth, so lines can appear curved. The basemap is selected separately in the top toolbar. The projection applies to the whole project and is saved in the project and JSON exports.",
+    "guideContent": {
+      "intros": {
+        "interface": "Explore the main controls, workspace settings and map panel.",
+        "tips": "Keyboard shortcuts and practical tips for your mapping workflow."
+      },
+      "badges": {
+        "essential": "Essential",
+        "advanced": "Advanced",
+        "analysis": "Analysis"
+      },
+      "cards": {
+        "workspace": "Find the controls",
+        "workspaceContent": "The top bar contains the main tools. Open Build for advanced line tools.",
+        "interface": "Customize your workspace",
+        "interfaceContent": "Use the top-right menu to change themes and language or open the project repository.",
+        "drawing": "Draw shapes",
+        "drawingContent": "Create points, circles, lines, routes and polygons with advanced construction tools.",
+        "search": "Find places",
+        "searchContent": "Search from the top bar and choose a basemap from the selector on the right.",
+        "path": "Search along a route",
+        "pathContent": "Find places within a chosen distance of a route.",
+        "elevation": "Elevation profiles",
+        "elevationContent": "Review terrain and elevation along line segments.",
+        "points": "Save points",
+        "pointsContent": "Manage coordinates and reuse points as geometry centers.",
+        "projects": "Manage projects",
+        "projectsContent": "Save work, choose a projection and export GPX files."
+      },
+      "search": {
+        "address": {
+          "item1": "Enter a place name or address in the search box.",
+          "item2": "Choose a result to center the map on that location.",
+          "item3": "Use the result actions to create a point or a circle at that location."
+        },
+        "alongPath": {
+          "title": "Search along a route",
+          "item1": "Open Nearby places from a line, route or point menu.",
+          "item2": "Set the distance band around the selected route or point.",
+          "item3": "Filter results by category, name or elevation, then select a result to inspect it."
+        }
+      },
+      "tools": {
+        "ruler": {
+          "item1": "Open the round Tools button on the map and choose the ruler.",
+          "item2": "Set the start and end points; distance and azimuth update as you move. Click to finish, or press Escape to cancel without adding a layer."
+        }
+      },
+      "notes": {
+        "add": {
+          "item1": "Open an item’s ⋮ menu and choose Add a note to attach a note to it.",
+          "item2": "Use the Note button in the top toolbar to create a free note.",
+          "item3": "Enter a title and the note text.",
+          "item4": "For a free note, choose the shape or map item it refers to, if applicable.",
+          "item5": "Hover over a note marker to preview its content."
+        }
+      },
+      "points": {
+        "manage": {
+          "item1": "Choose Point in the top toolbar, or right-click the map to create one.",
+          "item2": "Enter coordinates or select a saved point as the location.",
+          "item3": "Give the point a name; GeoChase can suggest one automatically.",
+          "item4": "Find saved points in the notebook, where you can edit or delete them."
+        }
+      },
+      "pdf": {
+        "item1": "Open a project, then use PDF in the top toolbar to add or view its document.",
+        "item2": "Select a PDF file (up to 50 MB) to open it in the viewer.",
+        "item3": "Use the viewer controls to change pages, zoom, fit, rotate, show thumbnails or download.",
+        "item4": "Resize the viewer from its left edge; enter the password if the PDF is protected.",
+        "item5": "The PDF password is stored locally in this browser.",
+        "item6": "Use the trash button to remove the PDF from the project.",
+        "item7": "PDFs belong to the current project and are not included in JSON exports."
+      },
+      "interface": {
+        "toolbar": {
+          "title": "Top toolbar",
+          "content": "The first row contains search, Projects, help and the More menu. The second row contains drawing tools and the basemap selector.",
+          "item1": "Point, Circle, Line, Route and Polygon open their creation forms.",
+          "item2": "Open Build for Azimuth, Intersection, Parallel, Free Hand and Line at Angle.",
+          "item3": "Note creates a note; PDF imports or opens the project document.",
+          "item4": "The selector on the right offers Geoportail (IGN), OpenStreetMap and Google map, satellite and terrain layers.",
+          "item5": "Use the small arrow below the toolbar to collapse or reopen it."
+        },
+        "moreMenu": {
+          "title": "More menu: themes, language and GitHub",
+          "content": "The three-dot menu in the top-right corner contains workspace settings.",
+          "item1": "Themes offers 12 palettes. Your choice is remembered.",
+          "item2": "Language switches the app between French and English.",
+          "item3": "GitHub opens the project repository in a new tab."
+        },
+        "sidebar": {
+          "title": "Sidebar and map",
+          "content": "The button at the middle of the left edge shows or hides the layers notebook. Map zoom controls are at the bottom-right; the round tools button below them opens the measuring ruler.",
+          "item1": "Use the notebook to manage map items; the map controls adjust zoom and open the ruler."
+        }
+      },
+      "drawing": {
+        "itinerary": {
+          "title": "Route",
+          "content": "Create a driving or walking route between saved points.",
+          "item1": "Enter a name for the route.",
+          "item2": "Choose saved points for the start and destination.",
+          "item3": "Add, reorder or remove stops as needed.",
+          "item4": "Choose walking or driving, then the shortest or fastest route.",
+          "item5": "The calculated route appears in the notebook with your other map items."
+        }
+      },
+      "layers": {
+        "organize": {
+          "title": "Find and organize items",
+          "content": "The left notebook groups project drawings and notes so you can find and manage them.",
+          "item1": "Groups contain circles, lines, routes, points, polygons and notes; expand or collapse each group.",
+          "item2": "Use the Filter by name field to find an item.",
+          "item3": "Use a group eye button to show or hide all its items; each ⋮ menu controls one item.",
+          "item4": "Select an item name to center the map on it.",
+          "item5": "Drag an item within its group to change its order.",
+          "item6": "Drag one point onto another in the notebook to create a line."
+        },
+        "actions": {
+          "item1": "Show or hide: Toggle this item on the map.",
+          "item2": "Nearby places: Search around this item.",
+          "item3": "Navigate: Move along this circle, line or route with the arrow keys.",
+          "item4": "Add a point on a line: Place a point at a chosen distance from one endpoint.",
+          "item5": "Bearings: View distances and directions to the other points.",
+          "item6": "Add a note: Create or edit a note attached to this item.",
+          "item7": "Edit: Change the item’s properties.",
+          "item8": "Color: Change the color of supported shapes.",
+          "item9": "Add center as point: Create a point at a polygon’s center.",
+          "item10": "Delete: Remove the item after confirmation."
+        },
+        "importExport": {
+          "title": "Import and export",
+          "content": "Use the Projects menu in the top bar to create or open projects, import JSON, and export project data as JSON or GPX."
+        }
+      }
+    },
     "layers": "Layers",
     "navigation": "Navigation",
     "notes": "Notes",
@@ -373,6 +509,7 @@
     },
     "drawingToolsSection": {
       "heading": "🔧 Drawing Tools",
+      "intro": "Create precise geometric drawings with the tools in the top toolbar.",
       "accessing": {
         "title": "Accessing Drawing Tools",
         "description": "All drawing tools are located in the top bar:",
@@ -427,6 +564,7 @@
     },
     "searchSection": {
       "heading": "🔍 Search & Explore",
+      "intro": "Search for an address from the top bar, then find places near your drawings.",
       "addressSearch": {
         "title": "🏘️ Address Search",
         "description": "Find locations by address and explore nearby places:",
@@ -512,7 +650,9 @@
         "navigate": "🧭 Navigate: Use arrow keys to move around the shape (circles and lines)",
         "bearings": "🧭 Bearings: View distances and azimuths to all other points (points only)",
         "createWith": "➕ Create with: Create new shapes from a point",
-        "addCenter": "⬟ Add center as point: Extract polygon center as a new point (polygons only)"
+        "addCenter": "⬟ Add center as point: Extract polygon center as a new point (polygons only)",
+        "addNote": "Add note: Create or edit a note attached to this item",
+        "color": "Color: Change the color of supported shapes"
       },
       "dragDrop": {
         "title": "Drag & Drop",

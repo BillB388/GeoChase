@@ -96,13 +96,19 @@
                 md="6"
               >
                 <v-card
-                  :aria-label="sub.title"
+                  :aria-label="featureTitle(sub.id, sub.title)"
                   class="h-100 modern-feature-card pa-5 d-flex flex-column rounded-xl"
                   variant="flat"
                   @click="navigateTo(sub.linkTarget)"
                 >
                   <div class="d-flex align-start gap-4 mb-3">
-                    <v-avatar color="primary" rounded="lg" size="46" variant="tonal">
+                    <v-avatar
+                      class="flex-shrink-0"
+                      color="primary"
+                      rounded="lg"
+                      size="46"
+                      variant="tonal"
+                    >
                       <v-icon :icon="sub.icon || 'mdi-compass'" size="24" />
                     </v-avatar>
 
@@ -110,11 +116,11 @@
                       <v-card-title
                         class="text-h6 font-weight-bold text-high-emphasis pa-0 mb-1 line-height-tight"
                       >
-                        {{ sub.title }}
+                        {{ featureTitle(sub.id, sub.title) }}
                       </v-card-title>
 
                       <v-card-text class="text-body-2 text-medium-emphasis pa-0">
-                        {{ sub.content }}
+                        {{ featureContent(sub.id, sub.content ?? '') }}
                       </v-card-text>
                     </div>
                   </div>
@@ -139,9 +145,9 @@
               "
             >
               <div class="d-flex align-center justify-space-between mb-4">
-                <div class="d-flex align-center gap-3">
+                <div class="tutorial-step-heading">
                   <div
-                    class="icon-wrapper d-flex align-center justify-center rounded-lg bg-background border"
+                    class="icon-wrapper d-flex flex-shrink-0 align-center justify-center rounded-lg bg-background border"
                   >
                     <v-icon color="primary" :icon="sub.icon || 'mdi-chevron-right'" size="20" />
                   </div>
@@ -158,7 +164,7 @@
                   size="small"
                   variant="elevated"
                 >
-                  {{ sub.badge }}
+                  {{ subsectionBadge(sub.id, sub.badge) }}
                 </v-chip>
               </div>
 
@@ -175,11 +181,14 @@
               >
                 <ul class="tutorial-list">
                   <li v-for="(item, bIndex) in sub.items" :key="bIndex">
-                    <strong v-if="item.label" class="text-high-emphasis"
-                      >{{ item.label }} <span class="text-primary mx-1">•</span>
+                    <strong v-if="detailLabel(sub, bIndex, item.label)" class="text-high-emphasis"
+                      >{{ detailLabel(sub, bIndex, item.label) }}
+                      <span class="text-primary mx-1">•</span>
                     </strong>
 
-                    <span class="text-medium-emphasis">{{ item.text }}</span>
+                    <span class="text-medium-emphasis">{{
+                      detailText(sub, bIndex, item.text)
+                    }}</span>
                   </li>
                 </ul>
               </div>
@@ -496,7 +505,7 @@ const DEFAULT_DATA: Section[] = [
       {
         id: 'draw-polygon',
         title: 'Polygones',
-        icon: 'mdi-polygon',
+        icon: 'mdi-vector-polygon',
         content: 'Zones fermées à plusieurs sommets.',
         items: [
           {
@@ -529,7 +538,7 @@ const DEFAULT_DATA: Section[] = [
       {
         id: 'search-address',
         title: "Recherche d'adresse",
-        icon: 'mdi-map-marker-search',
+        icon: 'mdi-map-search',
         items: [
           {
             label: '1',
@@ -938,14 +947,240 @@ const sectionTitleKeys: Record<string, string> = {
   tips: 'tutorial.tipsTricks',
 };
 
+const featureTitleKeys: Record<string, string> = {
+  'feat-workspace': 'tutorial.guideContent.cards.workspace',
+  'feat-interface': 'tutorial.guideContent.cards.interface',
+  'feat-draw': 'tutorial.guideContent.cards.drawing',
+  'feat-search': 'tutorial.guideContent.cards.search',
+  'feat-path': 'tutorial.guideContent.cards.path',
+  'feat-elevation': 'tutorial.guideContent.cards.elevation',
+  'feat-points': 'tutorial.guideContent.cards.points',
+  'feat-projects': 'tutorial.guideContent.cards.projects',
+};
+
+const featureContentKeys: Record<string, string> = {
+  'feat-workspace': 'tutorial.guideContent.cards.workspaceContent',
+  'feat-interface': 'tutorial.guideContent.cards.interfaceContent',
+  'feat-draw': 'tutorial.guideContent.cards.drawingContent',
+  'feat-search': 'tutorial.guideContent.cards.searchContent',
+  'feat-path': 'tutorial.guideContent.cards.pathContent',
+  'feat-elevation': 'tutorial.guideContent.cards.elevationContent',
+  'feat-points': 'tutorial.guideContent.cards.pointsContent',
+  'feat-projects': 'tutorial.guideContent.cards.projectsContent',
+};
+
+const subsectionTitleKeys: Record<string, string> = {
+  'interface-toolbar': 'tutorial.guideContent.interface.toolbar.title',
+  'interface-more-menu': 'tutorial.guideContent.interface.moreMenu.title',
+  'interface-sidebar': 'tutorial.guideContent.interface.sidebar.title',
+  'draw-access': 'tutorial.drawingToolsSection.accessing.title',
+  'draw-itineraire': 'tutorial.guideContent.drawing.itinerary.title',
+  'draw-circle': 'tutorial.drawingToolsSection.circle.title',
+  'draw-line': 'tutorial.drawingToolsSection.line.title',
+  'draw-intersection-edit': 'tutorial.drawingToolsSection.intersectionEditing.title',
+  'draw-crossing': 'tutorial.drawingToolsSection.crossingPoint.title',
+  'draw-point': 'tutorial.drawingToolsSection.point.title',
+  'draw-polygon': 'tutorial.drawingToolsSection.polygon.title',
+  'search-address': 'tutorial.searchSection.addressSearch.title',
+  'search-path': 'tutorial.guideContent.search.alongPath.title',
+  'nav-howto': 'tutorial.navigationSection.howTo.title',
+  'tool-ruler': 'tutorial.toolsSection.ruler.title',
+  'layers-actions': 'tutorial.guideContent.layers.organize.title',
+  'layers-actions-2': 'tutorial.layersSection.actions.title',
+  'layers-dragdrop': 'tutorial.guideContent.layers.importExport.title',
+  'notes-add': 'tutorial.notesSection.howToAdd.title',
+  'points-manage': 'tutorial.pointsSection.managing.title',
+  'proj-system': 'tutorial.projectsSection.projectActions.title',
+  'proj-actions': 'tutorial.projectsSection.projection.title',
+  'pdf-upload': 'tutorial.pdfSection.uploading.title',
+  'tips-shortcuts': 'tutorial.tipsSection.keyboardShortcuts.title',
+};
+
+const subsectionContentKeys: Record<string, string> = {
+  'interface-toolbar': 'tutorial.guideContent.interface.toolbar.content',
+  'interface-more-menu': 'tutorial.guideContent.interface.moreMenu.content',
+  'interface-sidebar': 'tutorial.guideContent.interface.sidebar.content',
+  'draw-access': 'tutorial.drawingToolsSection.accessing.description',
+  'draw-itineraire': 'tutorial.guideContent.drawing.itinerary.content',
+  'draw-circle': 'tutorial.drawingToolsSection.circle.description',
+  'draw-line': 'tutorial.drawingToolsSection.line.description',
+  'draw-point': 'tutorial.drawingToolsSection.point.description',
+  'draw-polygon': 'tutorial.drawingToolsSection.polygon.description',
+  'search-address': 'tutorial.searchSection.addressSearch.description',
+  'search-path': 'tutorial.searchSection.alongPath.description',
+  'tool-ruler': 'tutorial.toolsSection.ruler.description',
+  'layers-actions': 'tutorial.guideContent.layers.organize.content',
+  'layers-dragdrop': 'tutorial.guideContent.layers.importExport.content',
+  'proj-system': 'tutorial.projectsSection.accessing.dropdown',
+};
+
+const subsectionItemKeys: Record<string, string[]> = {
+  'interface-toolbar': [
+    'tutorial.guideContent.interface.toolbar.item1',
+    'tutorial.guideContent.interface.toolbar.item2',
+    'tutorial.guideContent.interface.toolbar.item3',
+    'tutorial.guideContent.interface.toolbar.item4',
+    'tutorial.guideContent.interface.toolbar.item5',
+  ],
+  'interface-more-menu': [
+    'tutorial.guideContent.interface.moreMenu.item1',
+    'tutorial.guideContent.interface.moreMenu.item2',
+    'tutorial.guideContent.interface.moreMenu.item3',
+  ],
+  'interface-sidebar': ['tutorial.guideContent.interface.sidebar.item1'],
+  'draw-access': [
+    'tutorial.drawingToolsSection.accessing.clickButtons',
+    'tutorial.drawingToolsSection.accessing.collapse',
+    'tutorial.drawingToolsSection.accessing.toolsInclude',
+  ],
+  'draw-itineraire': [
+    'tutorial.guideContent.drawing.itinerary.item1',
+    'tutorial.guideContent.drawing.itinerary.item2',
+    'tutorial.guideContent.drawing.itinerary.item3',
+    'tutorial.guideContent.drawing.itinerary.item4',
+    'tutorial.guideContent.drawing.itinerary.item5',
+  ],
+  'draw-circle': [
+    'tutorial.drawingToolsSection.circle.name',
+    'tutorial.drawingToolsSection.circle.center',
+    'tutorial.drawingToolsSection.circle.radius',
+  ],
+  'draw-line': [
+    'tutorial.drawingToolsSection.line.twoPoints',
+    'tutorial.drawingToolsSection.line.azimuth',
+    'tutorial.drawingToolsSection.line.angle',
+    'tutorial.drawingToolsSection.line.intersection',
+    'tutorial.drawingToolsSection.line.parallel',
+    'tutorial.drawingToolsSection.line.freeHand',
+    'tutorial.drawingToolsSection.line.dragDrop',
+  ],
+  'draw-intersection-edit': [
+    'tutorial.drawingToolsSection.intersectionEditing.start',
+    'tutorial.drawingToolsSection.intersectionEditing.move',
+    'tutorial.drawingToolsSection.intersectionEditing.snap',
+    'tutorial.drawingToolsSection.intersectionEditing.save',
+    'tutorial.drawingToolsSection.intersectionEditing.cancel',
+  ],
+  'draw-polygon': [
+    'tutorial.drawingToolsSection.polygon.selectPoints',
+    'tutorial.drawingToolsSection.polygon.visual',
+    'tutorial.drawingToolsSection.polygon.extractCenter',
+    'tutorial.drawingToolsSection.polygon.useCase',
+  ],
+  'search-address': [
+    'tutorial.guideContent.search.address.item1',
+    'tutorial.guideContent.search.address.item2',
+    'tutorial.guideContent.search.address.item3',
+  ],
+  'search-path': [
+    'tutorial.guideContent.search.alongPath.item1',
+    'tutorial.guideContent.search.alongPath.item2',
+    'tutorial.guideContent.search.alongPath.item3',
+  ],
+  'nav-howto': [
+    'tutorial.navigationSection.howTo.step1',
+    'tutorial.navigationSection.howTo.step2',
+    'tutorial.navigationSection.howTo.step3',
+  ],
+  'tool-ruler': [
+    'tutorial.guideContent.tools.ruler.item1',
+    'tutorial.guideContent.tools.ruler.item2',
+  ],
+  'layers-actions-2': [
+    'tutorial.guideContent.layers.actions.item1',
+    'tutorial.guideContent.layers.actions.item2',
+    'tutorial.guideContent.layers.actions.item3',
+    'tutorial.guideContent.layers.actions.item4',
+    'tutorial.guideContent.layers.actions.item5',
+    'tutorial.guideContent.layers.actions.item6',
+    'tutorial.guideContent.layers.actions.item7',
+    'tutorial.guideContent.layers.actions.item8',
+    'tutorial.guideContent.layers.actions.item9',
+    'tutorial.guideContent.layers.actions.item10',
+  ],
+  'layers-actions': [
+    'tutorial.guideContent.layers.organize.item1',
+    'tutorial.guideContent.layers.organize.item2',
+    'tutorial.guideContent.layers.organize.item3',
+    'tutorial.guideContent.layers.organize.item4',
+    'tutorial.guideContent.layers.organize.item5',
+    'tutorial.guideContent.layers.organize.item6',
+  ],
+  'layers-dragdrop': [],
+  'notes-add': [
+    'tutorial.guideContent.notes.add.item1',
+    'tutorial.guideContent.notes.add.item2',
+    'tutorial.guideContent.notes.add.item3',
+    'tutorial.guideContent.notes.add.item4',
+    'tutorial.guideContent.notes.add.item5',
+  ],
+  'points-manage': [
+    'tutorial.guideContent.points.manage.item1',
+    'tutorial.guideContent.points.manage.item2',
+    'tutorial.guideContent.points.manage.item3',
+    'tutorial.guideContent.points.manage.item4',
+  ],
+  'proj-system': [
+    'tutorial.projectsSection.projectActions.newProject',
+    'tutorial.projectsSection.projectActions.loadProject',
+    'tutorial.projectsSection.projectActions.exportJSON',
+    'tutorial.projectsSection.projectActions.importJSON',
+    'tutorial.projectsSection.projectActions.exportGPX',
+    'tutorial.projectsSection.projection.settings',
+    'tutorial.projectsSection.features.autoSave',
+  ],
+  'proj-actions': [
+    'tutorial.projectsSection.projection.choice',
+    'tutorial.projectsSection.projection.export',
+  ],
+  'pdf-upload': [
+    'tutorial.guideContent.pdf.item1',
+    'tutorial.guideContent.pdf.item2',
+    'tutorial.guideContent.pdf.item3',
+    'tutorial.guideContent.pdf.item4',
+    'tutorial.guideContent.pdf.item5',
+    'tutorial.guideContent.pdf.item6',
+    'tutorial.guideContent.pdf.item7',
+  ],
+  'tips-shortcuts': [
+    'tutorial.tipsSection.keyboardShortcuts.esc',
+    'tutorial.tipsSection.keyboardShortcuts.z',
+    'tutorial.tipsSection.keyboardShortcuts.rightClick',
+    'tutorial.tipsSection.keyboardShortcuts.ctrl',
+    'tutorial.tipsSection.keyboardShortcuts.alt',
+    'tutorial.tipsSection.keyboardShortcuts.arrows',
+  ],
+};
+
+const subsectionBadgeKeys: Record<string, string> = {
+  'draw-line': 'tutorial.guideContent.badges.essential',
+  'draw-intersection-edit': 'tutorial.guideContent.badges.advanced',
+  'search-path': 'tutorial.guideContent.badges.analysis',
+};
+
 function sectionTitle(id: string): string {
   const key = sectionTitleKeys[id];
   return key ? String(t(key)) : '';
 }
 
+function featureTitle(id: string, fallback: string): string {
+  const key = featureTitleKeys[id];
+  return key ? String(t(key)) : fallback;
+}
+
+function featureContent(id: string, fallback: string): string {
+  const key = featureContentKeys[id];
+  return key ? String(t(key)) : fallback;
+}
+
+function subsectionBadge(id: string, fallback: string): string {
+  const key = subsectionBadgeKeys[id];
+  return key ? String(t(key)) : fallback;
+}
+
 function subsectionTitle(id: string, fallback: string): string {
-  if (id === 'tips-shortcuts') return String(t('tutorial.tipsSection.keyboardShortcuts.title'));
-  return fallback;
+  const key = subsectionTitleKeys[id];
+  return key ? String(t(key)) : fallback;
 }
 
 function subsectionContent(subsection: Subsection): string {
@@ -957,11 +1192,37 @@ function subsectionContent(subsection: Subsection): string {
     const prefix = 'tutorial.drawingToolsSection.intersectionEditing';
     return `${t(`${prefix}.start`)} ${t(`${prefix}.snap`)} ${t(`${prefix}.save`)} ${t(`${prefix}.cancel`)}`;
   }
+  const key = subsectionContentKeys[subsection.id];
+  if (key) return String(t(key));
   return subsection.content ?? '';
 }
 
+function detailLabel(subsection: Subsection, index: number, fallback?: string): string {
+  return subsectionItemKeys[subsection.id]?.[index] ? '' : (fallback ?? '');
+}
+
+function detailText(subsection: Subsection, index: number, fallback: string): string {
+  const key = subsectionItemKeys[subsection.id]?.[index];
+  return key ? String(t(key)) : fallback;
+}
+
 function sectionIntro(id: string, fallback: string): string {
-  return id === 'getting-started' ? String(t('tutorial.gettingStartedSection.intro')) : fallback;
+  const keys: Record<string, string> = {
+    'getting-started': 'tutorial.gettingStartedSection.intro',
+    interface: 'tutorial.guideContent.intros.interface',
+    drawing: 'tutorial.drawingToolsSection.intro',
+    search: 'tutorial.searchSection.intro',
+    navigation: 'tutorial.navigationSection.intro',
+    tools: 'tutorial.toolsSection.intro',
+    layers: 'tutorial.layersSection.intro',
+    notes: 'tutorial.notesSection.intro',
+    points: 'tutorial.pointsSection.intro',
+    projects: 'tutorial.projectsSection.intro',
+    pdf: 'tutorial.pdfSection.intro',
+    tips: 'tutorial.guideContent.intros.tips',
+  };
+  const key = keys[id];
+  return key ? String(t(key)) : fallback;
 }
 
 function navigateTo(targetId?: string) {
@@ -995,6 +1256,23 @@ watch(isOpen, (newValue) => {
 
 .tutorial-sidebar {
   min-height: 0;
+}
+
+.tutorial-step-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+}
+
+.tutorial-step-heading h4 {
+  min-width: 0;
+  margin: 0;
+}
+
+.modern-feature-card .v-card-title {
+  min-width: 0;
+  white-space: normal;
 }
 
 .sidebar-header .v-card-title {
@@ -1039,8 +1317,9 @@ watch(isOpen, (newValue) => {
   max-width: 700px;
 }
 .icon-wrapper {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
 }
 .border-dashed {
   border: 1px dashed rgba(var(--v-border-color), 0.4);
