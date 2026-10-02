@@ -212,7 +212,7 @@ function submitForm() {
         pointInStore.lineId = selectedSegmentId.value;
         pointInStore.construction = {
           lineId: selectedSegmentId.value,
-          distanceKm: form.value.distance,
+          distance: form.value.distance,
           fromEnd: form.value.distanceFrom === 'end',
         };
       }

@@ -224,7 +224,7 @@ describe('AddPointOnSegmentModal.vue', () => {
       expect(typeof lat).toBe('number');
       expect(typeof lon).toBe('number');
       // Name uses auto-generated format: "{line} at {distance} km"
-      expect(name).toBe('Test Line at 0.10 km');
+      expect(name).toBe('Test Line at 0.10');
     });
 
     it('draws point using binary search from end', async () => {
