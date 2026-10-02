@@ -191,8 +191,6 @@ const definitions = [
     '#c0b6a7',
     '#5a4634',
   ],
-<<<<<<< HEAD
-=======
   [
     'cyberpunk',
     'cyberpunk',
@@ -206,8 +204,6 @@ const definitions = [
     '#a0a0c0',
     '#2a2a40',
   ],
-
-  // --- Thème Vaporwave Néon ---
   [
     'vaporwaveNeon',
     'vaporwaveNeon',
@@ -221,8 +217,6 @@ const definitions = [
     '#bfbfbf',
     '#3d3d5c',
   ],
-
-  // --- Thème Sapin de Noël ---
   [
     'christmasTree',
     'christmasTree',
@@ -236,8 +230,8 @@ const definitions = [
     '#9fbdb0',
     '#2d5a43',
   ],
->>>>>>> f845fd0 (Correction du format du nom de point dans le test unitaire et ajout des thèmes)
 ] as const;
+
 export const palettes: Palette[] = definitions.map(([id, theme]) => ({ id, theme }));
 export const themes: Record<string, ThemeDefinition> = Object.fromEntries(
   definitions.map(
@@ -270,6 +264,7 @@ export const themes: Record<string, ThemeDefinition> = Object.fromEntries(
     ]
   )
 );
+
 export function readTheme(): string {
   try {
     const saved = localStorage.getItem('geochase_theme');
@@ -283,6 +278,7 @@ export function readTheme(): string {
   }
   return 'cartography';
 }
+
 export function applyWorkspaceTheme(name: string, persist = true): void {
   const definition = themes[name] ?? themes.cartography!;
   const c = definition.colors;
